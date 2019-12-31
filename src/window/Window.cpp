@@ -1,34 +1,34 @@
 #include "window/Window.hpp"
 
+#include <glfw/glfw3.h>
+
+#include "graphics/opengl/OpenGLContext.hpp"
 #include "utils/Logger.hpp"
 
-Window::Window(std::map<std::string, int> options) {
-	windowData.width = options["width"];
-	windowData.height = options["height"];
-	switch (options["fullscreen"]) {
-		case 0:
-			windowData.screenMode = ScreenMode::Fullscreen; break;
-		case 1:
-			windowData.screenMode = ScreenMode::Windowed; break;
-		case 2:
-			windowData.screenMode = ScreenMode::Borderless; break;
-	}
-	windowData.vSync = options["vsync"];
-	windowData.title = "Voxel Game";
+Window::Window() : context(nullptr), window(nullptr), windowData({}) {}
 
-	Window::init();
-}
-
-void Window::init() {
+void Window::init(std::map<std::string, int> options) {
 	// Initialize GLFW
 	if (glfwInit() == GLFW_FALSE)
 		Logger::error("Failed to init GLFW");
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// Initialize member variables
+	windowData.width = options["width"];
+	windowData.height = options["height"];
+	switch (options["fullscreen"]) {
+	case 0:
+		windowData.screenMode = ScreenMode::Fullscreen; break;
+	case 1:
+		windowData.screenMode = ScreenMode::Windowed; break;
+	case 2:
+		windowData.screenMode = ScreenMode::Borderless; break;
+	}
+	windowData.vSync = options["vsync"];
+	windowData.title = "Voxel Game";
 	
 	// Create GLFW window and OpenGL context
-	window = glfwCreateWindow(windowData.width, windowData.height, windowData.title, NULL, NULL);
+	GLFWmonitor* monitor = windowData.screenMode == ScreenMode::Fullscreen ? glfwGetPrimaryMonitor() : NULL;
+	window = glfwCreateWindow(windowData.width, windowData.height, windowData.title, monitor, NULL);
 	if (window == NULL)
 		Logger::error("Failed to create GLFW window");
 	glfwSetWindowUserPointer(window, &windowData);

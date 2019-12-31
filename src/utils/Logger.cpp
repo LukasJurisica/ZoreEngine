@@ -1,20 +1,20 @@
 #include "utils/Logger.hpp"
 
 namespace Logger {
-	void log(const char* message) {
-		std::cout << "[Log] " << message << std::endl;
+	void info(std::string s) {
+		std::cout << s << std::endl;
 	}
 
-	void error(const char* error) {
-		std::cout << "[Error] " << error << std::endl;
+	void log(std::string s) {
+		std::cout << "[Log] " << s << std::endl;
+	}
+
+	void error(std::string s) {
+		std::cout << "[Error] " << s << std::endl;
 		system("pause");
 	}
 
-	void crash(const char* error) {
+	void crash(std::string s) {
 		
-	}
-
-	void logString(std::string s) {
-		std::cout << s << std::endl;
 	}
 }

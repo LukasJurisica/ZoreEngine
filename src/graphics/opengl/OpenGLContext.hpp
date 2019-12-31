@@ -2,14 +2,12 @@
 
 #include "graphics/Context.hpp"
 
-struct GLFWwindow;
-
 class OpenGLContext : public Context {
 public:
-	OpenGLContext(GLFWwindow* window);
+	OpenGLContext(void* window);
 
 	void init();
 	void swapBuffers();
 private:
-	GLFWwindow* window;
+	void* window;
 };

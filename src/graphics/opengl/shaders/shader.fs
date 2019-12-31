@@ -1,8 +1,10 @@
-#version 130
+#version 330 core
 
-in vec4 color_interp;
+in vec4 colour_interp;
+
+layout(location = 0) out vec4 colour;
 
 void main()
 {
-    gl_FragColor = color_interp;
+   colour = colour_interp;
 }

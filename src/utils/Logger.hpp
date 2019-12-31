@@ -3,8 +3,8 @@
 #include <iostream>
 
 namespace Logger {
-	void log(const char* message);
-	void error(const char* error);
-	void crash(const char* error);
-	void logString(std::string s);
+	void info(std::string s);
+	void log(std::string s);
+	void error(std::string s);
+	void crash(std::string s);
 }

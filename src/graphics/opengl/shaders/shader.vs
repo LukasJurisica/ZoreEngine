@@ -1,23 +1,12 @@
-#version 130
+#version 330 core
 
-// Vertex buffer
-in vec3 vertex;
-in vec3 normal;
-in vec3 color;
-in vec3 uv;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec3 colour;
 
-// Uniform (global) buffer
-uniform mat4 world_mat;
-uniform mat4 view_mat;
-uniform mat4 projection_mat;
-
-uniform mat4 pvwMat;
-
-// Attributes forwarded to the fragment shader
-out vec4 color_interp;
+out vec4 colour_interp;
 
 void main()
 {
-    gl_Position = pvwMat * vec4(vertex, 1.0);
-    color_interp = vec4(color, 1.0);
+	colour_interp = vec4(colour, 1.0);
+    gl_Position = vec4(position, 1.0);
 }

@@ -1,17 +1,19 @@
 #pragma once
 
-#include <glfw/glfw3.h>
-
 #include <string>
 #include <map>
 
-#include "graphics/opengl/OpenGLContext.hpp"
+#include "graphics/Context.hpp"
 #include "window/InputCodes.hpp"
+
+struct GLFWwindow;
 
 class Window {
 public:
-	Window(std::map<std::string, int> options);
+	Window();
 	~Window();
+
+	void init(std::map<std::string, int> options);
 
 	float getAspectRatio();
 	bool shouldClose();
@@ -23,14 +25,12 @@ public:
 	void setViewport(int x, int y, int width, int height);
 	void setVSync(bool enabled);
 
+private:
 	enum class ScreenMode {
 		Fullscreen,
 		Windowed,
 		Borderless
 	};
-
-private:
-	void init();
 
 	struct WindowData {
 		int width;

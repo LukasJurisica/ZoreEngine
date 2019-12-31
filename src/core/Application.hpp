@@ -10,5 +10,5 @@ public:
 
 	void mainLoop();
 private:
-
+	Window window;
 };
