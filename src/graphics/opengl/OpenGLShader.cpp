@@ -1,5 +1,6 @@
 #include "graphics/opengl/OpenGLShader.hpp"
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 #include "core/main.hpp"
 
 #define SHADER_DIRECTORY BASE_DIRECTORY "/src/graphics/opengl/shaders/"
@@ -80,7 +81,7 @@ void OpenGLShader::setUniformFloat4(const char* name, const glm::vec4& value) {
 }
 
 void OpenGLShader::setUniformMat4(const char* name, const glm::mat4& value) {
-
+	glUniformMatrix4fv(glGetUniformLocation(programID, name), 1, GL_FALSE, glm::value_ptr(value));
 }
 
 OpenGLShader::~OpenGLShader() {

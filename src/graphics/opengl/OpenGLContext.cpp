@@ -5,10 +5,10 @@
 
 #include "utils/Logger.hpp"
 
-OpenGLContext::OpenGLContext(void* window) : window(window) {}
+OpenGLContext::OpenGLContext(void* window) : m_window(window) {}
 
 void OpenGLContext::init() {
-	glfwMakeContextCurrent((GLFWwindow*)window);
+	glfwMakeContextCurrent((GLFWwindow*)m_window);
 	// Initialize GLAD
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		Logger::error("Failed to initialize GLAD");
@@ -17,8 +17,4 @@ void OpenGLContext::init() {
 	Logger::info("  Vendor: " + std::string((char*)glGetString(GL_VENDOR)));
 	Logger::info("  Renderer: " + std::string((char*)glGetString(GL_RENDERER)));
 	Logger::info("  Version: " + std::string((char*)glGetString(GL_VERSION)));
-}
-
-void OpenGLContext::swapBuffers() {
-	glfwSwapBuffers((GLFWwindow*)window);
 }

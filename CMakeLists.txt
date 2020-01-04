@@ -5,12 +5,14 @@ set(PROJECT_NAME "GameEngine")
 project(${PROJECT_NAME})
 
 # Specify project files
+file(GLOB COMPONENTS_SOURCE "src/components/*.cpp" "src/components/*.hpp")
 file(GLOB CORE_SOURCE "src/core/*.cpp" "src/core/*.hpp")
 file(GLOB GRAPHICS_SOURCE "src/graphics/*.cpp" "src/graphics/*.hpp")
 file(GLOB OPENGL_SOURCE "src/graphics/opengl/*.cpp" "src/graphics/opengl/*.hpp")
 file(GLOB OPENGL_SHADER_SOURCE "src/graphics/opengl/shaders/*.vs" "src/graphics/opengl/shaders/*.fs")
 file(GLOB UTILS_SOURCE "src/utils/*.cpp" "src/utils/*.hpp")
 file(GLOB WINDOW_SOURCE "src/window/*.cpp" "src/window/*.hpp")
+source_group("src\\components" FILES ${COMPONENTS_SOURCE})
 source_group("src\\core" FILES ${CORE_SOURCE})
 source_group("src\\graphics" FILES ${GRAPHICS_SOURCE})
 source_group("src\\graphics\\opengl" FILES ${OPENGL_SOURCE})
@@ -32,6 +34,7 @@ include_directories(${DEP_INC})
 configure_file(config/config.h.in config/config.h)
 # Add executable based on the header and source files
 add_executable(${PROJECT_NAME}
+	${COMPONENTS_SOURCE}
 	${CORE_SOURCE}
 	${GRAPHICS_SOURCE}
 	${OPENGL_SOURCE}

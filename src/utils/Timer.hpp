@@ -6,9 +6,11 @@ public:
 	~Timer();
 
 	void start();
-	double timeSinceStart();
-	double deltaTime();
+	float timeSinceStart();
+	float deltaTime();
 private:
-	double startTime;
-	double lastTime;
+	float getCurrentTime();
+
+	float m_startTime;
+	float m_lastTime;
 };

@@ -1,5 +1,10 @@
 #pragma once
 
+// Generic Codes
+#define RELEASED			   0
+#define PRESSED				   1
+#define REPEATED			   2
+
 // Mouse Codes
 #define MOUSE_LEFT             0
 #define MOUSE_RIGHT            1

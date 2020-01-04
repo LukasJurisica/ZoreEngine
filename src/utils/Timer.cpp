@@ -2,22 +2,26 @@
 
 #include <glfw/glfw3.h>
 
-Timer::Timer() : startTime(0), lastTime(0){};
+Timer::Timer() : m_startTime(0), m_lastTime(0){};
 
 void Timer::start() {
-	startTime = glfwGetTime();
-	lastTime = startTime;
+	m_startTime = getCurrentTime();
+	m_lastTime = m_startTime;
 }
 
-double Timer::timeSinceStart() {
-	return (glfwGetTime() - startTime);
+float Timer::timeSinceStart() {
+	return (getCurrentTime() - m_startTime);
 }
 
-double Timer::deltaTime() {
-	double currentTime = glfwGetTime();
-	double deltaTime = currentTime - lastTime;
-	lastTime = currentTime;
+float Timer::deltaTime() {
+	float currentTime = getCurrentTime();
+	float deltaTime = currentTime - m_lastTime;
+	m_lastTime = currentTime;
 	return deltaTime;
+}
+
+float Timer::getCurrentTime() {
+	return (float)glfwGetTime();
 }
 
 Timer::~Timer() {};

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "utils/Logger.hpp"
 
@@ -41,15 +42,10 @@ struct BufferElement {
 class BufferLayout {
 public:
 	BufferLayout();
-	BufferLayout(const std::initializer_list<BufferElement>& elements);
+	BufferLayout(const std::vector<BufferElement>& elements);
 
-	inline const std::vector<BufferElement>& getElements() const { return m_elements; }
-	inline const uint32_t getStride() { return m_stride; }
-
-	std::vector<BufferElement>::iterator begin() { return m_elements.begin(); }
-	std::vector<BufferElement>::iterator end() { return m_elements.end(); }
-	std::vector<BufferElement>::const_iterator begin() const { return m_elements.begin(); }
-	std::vector<BufferElement>::const_iterator end() const { return m_elements.end(); }
+	inline const std::vector<BufferElement> getElements() const { return m_elements; }
+	inline const uint32_t getStride() const { return m_stride; }
 
 private:
 	std::vector<BufferElement> m_elements;
@@ -58,17 +54,31 @@ private:
 
 class VertexBuffer {
 public:
-	virtual ~VertexBuffer() {}
+	virtual ~VertexBuffer() = default;
 	virtual void bind() const = 0;
-	virtual void setLayout(const BufferLayout& layout) = 0;
-	virtual const BufferLayout& getLayout() const = 0;
+	virtual void unbind() const = 0;
+	virtual void setLayout(const std::shared_ptr<BufferLayout>& bufferLayout) = 0;
+	virtual const std::shared_ptr<BufferLayout>& getLayout() const = 0;
 	static VertexBuffer* create(float* vertices, uint32_t size);
 };
 
 class IndexBuffer {
 public:
-	virtual ~IndexBuffer() {}
+	virtual ~IndexBuffer() = default;
 	virtual void bind() const = 0;
-	virtual uint32_t getCount() const = 0;
+	virtual void unbind() const = 0;
+	virtual const uint32_t getCount() const = 0;
 	static IndexBuffer* create(uint32_t* indices, uint32_t count);
+};
+
+class VertexArray {
+public:
+	virtual ~VertexArray() = default;
+	virtual void bind() const = 0;
+	virtual void unbind() const = 0;
+	virtual void addVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) = 0;
+	virtual void setIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) = 0;
+	virtual const std::vector<std::shared_ptr<VertexBuffer>>& getVertexBuffers() const = 0;
+	virtual const std::shared_ptr<IndexBuffer>& getIndexBuffer() const = 0;
+	static VertexArray* create();
 };

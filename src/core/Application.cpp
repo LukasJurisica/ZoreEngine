@@ -1,81 +1,114 @@
 #include "core/Application.hpp"
 
-#include <glad/glad.h>
-
-#include "graphics/Shader.hpp"
-#include "graphics/Buffer.hpp"
 #include "core/main.hpp"
 
-Application::Application() {}
+void func(int i) {}
 
-static GLenum SDTtoGLDT(ShaderDataType type) {
-	switch(type) {
-	case ShaderDataType::Int:
-		return GL_INT;
-	case ShaderDataType::Float:
-		return GL_FLOAT;
-	case ShaderDataType::Mat:
-		return GL_FLOAT;
-	case ShaderDataType::Bool:
-		return GL_BOOL;
-	}
+void evc(Event* event) {}
+
+void evc2(Event* event) {
+	std::cout << "An event occured!" << std::endl;
 }
 
-void Application::mainLoop() {
+Application::Application() {
 	std::map<std::string, int> options;
 	options["width"] = 2560;
 	options["height"] = 1440;
 	options["fullscreen"] = 1;
 	options["vsync"] = 0;
 
-	window.init(options);
-	RenderEngine engine = RenderEngine();
-	engine.setClearColour(glm::vec4(0.2f, 0.2f, 0.2f, 1.0f));
+	m_window = std::unique_ptr<Window>(new Window(options, this));
 
-	Shader* shader = Shader::create("shader.vs", "shader.fs");
-	shader->bind();
+	m_camera = std::unique_ptr<Camera>(new Camera(m_window->getAspectRatio()));
 
-	// Opengl Stuff
+	m_engine = std::unique_ptr<RenderEngine>(new RenderEngine(m_camera));
+	m_engine->setClearColour({ 0.2f, 0.2f, 0.2f, 1.0f });
+}
 
-	float vertices[3 * 6] = {
-		-0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f,  0.0f,  0.0f,  1.0f,  0.0f,
-		 0.0f,  0.5f,  0.0f,  0.0f,  0.0f,  1.0f
+void Application::handleEvent(Event* event) {
+	switch (event->getEventType()) {
+	case Event::EventType::windowResize:
+		WindowResizeEvent* e = (WindowResizeEvent*)event;
+		m_window->updateResolution(e->getWidth(), e->getHeight());
+		m_camera->updateProjectionMatrix(m_window->getAspectRatio());
+		break;
+	}
+	delete event;
+}
+
+void Application::setupScene() {
+	// Shader
+	m_shader.reset(Shader::create("shader.vs", "shader.fs"));
+
+	// Buffer Layout
+	std::vector<BufferElement> elements = {
+		{ ShaderDataType::Float, 3, "position", false },
+		{ ShaderDataType::Float, 3, "colour", false }
 	};
-	VertexBuffer* vbo = VertexBuffer::create(vertices, sizeof(vertices));
+	std::shared_ptr<BufferLayout> bufferLayout = std::make_shared<BufferLayout>(elements);
 
-	{
-		BufferLayout layout = {
-			{ ShaderDataType::Float, 3, "position", false },
-			{ ShaderDataType::Float, 3, "colour", false }
-		};
+	// Vertex Buffer
+	float vertices[4 * 6] = {
+		-0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.0f,  0.0f,  1.0f,  0.0f,
+		 0.5f, -0.5f,  0.0f,  0.0f,  0.0f,  1.0f,
+		 0.5f,  0.5f,  0.0f,  1.0f,  1.0f,  1.0f
+	};
+	std::shared_ptr<VertexBuffer> squareVB;
+	squareVB.reset(VertexBuffer::create(vertices, sizeof(vertices)));
+	squareVB->setLayout(bufferLayout);
 
-		vbo->setLayout(layout);
-	}
-	//unsigned int vao;
-	//glGenVertexArrays(1, &vao);
-	//glBindVertexArray(vao);
+	// Index Buffer
+	uint32_t indices[6] = { 0, 1, 2, 0, 2, 3 };
+	std::shared_ptr<IndexBuffer> squareIB;
+	squareIB.reset(IndexBuffer::create(indices, sizeof(indices) / sizeof(uint32_t)));
 
-	int index = 0;
-	for (const auto& element : vbo->getLayout()) {
-		glEnableVertexAttribArray(index);
-		glVertexAttribPointer(index, element.count, SDTtoGLDT(element.type), element.normalized, layout.getStride(), (const void*)element.offset);
-		index++;
-	}
+	// Vertex Array
+	m_squareVA.reset(VertexArray::create());
+	m_squareVA->addVertexBuffer(squareVB);
+	m_squareVA->setIndexBuffer(squareIB);
+}
 
+void Application::updateScene(float deltaTime) {
+	if (m_window->keyPressed(KEY_W))
+		m_camPos.y += deltaTime * 1.0f;
+	if (m_window->keyPressed(KEY_S))
+		m_camPos.y -= deltaTime * 1.0f;
+	if (m_window->keyPressed(KEY_A))
+		m_camPos.x -= deltaTime * 1.0f;
+	if (m_window->keyPressed(KEY_D))
+		m_camPos.x += deltaTime * 1.0f;
 
-	uint32_t indices[3] = { 0, 1, 2 };
-	IndexBuffer* ibo = IndexBuffer::create(indices, 3);
+	if (m_window->keyPressed(KEY_Q))
+		m_camRot -= deltaTime * 90.0f;
+	if (m_window->keyPressed(KEY_E))
+		m_camRot += deltaTime * 90.0f;
 
-	while (!window.shouldClose()) {
-		engine.clearScreen();
+	m_camera->setPosition(m_camPos);
+	m_camera->setRotation(m_camRot);
+}
 
-		//glBindVertexArray(vao);
-		glDrawElements(GL_TRIANGLES, ibo->getCount(), GL_UNSIGNED_INT, nullptr);
+void Application::mainLoop() {
 
-		//std::cout << (window.keyPressed(KEY_H) ? "true" : "false") << std::endl;
+	Timer timer;
+	timer.start();
 
-		window.update();
+	while (!m_window->shouldClose()) {
+		m_engine->clear();
+
+		updateScene(timer.deltaTime());
+
+		m_engine->begin();
+		{
+			m_engine->submit(m_squareVA, m_shader);
+		}
+		m_engine->end();
+
+		//engine->flush();
+		if (m_window->keyPressed(KEY_H))
+			std::cout << timer.timeSinceStart() << std::endl;
+
+		m_window->update();
 	}
 }
 
