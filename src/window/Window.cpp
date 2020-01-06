@@ -37,7 +37,6 @@ void Window::init() {
 		Logger::error("Failed to create GLFW window");
 	glfwSetWindowUserPointer(m_window, &m_windowData);
 	m_context = new OpenGLContext(m_window);
-	m_context->init();
 
 	// Enable Various features
 	if (glfwRawMouseMotionSupported())
@@ -52,8 +51,6 @@ void Window::init() {
 	glfwSetMouseButtonCallback(m_window, WindowCallback::mouseButtonCallback);
 	glfwSetScrollCallback(m_window, WindowCallback::scrollCallback);
 	glfwSetWindowSizeCallback(m_window, WindowCallback::windowSizeCallback);
-
-	setViewport(0, 0, m_windowData.width, m_windowData.height);
 }
 
 bool Window::shouldClose() {
@@ -77,17 +74,11 @@ void Window::setResolution(int width, int height) {
 	glfwSetWindowSize(m_window, width, height);
 	m_windowData.width = width;
 	m_windowData.height = height;
-	glViewport(0, 0, width, height);
 }
 
 void Window::updateResolution(int width, int height) {
 	m_windowData.width = width;
 	m_windowData.height = height;
-	glViewport(0, 0, width, height);
-}
-
-void Window::setViewport(int x, int y, int width, int height) {
-	glViewport(x, y, width, height);
 }
 
 void Window::setVSync(bool enabled) {
@@ -108,7 +99,7 @@ namespace WindowCallback {
 		Window::WindowData* windowData = (Window::WindowData*)glfwGetWindowUserPointer(window);
 
 		Application* app = (Application*)(windowData->application);
-		app->handleEvent(new WindowResizeEvent(width, height));
+		app->handleResize(width, height);
 	}
 
 	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -121,7 +112,7 @@ namespace WindowCallback {
 		Window::WindowData* windowData = (Window::WindowData*)glfwGetWindowUserPointer(window);
 
 		Application* app = (Application*)(windowData->application);
-		app->handleEvent(new MouseMoveEvent((float)xpos, (float)ypos));
+		app->handleMouseMove((float)xpos, (float)ypos);
 	}
 
 	void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {

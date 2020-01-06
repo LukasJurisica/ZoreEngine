@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include "graphics/opengl/OpenGLRenderAPI.hpp"
 
-RenderEngine::RenderEngine(std::unique_ptr<Camera>& camera) : m_camera(camera) {
+RenderEngine::RenderEngine(std::shared_ptr<Camera>& camera) : m_camera(camera) {
 	switch (RenderAPI::getAPI()) {
 	case RenderAPI::API::None:
 		m_renderAPI = nullptr; break;

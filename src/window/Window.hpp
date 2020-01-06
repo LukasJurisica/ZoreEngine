@@ -7,11 +7,8 @@
 
 #include "graphics/Context.hpp"
 #include "window/InputCodes.hpp"
-#include "core/Event.hpp"
 
 struct GLFWwindow;
-
-
 
 class Window {
 public:
@@ -34,6 +31,8 @@ public:
 
 	void init();
 
+	inline int getWidth() const { return m_windowData.width; }
+	inline int getHeight() const { return m_windowData.height; }
 	inline float getAspectRatio() const { return (float)m_windowData.width / (float)m_windowData.height; }
 	bool shouldClose();
 	bool keyPressed(int key);
@@ -42,7 +41,6 @@ public:
 	void update();
 	void setResolution(int width, int height);
 	void updateResolution(int width, int height);
-	void setViewport(int x, int y, int width, int height);
 	void setVSync(bool enabled);
 
 private:

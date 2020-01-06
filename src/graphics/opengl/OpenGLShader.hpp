@@ -1,11 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include "graphics/Shader.hpp"
 
-class OpenGLShader : public Shader {
+class OpenGLShaderProgram : public Shader {
 public:
-	OpenGLShader(const char* vertPath, const char* fragPath);
-	~OpenGLShader();
+	OpenGLShaderProgram(const char* vertPath, const char* fragPath);
+	~OpenGLShaderProgram();
 
 	void bind();
 
@@ -21,5 +22,5 @@ private:
 	void setUniformMat4(const char* name, const glm::mat4& value);
 
 	int status;
-	unsigned int programID;
+	uint32_t programID;
 };

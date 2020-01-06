@@ -3,13 +3,12 @@
 #include "graphics/RenderAPI.hpp"
 #include "utils/Logger.hpp"
 
-
-Shader* Shader::create(const char* vertpath, const char* fragpath) {
+std::shared_ptr<Shader> Shader::create(const char* vertpath, const char* fragpath) {
 	switch (RenderAPI::getAPI()) {
 	case RenderAPI::API::None:
 		Logger::error("NULL RenderAPI is not currently supported"); return nullptr;
 	case RenderAPI::API::OpenGL:
-		return new OpenGLShader(vertpath, fragpath);
+		return std::make_shared<OpenGLShaderProgram>(vertpath, fragpath);
 	default:
 		Logger::error("Invalid RenderAPI"); return nullptr;
 	}

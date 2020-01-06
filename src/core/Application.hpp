@@ -1,7 +1,6 @@
 #pragma once
 
-#include <memory>
-
+#include "core/core.hpp"
 #include "window/Window.hpp"
 #include "graphics/RenderEngine.hpp"
 #include "graphics/Shader.hpp"
@@ -14,22 +13,23 @@ public:
 	Application();
 	~Application();
 
-	void handleEvent(Event* event);
+	void handleResize(int width, int height);
+	void handleKeyPress(int key, int action);
+	void handleMousePress(int button, int action);
+	void handleMouseMove(float x, float y);
 
 	void setupScene();
 	void updateScene(float deltaTime);
 	void mainLoop();
 
 private:
-	std::vector<Event*> m_events;
+	std::shared_ptr<Camera> m_camera;
 	std::unique_ptr<Window> m_window;
 	std::unique_ptr<RenderEngine> m_engine;
-
+	
 	std::shared_ptr<Shader> m_shader;
 	std::shared_ptr<VertexArray> m_squareVA;
-	std::unique_ptr<Camera> m_camera;
 
 	glm::vec3 m_camPos = glm::vec3(0.0);
 	float m_camRot = 0;
-
 };

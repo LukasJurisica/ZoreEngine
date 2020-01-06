@@ -5,7 +5,7 @@
 
 #include "utils/Logger.hpp"
 
-OpenGLContext::OpenGLContext(void* window) : m_window(window) {}
+OpenGLContext::OpenGLContext(void* window) : m_window(window) { init(); }
 
 void OpenGLContext::init() {
 	glfwMakeContextCurrent((GLFWwindow*)m_window);

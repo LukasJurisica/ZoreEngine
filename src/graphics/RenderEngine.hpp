@@ -8,19 +8,20 @@
 
 class RenderEngine {
 public:
-	RenderEngine(std::unique_ptr<Camera>& camera);
+	RenderEngine(std::shared_ptr<Camera>& camera);
 	~RenderEngine();
 
 	void begin();
 	void end();
 	void submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader);
 
-	inline void setClearColour(const glm::vec4& colour) { m_renderAPI->setClearColour(colour); }
-	inline void clear() { m_renderAPI->clear(); }
+	inline void setClearColour(const glm::vec4& colour) const { m_renderAPI->setClearColour(colour); }
+	inline void setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) const { m_renderAPI->setViewport(x, y, width, height); }
+	inline void clear() const { m_renderAPI->clear(); }
 
 private:
 	RenderAPI* m_renderAPI;
-	std::unique_ptr<Camera>& m_camera;
+	std::shared_ptr<Camera>& m_camera;
 };
 
 /*

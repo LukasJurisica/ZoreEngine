@@ -1,44 +1,45 @@
 #include "core/Application.hpp"
 
-#include "core/main.hpp"
-
-void func(int i) {}
-
-void evc(Event* event) {}
-
-void evc2(Event* event) {
-	std::cout << "An event occured!" << std::endl;
-}
+#include "utils/Logger.hpp"
 
 Application::Application() {
 	std::map<std::string, int> options;
-	options["width"] = 2560;
-	options["height"] = 1440;
+	options["width"] = 1920;
+	options["height"] = 1080;
 	options["fullscreen"] = 1;
 	options["vsync"] = 0;
 
-	m_window = std::unique_ptr<Window>(new Window(options, this));
+	m_window = std::make_unique<Window>(options, this);
 
-	m_camera = std::unique_ptr<Camera>(new Camera(m_window->getAspectRatio()));
+	m_camera = std::make_shared<Camera>(m_window->getAspectRatio());
 
-	m_engine = std::unique_ptr<RenderEngine>(new RenderEngine(m_camera));
+	m_engine = std::make_unique<RenderEngine> (m_camera);
 	m_engine->setClearColour({ 0.2f, 0.2f, 0.2f, 1.0f });
+	m_engine->setViewport(0, 0, options["width"], options["height"]);
 }
 
-void Application::handleEvent(Event* event) {
-	switch (event->getEventType()) {
-	case Event::EventType::windowResize:
-		WindowResizeEvent* e = (WindowResizeEvent*)event;
-		m_window->updateResolution(e->getWidth(), e->getHeight());
-		m_camera->updateProjectionMatrix(m_window->getAspectRatio());
-		break;
-	}
-	delete event;
+void Application::handleResize(int width, int height) {
+	m_window->updateResolution(width, height);
+	m_camera->updateProjectionMatrix((float)width / (float)height);
+	m_engine->setViewport(0, 0, width, height);
+}
+
+void Application::handleKeyPress(int key, int action) {
+
+}
+
+void Application::handleMousePress(int button, int action) {
+
+}
+
+void Application::handleMouseMove(float x, float y) {
+	m_camPos = {(x / m_window->getWidth() * 2) - 1, (-y / m_window->getHeight() * 2) + 1, 0};
+	m_camera->setPosition(m_camPos);
 }
 
 void Application::setupScene() {
 	// Shader
-	m_shader.reset(Shader::create("shader.vs", "shader.fs"));
+	m_shader = Shader::create("shader.vs", "shader.fs");
 
 	// Buffer Layout
 	std::vector<BufferElement> elements = {

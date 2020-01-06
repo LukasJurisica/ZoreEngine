@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
@@ -7,7 +9,7 @@
 
 class Shader {
 public:
-	virtual ~Shader() {}
+	virtual ~Shader() = default;
 
 	virtual void bind() = 0;
 	virtual void setUniformInt(const char* name, int value) = 0;
@@ -17,5 +19,5 @@ public:
 	virtual void setUniformFloat4(const char* name, const glm::vec4& value) = 0;
 	virtual void setUniformMat4(const char* name, const glm::mat4& value) = 0;
 
-	static Shader* create(const char* vertpath, const char* fragpath);
+	static std::shared_ptr<Shader> create(const char* vertpath, const char* fragpath);
 };

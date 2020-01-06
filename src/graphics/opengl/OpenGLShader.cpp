@@ -1,11 +1,14 @@
 #include "graphics/opengl/OpenGLShader.hpp"
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
-#include "core/main.hpp"
 
-#define SHADER_DIRECTORY BASE_DIRECTORY "/src/graphics/opengl/shaders/"
+#include "../../bin/config/config.h"
+#include "utils/Logger.hpp"
+#include "utils/FileManager.hpp"
 
-OpenGLShader::OpenGLShader(const char* vertPath, const char* fragPath) {
+#define GL_SHADER_DIRECTORY BASE_DIRECTORY "/src/graphics/opengl/shaders/"
+
+OpenGLShaderProgram::OpenGLShaderProgram(const char* vertPath, const char* fragPath) {
 	// Create a shader program
 	programID = glCreateProgram();
 
@@ -25,8 +28,8 @@ OpenGLShader::OpenGLShader(const char* vertPath, const char* fragPath) {
 	glDeleteShader(fs);
 }
 
-void OpenGLShader::setupShader(unsigned int shader, const char* filename) {
-	std::string source = FileManager::readTextFile(SHADER_DIRECTORY + std::string(filename));
+void OpenGLShaderProgram::setupShader(unsigned int shader, const char* filename) {
+	std::string source = FileManager::readTextFile(GL_SHADER_DIRECTORY + std::string(filename));
 	const char* source_p = source.c_str();
 
 	glShaderSource(shader, 1, &source_p, NULL);
@@ -43,7 +46,7 @@ void OpenGLShader::setupShader(unsigned int shader, const char* filename) {
 	glAttachShader(programID, shader);
 }
 
-void OpenGLShader::setupProgram() {
+void OpenGLShaderProgram::setupProgram() {
 	glLinkProgram(programID);
 	// Check if shaders were linked successfully
 	glGetProgramiv(programID, GL_LINK_STATUS, &status);
@@ -56,34 +59,34 @@ void OpenGLShader::setupProgram() {
 	}
 }
 
-void OpenGLShader::bind() {
+void OpenGLShaderProgram::bind() {
 	glUseProgram(programID);
 }
 
-void OpenGLShader::setUniformInt(const char* name, int value) {
+void OpenGLShaderProgram::setUniformInt(const char* name, int value) {
 
 }
 
-void OpenGLShader::setUniformFloat(const char* name, float value) {
+void OpenGLShaderProgram::setUniformFloat(const char* name, float value) {
 
 }
 
-void OpenGLShader::setUniformFloat2(const char* name, const glm::vec2& value) {
+void OpenGLShaderProgram::setUniformFloat2(const char* name, const glm::vec2& value) {
 
 }
 
-void OpenGLShader::setUniformFloat3(const char* name, const glm::vec3& value) {
+void OpenGLShaderProgram::setUniformFloat3(const char* name, const glm::vec3& value) {
 
 }
 
-void OpenGLShader::setUniformFloat4(const char* name, const glm::vec4& value) {
+void OpenGLShaderProgram::setUniformFloat4(const char* name, const glm::vec4& value) {
 
 }
 
-void OpenGLShader::setUniformMat4(const char* name, const glm::mat4& value) {
+void OpenGLShaderProgram::setUniformMat4(const char* name, const glm::mat4& value) {
 	glUniformMatrix4fv(glGetUniformLocation(programID, name), 1, GL_FALSE, glm::value_ptr(value));
 }
 
-OpenGLShader::~OpenGLShader() {
+OpenGLShaderProgram::~OpenGLShaderProgram() {
 	glDeleteProgram(programID);
 }
