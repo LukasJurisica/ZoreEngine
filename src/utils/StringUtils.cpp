@@ -8,4 +8,5 @@ std::vector<std::string> StringUtils::split(const std::string& str, const std::s
 			result.push_back(str.substr(prev, i));
 	}
 	result.push_back(str.substr(prev, str.length()));
+	return result;
 }
