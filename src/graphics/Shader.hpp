@@ -20,5 +20,5 @@ public:
 	virtual void setUniformFloat4(const char* name, const glm::vec4& value) = 0;
 	virtual void setUniformMat4(const char* name, const glm::mat4& value) = 0;
 
-	static std::shared_ptr<Shader> create(const std::string& filename);
+	static std::shared_ptr<Shader> create(const std::string& filepath);
 };

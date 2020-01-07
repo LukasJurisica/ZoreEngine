@@ -1,27 +1,29 @@
-#type vertex
+//VERTEX SHADER
 #version 330 core
 
 layout(location = 0) in vec3 position;
-layout(location = 1) in vec3 colour;
-
+layout(location = 1) in vec3 color;
 uniform mat4 u_viewProjectionMatrix;
+out vec4 color_interp;
 
-out vec4 colour_interp;
-
-void main()
-{
-	colour_interp = vec4(colour, 1.0);
-    gl_Position = u_viewProjectionMatrix * vec4(position, 1.0);
+void main() {
+	color_interp = vec4(color, 1.0);
+	gl_Position = u_viewProjectionMatrix * vec4(position, 1.0);
 }
+#type vertex
 
-#type fragment
+
+
+
+
+
+// FRAGMENT SHADER
 #version 330 core
 
-in vec4 colour_interp;
+in vec4 color_interp;
+layout(location = 0) out vec4 color;
 
-layout(location = 0) out vec4 colour;
-
-void main()
-{
-   colour = colour_interp;
+void main() {
+	color = color_interp;
 }
+#type fragment

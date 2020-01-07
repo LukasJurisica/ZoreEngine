@@ -1,12 +1,18 @@
 #include "utils/StringUtils.hpp"
+#include "utils/Logger.hpp"
 
-std::vector<std::string> StringUtils::split(const std::string& str, const std::string& delimiter) const {
-	std::vector<std::string> result = { };
-	size_t prev = 0;
-	for (int i = 0; i < str.length(); i++) {
-		if (delimiter.find(str.at(i)) != -1)
-			result.push_back(str.substr(prev, i));
+std::vector<std::string> StringUtils::split(const std::string& str, const std::string& delimiter) {
+	std::vector<std::string> result;
+	size_t start, end = 0;
+
+	while (end != std::string::npos) {
+		start = str.find_first_not_of(delimiter, end);
+		if (start == std::string::npos)
+			return result;
+		end = str.find_first_of(delimiter, start);
+		std::string res = str.substr(start, end - start);
+		result.push_back(res);
 	}
-	result.push_back(str.substr(prev, str.length()));
+
 	return result;
 }

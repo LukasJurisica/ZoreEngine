@@ -5,8 +5,10 @@ set(PROJECT_NAME "ZoreEngine")
 project(${PROJECT_NAME})
 
 # Specify project files
-file(GLOB_RECURSE SRC_FILES "src/*.cpp" "src/*.hpp" "src/*.glsl")
+file(GLOB_RECURSE SRC_FILES "src/*.cpp" "src/*.hpp")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}\\src" PREFIX "src" FILES ${SRC_FILES})
+file (GLOB_RECURSE SHADER_FILES "assets/shaders/*.glsl")
+source_group("shaders" FILES ${SHADER_FILES})
 include_directories("src")
 
 #Specify Dependencies
@@ -14,8 +16,11 @@ file(GLOB_RECURSE DEP_FILES "deps/*.h" "deps/*.hpp" "deps/*.inl" "deps/*.c")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}\\deps" PREFIX "deps" FILES ${DEP_FILES})
 include_directories("deps")
 
+# Add path name to configuration file
+configure_file(config/config.h.in config/config.h)
+
 # Add executable based on the header and source files
-add_executable(${PROJECT_NAME} ${SRC_FILES} ${DEP_FILES})
+add_executable(${PROJECT_NAME} ${SRC_FILES} ${DEP_FILES} ${SHADER_FILES})
 
 # Require OpenGL library
 find_package(OpenGL REQUIRED)

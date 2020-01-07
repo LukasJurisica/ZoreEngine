@@ -2,6 +2,10 @@
 
 #include "utils/Logger.hpp"
 #include "utils/FileManager.hpp"
+#include "utils/StringUtils.hpp"
+#include "../../bin/config/config.h"
+
+#define SHADER_DIRECTORY BASE_DIRECTORY "/assets/shaders/"
 
 Application::Application() {
 	std::map<std::string, int> options;
@@ -39,12 +43,12 @@ void Application::handleMouseMove(float x, float y) {
 
 void Application::setupScene() {
 	// Shader
-	m_shader = Shader::create("assets/shaders/shader.glsl");
+	m_shader = Shader::create(SHADER_DIRECTORY + std::string("shader.glsl"));
 
 	// Buffer Layout
 	std::vector<BufferElement> elements = {
 		{ ShaderDataType::Float, 3, "position", false },
-		{ ShaderDataType::Float, 3, "colour", false }
+		{ ShaderDataType::Float, 3, "color", false }
 	};
 	std::shared_ptr<BufferLayout> bufferLayout = std::make_shared<BufferLayout>(elements);
 

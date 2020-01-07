@@ -1,25 +1,13 @@
 #include "graphics/opengl/OpenGLShader.hpp"
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <fstream>
 #include "utils/Logger.hpp"
-#include "utils/FileManager.hpp"
+#include "utils/StringUtils.hpp"
 
-static GLenum shaderTypeFromString(const std::string& type)
-{
-	if (type == "vertex")
-		return GL_VERTEX_SHADER;
-	else if (type == "fragment")
-		return GL_FRAGMENT_SHADER;
-	else
-		Logger::error("Invalid Shader Type");
-	return 0;
-}
-
-OpenGLShaderProgram::OpenGLShaderProgram(const std::string& filename) {
+OpenGLShaderProgram::OpenGLShaderProgram(const std::string& filepath) {
 	programID = glCreateProgram();
-	const std::string& shaderSource = FileManager::readTextFile(filename);
-	std::vector<GLuint>& shaders = process(shaderSource);
+	std::vector<GLuint>& shaders = preProcess(filepath);
 
 	if (shaders.size() != 2)
 		Logger::error("Must have exactly 2 (a vertex and a fragment) shader");
@@ -31,24 +19,34 @@ OpenGLShaderProgram::OpenGLShaderProgram(const std::string& filename) {
 	}
 }
 
-std::vector<GLuint> OpenGLShaderProgram::process(const std::string& source) {
+std::vector<GLuint> OpenGLShaderProgram::preProcess(const std::string& filepath) {
 	std::vector<GLuint> shaders;
 
-	std::string token = "#type";
-	size_t tokenLength = token.length();
-	size_t pos = source.find(token, 0);
-	// Check if there are any more shaders in the file
-	while (pos != std::string::npos) {
-		size_t end = source.find_first_of("\r\n", pos);
-		size_t start = pos + tokenLength + 1;
-		GLenum type = shaderTypeFromString(source.substr(start, end - start));
-		size_t next = source.find_first_not_of("\r\n", end);
-		pos = source.find(token, next);
+	std::ifstream f(filepath);
+	if (f.fail())
+		Logger::error("Error opening file: " + std::string(filepath));
 
-		GLuint shader = glCreateShader(type);
-		setupShader((pos == std::string::npos) ? source.substr(next) : source.substr(next, pos - next), shader);
-		shaders.push_back(shader);
+	std::string line, source;
+	std::vector<std::string> parts;
+	GLenum type;
+	GLuint shader;
+
+	while (std::getline(f, line)) {
+		parts = StringUtils::split(line, " ()=;");
+		if (parts.size() == 0)
+			continue;
+		else if (parts[0] == "#type") {
+			type = shaderTypeFromString(parts[1]);
+			shader = glCreateShader(type);
+			shaders.push_back(shader);
+			setupShader(source, shader);
+			source = "";
+		}
+		else
+			source += line + "\n";
 	}
+
+	f.close();	
 	return shaders;
 }
 
@@ -106,7 +104,27 @@ void OpenGLShaderProgram::setUniformFloat4(const char* name, const glm::vec4& va
 }
 
 void OpenGLShaderProgram::setUniformMat4(const char* name, const glm::mat4& value) {
-	glUniformMatrix4fv(glGetUniformLocation(programID, name), 1, GL_FALSE, glm::value_ptr(value));
+	verifyUniformLocation(name);
+	glUniformMatrix4fv(uniforms[name], 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void OpenGLShaderProgram::verifyUniformLocation(const char* name) {
+	if (uniforms.find(name) == uniforms.end()) {
+		GLint loc = glGetUniformLocation(programID, name);
+		if (loc == -1)
+			Logger::error("Uniform not found: " + std::string(name));
+		uniforms[name] = loc;
+	}
+}
+
+GLenum OpenGLShaderProgram::shaderTypeFromString(const std::string& type) {
+	if (type == "vertex")
+		return GL_VERTEX_SHADER;
+	else if (type == "fragment")
+		return GL_FRAGMENT_SHADER;
+	else
+		Logger::error("Invalid Shader Type");
+	return 0;
 }
 
 OpenGLShaderProgram::~OpenGLShaderProgram() {
