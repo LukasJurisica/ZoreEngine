@@ -2,37 +2,59 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../../bin/config/config.h"
 #include "utils/Logger.hpp"
 #include "utils/FileManager.hpp"
 
-#define GL_SHADER_DIRECTORY BASE_DIRECTORY "/src/graphics/opengl/shaders/"
-
-OpenGLShaderProgram::OpenGLShaderProgram(const char* vertPath, const char* fragPath) {
-	// Create a shader program
-	programID = glCreateProgram();
-
-	// Create Vertex and Fragment shaders
-	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-	setupShader(vs, vertPath);
-	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-	setupShader(fs, fragPath);
-
-	// link the vertex and fragment shaders to the program
-	setupProgram();
-
-	// Delete memory used by shaders, since they were already compiled and linked
-	glDetachShader(programID, vs);
-	glDeleteShader(vs);
-	glDetachShader(programID, fs);
-	glDeleteShader(fs);
+static GLenum shaderTypeFromString(const std::string& type)
+{
+	if (type == "vertex")
+		return GL_VERTEX_SHADER;
+	else if (type == "fragment")
+		return GL_FRAGMENT_SHADER;
+	else
+		Logger::error("Invalid Shader Type");
+	return 0;
 }
 
-void OpenGLShaderProgram::setupShader(unsigned int shader, const char* filename) {
-	std::string source = FileManager::readTextFile(GL_SHADER_DIRECTORY + std::string(filename));
-	const char* source_p = source.c_str();
+OpenGLShaderProgram::OpenGLShaderProgram(const std::string& filename) {
+	programID = glCreateProgram();
+	const std::string& shaderSource = FileManager::readTextFile(filename);
+	std::vector<GLuint>& shaders = process(shaderSource);
 
-	glShaderSource(shader, 1, &source_p, NULL);
+	if (shaders.size() != 2)
+		Logger::error("Must have exactly 2 (a vertex and a fragment) shader");
+
+	setupProgram();
+	for (GLuint shader : shaders) {
+		glDetachShader(programID, shader);
+		glDeleteShader(shader);
+	}
+}
+
+std::vector<GLuint> OpenGLShaderProgram::process(const std::string& source) {
+	std::vector<GLuint> shaders;
+
+	std::string token = "#type";
+	size_t tokenLength = token.length();
+	size_t pos = source.find(token, 0);
+	// Check if there are any more shaders in the file
+	while (pos != std::string::npos) {
+		size_t end = source.find_first_of("\r\n", pos);
+		size_t start = pos + tokenLength + 1;
+		GLenum type = shaderTypeFromString(source.substr(start, end - start));
+		size_t next = source.find_first_not_of("\r\n", end);
+		pos = source.find(token, next);
+
+		GLuint shader = glCreateShader(type);
+		setupShader((pos == std::string::npos) ? source.substr(next) : source.substr(next, pos - next), shader);
+		shaders.push_back(shader);
+	}
+	return shaders;
+}
+
+void OpenGLShaderProgram::setupShader(const std::string& source, unsigned int shader) {
+	const char* source_cstr = source.c_str();
+	glShaderSource(shader, 1, &source_cstr, NULL);
 	glCompileShader(shader);
 	// Check if shaders compiled successfully
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
@@ -41,7 +63,7 @@ void OpenGLShaderProgram::setupShader(unsigned int shader, const char* filename)
 		char* buffer = new char[status];
 		glGetShaderInfoLog(shader, status, NULL, buffer);
 		glDeleteShader(shader);
-		Logger::error("Compiling (" + std::string(filename) + ") failed: " + std::string(buffer));
+		Logger::error("Shader compilation failed: " + std::string(buffer));
 	}
 	glAttachShader(programID, shader);
 }

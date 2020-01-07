@@ -1,6 +1,7 @@
 #include "core/Application.hpp"
 
 #include "utils/Logger.hpp"
+#include "utils/FileManager.hpp"
 
 Application::Application() {
 	std::map<std::string, int> options;
@@ -33,13 +34,12 @@ void Application::handleMousePress(int button, int action) {
 }
 
 void Application::handleMouseMove(float x, float y) {
-	m_camPos = {(x / m_window->getWidth() * 2) - 1, (-y / m_window->getHeight() * 2) + 1, 0};
-	m_camera->setPosition(m_camPos);
+
 }
 
 void Application::setupScene() {
 	// Shader
-	m_shader = Shader::create("shader.vs", "shader.fs");
+	m_shader = Shader::create("assets/shaders/shader.glsl");
 
 	// Buffer Layout
 	std::vector<BufferElement> elements = {
@@ -90,7 +90,6 @@ void Application::updateScene(float deltaTime) {
 }
 
 void Application::mainLoop() {
-
 	Timer timer;
 	timer.start();
 

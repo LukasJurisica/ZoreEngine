@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "graphics/Context.hpp"
-#include "window/InputCodes.hpp"
+#include "core/InputCodes.hpp"
 
 struct GLFWwindow;
 

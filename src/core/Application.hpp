@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/core.hpp"
-#include "window/Window.hpp"
+#include "core/Window.hpp"
 #include "graphics/RenderEngine.hpp"
 #include "graphics/Shader.hpp"
 #include "graphics/Buffer.hpp"
