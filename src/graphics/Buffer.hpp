@@ -1,84 +1,97 @@
 #pragma once
-
-#include <cstdint>
-#include <string>
 #include <vector>
-#include <memory>
+#include "graphics/Shader.hpp"
 
-#include "utils/Logger.hpp"
+#pragma warning(disable:4250)
 
-enum class ShaderDataType {
-	Int, Float, Mat, Bool
-};
+namespace zore {
 
-static uint32_t shaderDataTypeSize(ShaderDataType type, uint32_t count) {
-	switch (type) {
-	case ShaderDataType::Int:
-		return (4 * count);
-	case ShaderDataType::Float:
-		return (4 * count);
-	case ShaderDataType::Mat:
-		return (4 * count * count);
-	case ShaderDataType::Bool:
-		return (1 * count);
-	default:
-		Logger::error("Invalid ShaderDataType"); return (0);
-	}
+	typedef unsigned short Index;
+
+	//========================================================================
+	//	Platform Agnostic GPU Buffer Base Class
+	//========================================================================
+
+	class Buffer {
+	public:
+		virtual ~Buffer() = default;
+		virtual void Set(const void* data, unsigned int size) = 0;
+		virtual void Update(const void* data, unsigned int size, unsigned int offset = 0) = 0;
+		virtual void Bind() const = 0;
+		virtual void UnBind() const = 0;
+	};
+
+	//========================================================================
+	//	Platform Agnostic Vertex Buffer Class
+	//========================================================================
+
+	class VertexBuffer : public virtual Buffer {
+	public:
+		static VertexBuffer* Create(void* vertices, unsigned int size);
+		virtual ~VertexBuffer() = default;
+	};
+
+	//========================================================================
+	//	Platform Agnostic Index Buffer Class
+	//========================================================================
+
+	class IndexBuffer : public virtual Buffer {
+	public:
+		static IndexBuffer* Create(void* indices, unsigned int size);
+		virtual ~IndexBuffer() = default;
+	};
+
+	//========================================================================
+	//	Platform Agnostic Shader Storage Buffer Class
+	//========================================================================
+
+	class ShaderStorageBuffer : public virtual Buffer {
+	public:
+		static ShaderStorageBuffer* Create(void* data, unsigned int size, unsigned int index);
+		virtual ~ShaderStorageBuffer() = default;
+	};
+
+	//========================================================================
+	//	Platform Agnostic Uniform Buffer Class
+	//========================================================================
+
+	class UniformBuffer : public virtual Buffer {
+	public:
+		static UniformBuffer* Create(void* data, unsigned int size, unsigned int index);
+		virtual ~UniformBuffer() = default;
+		virtual void AttachToShader(Shader* shader, const std::string& name) = 0;
+	};
+
+	//========================================================================
+	//	Platform Agnostic Vertex Buffer Layout Class
+	//========================================================================
+
+	struct BufferElement {
+		BufferElement(std::string name, ShaderDataType type, unsigned int count, bool normalized);
+
+		std::string name;
+		ShaderDataType type;
+		unsigned int count;
+		unsigned int size;
+		unsigned int offset;
+		int attribLocation;
+		bool normalized;
+	};
+
+	class BufferLayout {
+	public:
+		static BufferLayout* Create(const std::string& name, Shader* shader, const std::vector<BufferElement>& elements);
+		virtual ~BufferLayout();
+		static BufferLayout* Get(const std::string& name);
+		unsigned int GetStride() const;
+		virtual void Bind() const = 0;
+
+	protected:
+		BufferLayout(const std::string& name, const std::vector<BufferElement>& elements);
+		std::vector<BufferElement> elements;
+		uint32_t stride;
+
+	private:
+		std::string name;
+	};
 }
-
-struct BufferElement {
-	ShaderDataType type;
-	uint32_t count;
-	uint32_t offset;
-	uint32_t size;
-	std::string name;
-	bool normalized;
-	BufferElement(ShaderDataType type, uint32_t count, std::string name, bool normalized) : type(type), count(count), name(name), normalized(normalized), offset(0), size(shaderDataTypeSize(type, count)) {
-		if (count > 4 || count < 1)
-			Logger::error("Invalid number of components for BufferElement");
-	}
-};
-
-class BufferLayout {
-public:
-	BufferLayout();
-	BufferLayout(const std::vector<BufferElement>& elements);
-
-	inline const std::vector<BufferElement> getElements() const { return m_elements; }
-	inline const uint32_t getStride() const { return m_stride; }
-
-private:
-	std::vector<BufferElement> m_elements;
-	uint32_t m_stride;
-};
-
-class VertexBuffer {
-public:
-	virtual ~VertexBuffer() = default;
-	virtual void bind() const = 0;
-	virtual void unbind() const = 0;
-	virtual void setLayout(const std::shared_ptr<BufferLayout>& bufferLayout) = 0;
-	virtual const std::shared_ptr<BufferLayout>& getLayout() const = 0;
-	static VertexBuffer* create(float* vertices, uint32_t size);
-};
-
-class IndexBuffer {
-public:
-	virtual ~IndexBuffer() = default;
-	virtual void bind() const = 0;
-	virtual void unbind() const = 0;
-	virtual const uint32_t getCount() const = 0;
-	static IndexBuffer* create(uint32_t* indices, uint32_t count);
-};
-
-class VertexArray {
-public:
-	virtual ~VertexArray() = default;
-	virtual void bind() const = 0;
-	virtual void unbind() const = 0;
-	virtual void addVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer) = 0;
-	virtual void setIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer) = 0;
-	virtual const std::vector<std::shared_ptr<VertexBuffer>>& getVertexBuffers() const = 0;
-	virtual const std::shared_ptr<IndexBuffer>& getIndexBuffer() const = 0;
-	static VertexArray* create();
-};

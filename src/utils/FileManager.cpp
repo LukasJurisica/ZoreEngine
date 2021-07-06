@@ -1,26 +1,47 @@
 #include "utils/FileManager.hpp"
-
+#include "debug/Debug.hpp"
+#include "path_config.h"
 #include <fstream>
 
-#include "utils/Logger.hpp"
+#if IS_DEBUG
+#define PATH (BASE_DIRECTORY "/")
+#else
+#define PATH "./"
+#endif
 
-namespace FileManager {
-	std::string readTextFile(std::string filename) {
+namespace zore {
+
+	void FileManager::ReadContent(std::string& result, const std::string& filename, bool includeEmptyLines) {
+		result = "";
 		// Open file
-		std::ifstream f(filename);
-		if (f.fail())
-			Logger::error("Error opening file: " + std::string(filename));
+		std::ifstream f("./" + filename);
+		ENSURE(f.is_open(), "Error opening file: " + filename);
 
 		// Read file
-		std::string content;
 		std::string line;
 		while (std::getline(f, line))
-			content += line + "\n";
+			if (line != "" || includeEmptyLines)
+				result += line + "\n";
+	}
 
-		// Close file
-		f.close();
+	void FileManager::ReadLines(std::vector<std::string>& result, const std::string& filename, bool includeEmptyLines) {
+		result.clear();
+		// Open file
+		std::ifstream f("./" + filename);
+		ENSURE(f.is_open(), "Error opening file: " + filename);
 
-		// Return Result
-		return content;
+		// Read file
+		std::string line;
+		while (std::getline(f, line))
+			if (line != "" || includeEmptyLines)
+				result.push_back(line);
+	}
+
+	void FileManager::ReadChunks(std::vector<std::string>& result, const std::string& filename, const std::string& delimiter, bool includeEmptyLines) {
+
+	}
+
+	std::string FileManager::GetPath(const std::string& filename) {
+		return std::string(PATH) + filename;
 	}
 }

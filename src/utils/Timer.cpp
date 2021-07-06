@@ -1,27 +1,26 @@
-#include "utils/Timer.hpp"
+#include "Timer.hpp"
 
-#include <glfw/glfw3.h>
+namespace zore {
 
-Timer::Timer() : m_startTime(0), m_lastTime(0){};
+	Timer::Timer() {
+		Reset();
+	};
 
-void Timer::start() {
-	m_startTime = getCurrentTime();
-	m_lastTime = m_startTime;
+	void Timer::Reset() {
+		startTime = std::chrono::steady_clock::now();
+		lastTime = startTime;
+	}
+
+	float Timer::TimeSinceStart() {
+		std::chrono::duration<float> elapsed = std::chrono::steady_clock::now() - startTime;
+		return elapsed.count();
+	}
+
+	float Timer::DeltaTime(bool update) {
+		std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
+		std::chrono::duration<float> elapsed = currentTime - lastTime;
+		if (update)
+			lastTime = currentTime;
+		return elapsed.count();
+	}
 }
-
-float Timer::timeSinceStart() {
-	return (getCurrentTime() - m_startTime);
-}
-
-float Timer::deltaTime() {
-	float currentTime = getCurrentTime();
-	float deltaTime = currentTime - m_lastTime;
-	m_lastTime = currentTime;
-	return deltaTime;
-}
-
-float Timer::getCurrentTime() {
-	return (float)glfwGetTime();
-}
-
-Timer::~Timer() {};

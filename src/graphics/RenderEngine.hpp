@@ -1,38 +1,37 @@
 #pragma once
+#include "graphics/Mesh.hpp"
 
-#include <glm/vec4.hpp>
+namespace zore {
 
-#include "graphics/RenderAPI.hpp"
-#include "graphics/Shader.hpp"
-#include "components/Camera.hpp"
+	//========================================================================
+	//	Platform Agnostic Render Engine Interface
+	//========================================================================
 
-class RenderEngine {
-public:
-	RenderEngine(std::shared_ptr<Camera>& camera);
-	~RenderEngine();
+	enum class API {
+		None, OpenGL, Vulkan
+	};
 
-	void begin();
-	void end();
-	void submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader);
+	class RenderEngine {
+	public:
+		static RenderEngine* Create();
+		virtual ~RenderEngine() = default;
 
-	inline void setClearColour(const glm::vec4& colour) const { m_renderAPI->setClearColour(colour); }
-	inline void setViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) const { m_renderAPI->setViewport(x, y, width, height); }
-	inline void clear() const { m_renderAPI->clear(); }
+		static void Init();
+		static API GetApi();
+		static void SetApi(API api);
 
-private:
-	RenderAPI* m_renderAPI;
-	std::shared_ptr<Camera>& m_camera;
-};
+		virtual void SetClearColour(float r, float g, float b, float a = 1.0f) = 0;
+		virtual void SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) = 0;
+		virtual void Clear() = 0;
+		virtual void Draw(Mesh* m);
+		virtual void DrawLinear(unsigned int count, unsigned int offset = 0) = 0;
+		virtual void DrawIndexed(unsigned int count, unsigned int offset = 0) = 0;
 
-/*
-class RenderCommand {
-public:
-	inline static void setRenderAPI(RenderAPI* renderAPI) { s_renderAPI = renderAPI; }
+		//void begin();
+		//void end();
+		//void submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader);
 
-	inline static void drawIndexed(const std::shared_ptr<VertexArray>& vertexArray) { s_renderAPI->drawIndexed(vertexArray); }
-	inline static void setClearColour(const glm::vec4& colour) { s_renderAPI->setClearColour(colour); }
-	inline static void clear() { s_renderAPI->clear(); }
-private:
-	static RenderAPI* s_renderAPI;
-};
-*/
+	private:
+		static bool VerificaitonInit();
+	};
+}

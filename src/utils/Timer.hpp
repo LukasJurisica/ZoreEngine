@@ -1,16 +1,19 @@
 #pragma once
+#include <chrono>
 
-class Timer {
-public:
-	Timer();
-	~Timer();
+namespace zore {
 
-	void start();
-	float timeSinceStart();
-	float deltaTime();
-private:
-	float getCurrentTime();
+	class Timer {
+	public:
+		Timer();
+		~Timer() = default;
 
-	float m_startTime;
-	float m_lastTime;
-};
+		void Reset();
+		float TimeSinceStart();
+		float DeltaTime(bool update = true);
+
+	private:
+		std::chrono::steady_clock::time_point startTime;
+		std::chrono::steady_clock::time_point lastTime;
+	};
+}

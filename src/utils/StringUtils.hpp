@@ -1,10 +1,15 @@
 #pragma once
-
-#include <String>
+#include <string>
 #include <vector>
 
-class StringUtils {
-public:
-	static std::vector<std::string> split(const std::string& str, const std::string& delimiter);
-	static std::string strip(const std::string& str, const std::string& delimiter);
-};
+namespace zore {
+
+	class StringUtils {
+	public:
+		static void SplitOnChr(std::vector<std::string>& result, const std::string& str, const std::string& delimiter);
+		static void SplitOnStr(std::vector<std::string>& result, const std::string& str, const std::string& delimiter, bool inclusive = false);
+		static std::string Strip(const std::string& str, const std::string& delimiter);
+		static std::wstring to_wstring(const std::string& string);
+		static std::string to_string(const std::wstring& string);
+	};
+}

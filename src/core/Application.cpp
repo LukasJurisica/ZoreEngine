@@ -1,119 +1,50 @@
 #include "core/Application.hpp"
+#include "debug/Console.hpp"
+#include "debug/Debug.hpp"
 
-#include "utils/Logger.hpp"
-#include "utils/FileManager.hpp"
-#include "utils/StringUtils.hpp"
-#include "../../bin/config/config.h"
+#include "graphics/Shader.hpp"
+#include "graphics/Buffer.hpp"
+#include "graphics/Mesh.hpp"
 
-#define SHADER_DIRECTORY BASE_DIRECTORY "/assets/shaders/"
+namespace zore {
 
-Application::Application() {
-	std::map<std::string, int> options;
-	options["width"] = 1920;
-	options["height"] = 1080;
-	options["fullscreen"] = 1;
-	options["vsync"] = 0;
-
-	m_window = std::make_unique<Window>(options, this);
-
-	m_camera = std::make_shared<Camera>(m_window->getAspectRatio());
-
-	m_engine = std::make_unique<RenderEngine> (m_camera);
-	m_engine->setClearColour({ 0.2f, 0.2f, 0.2f, 1.0f });
-	m_engine->setViewport(0, 0, options["width"], options["height"]);
-}
-
-void Application::handleResize(int width, int height) {
-	m_window->updateResolution(width, height);
-	m_camera->updateProjectionMatrix((float)width / (float)height);
-	m_engine->setViewport(0, 0, width, height);
-}
-
-void Application::handleKeyPress(int key, int action) {
-
-}
-
-void Application::handleMousePress(int button, int action) {
-
-}
-
-void Application::handleMouseMove(float x, float y) {
-
-}
-
-void Application::setupScene() {
-	// Shader
-	m_shader = Shader::create(SHADER_DIRECTORY + std::string("shader.glsl"));
-
-	// Buffer Layout
-	std::vector<BufferElement> elements = {
-		{ ShaderDataType::Float, 3, "position", false },
-		{ ShaderDataType::Float, 3, "color", false }
-	};
-	std::shared_ptr<BufferLayout> bufferLayout = std::make_shared<BufferLayout>(elements);
-
-	// Vertex Buffer
-	float vertices[4 * 6] = {
-		-0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f,  0.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f, -0.5f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f,  0.0f,  1.0f,  1.0f,  1.0f
-	};
-	std::shared_ptr<VertexBuffer> squareVB;
-	squareVB.reset(VertexBuffer::create(vertices, sizeof(vertices)));
-	squareVB->setLayout(bufferLayout);
-
-	// Index Buffer
-	uint32_t indices[6] = { 0, 1, 2, 0, 2, 3 };
-	std::shared_ptr<IndexBuffer> squareIB;
-	squareIB.reset(IndexBuffer::create(indices, sizeof(indices) / sizeof(uint32_t)));
-
-	// Vertex Array
-	m_squareVA.reset(VertexArray::create());
-	m_squareVA->addVertexBuffer(squareVB);
-	m_squareVA->setIndexBuffer(squareIB);
-}
-
-void Application::updateScene(float deltaTime) {
-	if (m_window->keyPressed(KEY_W))
-		m_camPos.y += deltaTime * 1.0f;
-	if (m_window->keyPressed(KEY_S))
-		m_camPos.y -= deltaTime * 1.0f;
-	if (m_window->keyPressed(KEY_A))
-		m_camPos.x -= deltaTime * 1.0f;
-	if (m_window->keyPressed(KEY_D))
-		m_camPos.x += deltaTime * 1.0f;
-
-	if (m_window->keyPressed(KEY_Q))
-		m_camRot -= deltaTime * 90.0f;
-	if (m_window->keyPressed(KEY_E))
-		m_camRot += deltaTime * 90.0f;
-
-	m_camera->setPosition(m_camPos);
-	m_camera->setRotation(m_camRot);
-}
-
-void Application::mainLoop() {
-	Timer timer;
-	timer.start();
-
-	while (!m_window->shouldClose()) {
-		m_engine->clear();
-
-		updateScene(timer.deltaTime());
-
-		m_engine->begin();
+	void Application::EntryPoint() {
+        DEBUG_ONLY(Console console);
+		// Set the Rendering API
+		RenderEngine::SetApi(API::OpenGL);
+		Window::Init();
 		{
-			m_engine->submit(m_squareVA, m_shader);
+			Application app;
+			app.Run();
 		}
-		m_engine->end();
+		Window::Cleanup();
+	}
 
-		//engine->flush();
-		if (m_window->keyPressed(KEY_H))
-			std::cout << timer.timeSinceStart() << std::endl;
+	Application::Application() : window("main", 1920, 1080), engine(RenderEngine::Create()) {
 
-		m_window->update();
+	}
+
+	void Application::Run() {
+		Shader* s = Shader::Create("shader");
+		s->Bind();
+		BufferLayout::Create("basic", s, { { "position", ShaderDataType::Byte, 2, false } });
+
+		// Create the screenspace quad - Used for both raymarching and postprocessing steps
+		char vertices[] = { -1, 1, -1, -1, 1, -1, -1, 1, 1, -1, 1, 1 };
+		Mesh* m = Mesh::Create(&vertices, sizeof(vertices), "basic");
+		m->Bind();
+
+		engine->SetClearColour(0.2f, 0.3f, 0.3f);
+
+		while (!window.ShouldClose()) {
+			window.Update();
+
+			engine->Clear();
+			engine->Draw(m);
+		}
+	}
+
+	void Application::OnWindowResize(int width, int height) {
+		engine->SetViewport(0, 0, width, height);
 	}
 }
-
-Application::~Application() {}

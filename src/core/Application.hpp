@@ -1,35 +1,20 @@
 #pragma once
-
-#include "core/core.hpp"
-#include "core/Window.hpp"
+#include "devices/Window.hpp"
 #include "graphics/RenderEngine.hpp"
-#include "graphics/Shader.hpp"
-#include "graphics/Buffer.hpp"
-#include "components/camera.hpp"
-#include "utils/Timer.hpp"
 
-class Application {
-public:
-	Application();
-	~Application();
+namespace zore {
 
-	void handleResize(int width, int height);
-	void handleKeyPress(int key, int action);
-	void handleMousePress(int button, int action);
-	void handleMouseMove(float x, float y);
+	class Application : WindowListener {
+	public:
+		Application();
+		~Application() = default;
+		static void EntryPoint();
+		void Run();
 
-	void setupScene();
-	void updateScene(float deltaTime);
-	void mainLoop();
+		void OnWindowResize(int width, int height) override;
 
-private:
-	std::shared_ptr<Camera> m_camera;
-	std::unique_ptr<Window> m_window;
-	std::unique_ptr<RenderEngine> m_engine;
-	
-	std::shared_ptr<Shader> m_shader;
-	std::shared_ptr<VertexArray> m_squareVA;
-
-	glm::vec3 m_camPos = glm::vec3(0.0);
-	float m_camRot = 0;
-};
+	private:
+		Window window;
+		RenderEngine* engine;
+	};
+}

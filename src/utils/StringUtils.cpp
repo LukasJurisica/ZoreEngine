@@ -1,18 +1,38 @@
 #include "utils/StringUtils.hpp"
-#include "utils/Logger.hpp"
+#include "debug/Logger.hpp"
 
-std::vector<std::string> StringUtils::split(const std::string& str, const std::string& delimiter) {
-	std::vector<std::string> result;
-	size_t start, end = 0;
+namespace zore {
 
-	while (end != std::string::npos) {
-		start = str.find_first_not_of(delimiter, end);
-		if (start == std::string::npos)
-			return result;
-		end = str.find_first_of(delimiter, start);
-		std::string res = str.substr(start, end - start);
-		result.push_back(res);
+	void StringUtils::SplitOnChr(std::vector<std::string>& result, const std::string& str, const std::string& delimiter) {
+		size_t start = 0, end;
+		do {
+			end = str.find_first_of(delimiter, start);
+			result.push_back(str.substr(start, end - start));
+			start = str.find_first_not_of(delimiter, end);
+		} while (end != std::string::npos);
 	}
 
-	return result;
+	void StringUtils::SplitOnStr(std::vector<std::string>& result, const std::string& str, const std::string& delimiter, bool inclusive) {
+		size_t searchStart = 0, stringStart = 0, end;
+		do {
+			end = str.find(delimiter, searchStart);
+			result.push_back(str.substr(stringStart, end - stringStart));
+			searchStart = end + delimiter.length();
+			stringStart = inclusive ? end : searchStart;
+		} while (end != std::string::npos); 
+	}
+
+	std::string StringUtils::Strip(const std::string& str, const std::string& delimiter) {
+		return "";
+	}
+
+	std::wstring StringUtils::to_wstring(const std::string& string) {
+		//std::wstring result(string.length(), L' ');
+		//std::copy(string.begin(), string.end(), result.begin());
+		return std::wstring(string.begin(), string.end());
+	}
+
+	std::string StringUtils::to_string(const std::wstring& string) {
+		return std::string(string.begin(), string.end());
+	}
 }

@@ -1,33 +1,55 @@
 #include "graphics/RenderEngine.hpp"
-#include <glad/glad.h>
-#include "graphics/opengl/OpenGLRenderAPI.hpp"
+#include "graphics/opengl/GLRenderEngine.hpp"
+//#include "graphics/vulkan/GLRenderEngine.hpp"
+#include "debug/Debug.hpp"
 
-RenderEngine::RenderEngine(std::shared_ptr<Camera>& camera) : m_camera(camera) {
-	switch (RenderAPI::getAPI()) {
-	case RenderAPI::API::None:
-		m_renderAPI = nullptr; break;
-	case RenderAPI::API::OpenGL:
-		m_renderAPI = new OpenGLRenderAPI(); break;
-	default:
-		Logger::error("Invalid RenderAPI"); m_renderAPI = nullptr;
+
+namespace zore {
+
+	//========================================================================
+	//	Platform Agnostic Render Engine Interface
+	//========================================================================
+
+	API activeAPI = API::None;
+	bool initialized = false;
+
+	RenderEngine* RenderEngine::Create() {
+		switch (activeAPI) {
+		case API::OpenGL:
+			return new GLRenderEngine();
+		}
+		throw ZORE_EXCEPTION("Invalid RenderAPI");
+		return nullptr;
 	}
-}
 
-void RenderEngine::begin() {
+	void RenderEngine::Init() {
+		if (!initialized)
+			initialized = VerificaitonInit();
+	}
 
-}
+	API RenderEngine::GetApi() {
+		return activeAPI;
+	}
 
-void RenderEngine::submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader) {
-	vertexArray->bind();
-	shader->bind();
-	shader->setUniformMat4("u_viewProjectionMatrix", m_camera->getViewProjectionMatrix());
-	m_renderAPI->drawIndexed(vertexArray);
-}
+	void RenderEngine::SetApi(API api) {
+		activeAPI = api;
+		initialized = false;
+	}
 
-void RenderEngine::end() {
+	void RenderEngine::Draw(Mesh* m) {
+		if (m->IsIndexed())
+			DrawIndexed(m->GetCount());
+		else
+			DrawLinear(m->GetCount());
+	}
 
-}
-
-RenderEngine::~RenderEngine() {
-
+	bool RenderEngine::VerificaitonInit() {
+		switch (activeAPI) {
+		case API::OpenGL:
+			GLRenderEngine::Init();
+			return true;
+		}
+		throw ZORE_EXCEPTION("Invalid RenderAPI");
+		return false;
+	}
 }

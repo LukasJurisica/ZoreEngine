@@ -1,62 +1,102 @@
 #include "graphics/Buffer.hpp"
-#include "graphics/opengl/OpenGLBuffer.hpp"
-#include "graphics/RenderAPI.hpp"
+#include "graphics/opengl/GLBuffer.hpp"
+#include "graphics/RenderEngine.hpp"
+#include "debug/Debug.hpp"
 
-///////////////////
-// Buffer Layout //
-///////////////////
+namespace zore {
 
-BufferLayout::BufferLayout() : m_stride(0) {}
+	//========================================================================
+	//	Platform Agnostic Vertex Buffer Class
+	//========================================================================
 
-BufferLayout::BufferLayout(const std::vector<BufferElement>& elements) : m_elements(elements) {
-	m_stride = 0;
-	for (BufferElement& element : m_elements) {
-		element.offset = m_stride;
-		m_stride += element.size;
+	VertexBuffer* VertexBuffer::Create(void* vertices, unsigned int size) {
+		switch (RenderEngine::GetApi()) {
+		case API::OpenGL:
+			return new GLVertexBuffer(vertices, size);
+		}
+		throw ZORE_EXCEPTION("Invalid RenderAPI");
+		return nullptr;
 	}
-}
 
-///////////////////
-// Vertex Buffer //
-///////////////////
+	//========================================================================
+	//	Platform Agnostic Index Buffer Class
+	//========================================================================
 
-VertexBuffer* VertexBuffer::create(float* vertices, uint32_t size) {
-	switch (RenderAPI::getAPI()) {
-	case RenderAPI::API::None:
-		Logger::error("NULL RenderAPI is not currently supported"); return nullptr;
-	case RenderAPI::API::OpenGL:
-		return new OpenGLVertexBuffer(vertices, size);
-	default:
-		Logger::error("Invalid RenderAPI"); return nullptr;
+	IndexBuffer* IndexBuffer::Create(void* indices, unsigned int size) {
+		switch (RenderEngine::GetApi()) {
+		case API::OpenGL:
+			return new GLIndexBuffer(indices, size);
+		}
+		throw ZORE_EXCEPTION("Invalid RenderAPI");
+		return nullptr;
 	}
-}
 
-//////////////////
-// Index Buffer //
-//////////////////
+	//========================================================================
+	//	Platform Agnostic Shader Storage Buffer Class
+	//========================================================================
 
-IndexBuffer* IndexBuffer::create(uint32_t* indices, uint32_t count) {
-	switch (RenderAPI::getAPI()) {
-	case RenderAPI::API::None:
-		Logger::error("NULL RenderAPI is not currently supported"); return nullptr;
-	case RenderAPI::API::OpenGL:
-		return new OpenGLIndexBuffer(indices, count);
-	default:
-		Logger::error("Invalid RenderAPI"); return nullptr;
+	ShaderStorageBuffer* ShaderStorageBuffer::Create(void* data, unsigned int size, unsigned int index) {
+		switch (RenderEngine::GetApi()) {
+		case API::OpenGL:
+			return new GLShaderStorageBuffer(data, size, index);
+		}
+		throw ZORE_EXCEPTION("Invalid RenderAPI");
+		return nullptr;
 	}
-}
 
-//////////////////
-// Vertex Array //
-//////////////////
+	//========================================================================
+	//	Platform Agnostic Uniform Buffer Class
+	//========================================================================
 
-VertexArray* VertexArray::create() {
-	switch (RenderAPI::getAPI()) {
-	case RenderAPI::API::None:
-		Logger::error("NULL RenderAPI is not currently supported"); return nullptr;
-	case RenderAPI::API::OpenGL:
-		return new OpenGLVertexArray();
-	default:
-		Logger::error("Invalid RenderAPI"); return nullptr;
+	UniformBuffer* UniformBuffer::Create(void* data, unsigned int size, unsigned int index) {
+		switch (RenderEngine::GetApi()) {
+		case API::OpenGL:
+			return new GLUniformBuffer(data, size, index);
+		}
+		throw ZORE_EXCEPTION("Invalid RenderAPI");
+		return nullptr;
+	}
+
+	//========================================================================
+	//	Platform Agnostic Vertex Buffer Layout Class
+	//========================================================================
+
+	std::vector<BufferLayout*> layouts;
+
+	BufferElement::BufferElement(std::string name, ShaderDataType type, unsigned int count, bool normalized) :
+		type(type), count(count), name(name), normalized(normalized), offset(0), size(ShaderDataTypeSize(type, count)), attribLocation(-1) {
+		ENSURE(count < 5 && count > 0, "Invalid number of components for BufferElement");
+	}
+
+	BufferLayout::BufferLayout(const std::string& name, const std::vector<BufferElement>& elements) :
+		name(name), elements(elements), stride(0) {
+		layouts.push_back(this);
+	}
+
+	BufferLayout::~BufferLayout() {
+		auto iter = std::find(layouts.begin(), layouts.end(), this);
+		if (iter != layouts.end())
+			layouts.erase(iter);
+	}
+
+	BufferLayout* BufferLayout::Create(const std::string& name, Shader* shader, const std::vector<BufferElement>& elements) {
+		switch (RenderEngine::GetApi()) {
+		case API::OpenGL:
+			return new GLBufferLayout(name, shader, elements);
+		}
+		throw ZORE_EXCEPTION("Invalid RenderAPI");
+		return nullptr;
+	}
+
+	BufferLayout* BufferLayout::Get(const std::string& name) {
+		for (BufferLayout* layout : layouts) {
+			if (layout->name == name)
+				return layout;
+		}
+		throw ZORE_EXCEPTION("No vertex buffer layout with the name: " + name);
+	}
+
+	unsigned int BufferLayout::GetStride() const {
+		return stride;
 	}
 }
