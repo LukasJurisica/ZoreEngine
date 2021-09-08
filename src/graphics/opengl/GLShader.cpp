@@ -1,32 +1,16 @@
 #include "graphics/opengl/GLShader.hpp"
 #include "utils/FileManager.hpp"
+#include "utils/StringUtils.hpp"
 #include "debug/Debug.hpp"
 #include <glad/glad.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <fstream>
+
+#define SHADER_ERROR_BUFFER_LENGTH 256
 
 namespace zore {
 
 	//========================================================================
 	//	Shader Utilities
 	//========================================================================
-
-	unsigned int SDTtoGLDT(ShaderDataType type) {
-		switch (type) {
-		case ShaderDataType::Int:
-			return GL_INT;
-		case ShaderDataType::Float:
-			return GL_FLOAT;
-		case ShaderDataType::Bool:
-			return GL_BOOL;
-		case ShaderDataType::Byte:
-			return GL_BYTE;
-		case ShaderDataType::UByte:
-			return GL_UNSIGNED_BYTE;
-		default:
-			return GL_FALSE;
-		}
-	}
 
 	unsigned int STRtoGLST(const std::string& stage) {
 		if (stage == "vertex")
@@ -38,90 +22,79 @@ namespace zore {
 		return 0;
 	}
 
-	std::string GLSTtoSTR(unsigned int stage) {
-		if (stage == GL_VERTEX_SHADER)
-			return "vertex";
-		else if (stage == GL_FRAGMENT_SHADER)
-			return "fragment";
+	GLShaderStage::GLShaderStage(std::string s, const std::string& name) {
+		size_t index = s.find("\n");
+		std::string type = s.substr(0, index);
+		StringUtils::TrimInPlace(type);
+		id = glCreateShader(STRtoGLST(type));
 
-		Logger::Error("Invalid Shader Stage requested");
-		return "";
+		const char* source = s.erase(0, index + 1).c_str();
+		glShaderSource(id, 1, &source, nullptr);
+		glCompileShader(id);
+
+		// Check if shader stage was created successfully
+		GLint status;
+		glGetShaderiv(id, GL_COMPILE_STATUS, &status);
+		if (status != GL_TRUE) {
+			char buffer[SHADER_ERROR_BUFFER_LENGTH];
+			glGetShaderInfoLog(id, SHADER_ERROR_BUFFER_LENGTH, nullptr, buffer);
+			throw ZORE_EXCEPTION("Error compiling " + type + " shader: " + name + "\n" + std::string(buffer));
+		}
 	}
 
 	//========================================================================
 	//	Shader Program Class
 	//========================================================================
 
-	GLShader::GLShader(const std::string& filename) {
-		shaderID = glCreateProgram();
+	GLShader::GLShader(const std::string& filename) : name(filename + ".glsl") {
+		id = glCreateProgram();
 
 		std::vector<GLShaderStage> shaderStages;
-		
-		std::string path = FileManager::GetPath("assets/shaders/" + filename + ".glsl");
-		std::ifstream f(path);
-		ENSURE(f.is_open(), "Error opening file: " + path);
+		std::string source;
+		FileManager::ReadContent(source, "assets/shaders/" + name, IS_DEBUG);
 
-		// Read file
-		std::string line;
-		while (std::getline(f, line)) {
-			if (line.find("#shaderstage") != std::string::npos)
-				shaderStages.push_back({ line.substr(13, std::string::npos) });
-			else if (line != "")
-				shaderStages[shaderStages.size() - 1].content += line + "\n";
-		}
+		size_t index = 0;
+		do {
+			index = source.rfind("#shaderstage", std::string::npos);
+			shaderStages.push_back({ source.substr(index + 13, std::string::npos), name });
+			source.erase(index, std::string::npos);
+		} while (index > 0);
 
 		Link(shaderStages);
 	}
 
 	GLShader::~GLShader() {
-		glDeleteProgram(shaderID);
+		glDeleteProgram(id);
 	}
 
 	void GLShader::Bind() {
-		glUseProgram(shaderID);
+		glUseProgram(id);
 	}
 
-	void GLShader::UnBind() {
+	void GLShader::Unbind() {
 		glUseProgram(0);
 	}
 
 	unsigned int GLShader::GetShaderID() {
-		return shaderID;
-	}
-
-	void GLShader::CreateShaderStage(GLShaderStage& stage) {
-		stage.id = glCreateShader(stage.type);
-
-		const char* source = stage.content.c_str();
-		glShaderSource(stage.id, 1, &source, NULL);
-		glCompileShader(stage.id);
-		// Check if shader was created successfully
-		GLint status;
-		glGetShaderiv(stage.id, GL_COMPILE_STATUS, &status);
-		if (status != GL_TRUE) {
-			char buffer[256];
-			glGetShaderInfoLog(stage.id, 256, NULL, buffer);
-			throw ZORE_EXCEPTION("Error compiling shader: " + name + "\n" + std::string(buffer));
-		}
-		glAttachShader(shaderID, stage.id);
+		return id;
 	}
 
 	void GLShader::Link(std::vector<GLShaderStage>& shaderStages) {
 		for (GLShaderStage& stage : shaderStages)
-			CreateShaderStage(stage);
+			glAttachShader(id, stage.id);
 
-		glLinkProgram(shaderID);
+		glLinkProgram(id);
 		// Check if shaders were linked successfully
 		int status;
-		glGetProgramiv(shaderID, GL_LINK_STATUS, &status);
+		glGetProgramiv(id, GL_LINK_STATUS, &status);
 		if (!status) {
-			char buffer[256];
-			glGetProgramInfoLog(shaderID, 256, NULL, buffer);
-			throw ZORE_EXCEPTION("Error linking shader:\n" + std::string(buffer));
+			char buffer[SHADER_ERROR_BUFFER_LENGTH];
+			glGetProgramInfoLog(id, SHADER_ERROR_BUFFER_LENGTH, nullptr, buffer);
+			throw ZORE_EXCEPTION("Error linking shader: " + name + "\n" + std::string(buffer));
 		}
 
 		for (GLShaderStage& stage : shaderStages) {
-			glDetachShader(shaderID, stage.id);
+			glDetachShader(id, stage.id);
 			glDeleteShader(stage.id);
 		}
 	}
@@ -129,14 +102,15 @@ namespace zore {
 	unsigned int GLShader::GetUniformLoc(const std::string& name) {
 		auto iter = uniforms.find(name);
 		if (iter == uniforms.end()) {
-			unsigned int loc = glGetUniformLocation(shaderID, name.c_str());
-			if (loc == -1) Logger::Warn("Invalid uniform name: " + name);
+			unsigned int loc = glGetUniformLocation(id, name.c_str());
+			if (loc == -1)
+				Logger::Warn("Invalid uniform name: " + name);
 			uniforms.insert({ name, loc });
 			return loc;
 		}
 		return iter->second;
 	}
-
+	// glUniform{1|2|3|4}{f|i|ui}
 	void GLShader::SetInt(const std::string& name, int data) {
 		glUniform1i(GetUniformLoc(name), data);
 	}
@@ -151,6 +125,22 @@ namespace zore {
 
 	void GLShader::SetInt4(const std::string& name, const glm::ivec4& data) {
 		glUniform4i(GetUniformLoc(name), data.x, data.y, data.z, data.w);
+	}
+
+	void GLShader::SetUInt(const std::string& name, unsigned int data) {
+		glUniform1ui(GetUniformLoc(name), data);
+	}
+
+	void GLShader::SetUInt2(const std::string& name, const glm::uvec2& data) {
+		glUniform2ui(GetUniformLoc(name), data.x, data.y);
+	}
+
+	void GLShader::SetUInt3(const std::string& name, const glm::uvec3& data) {
+		glUniform3ui(GetUniformLoc(name), data.x, data.y, data.z);
+	}
+
+	void GLShader::SetUInt4(const std::string& name, const glm::uvec4& data) {
+		glUniform4ui(GetUniformLoc(name), data.x, data.y, data.z, data.w);
 	}
 
 	void GLShader::SetFloat(const std::string& name, float data) {
@@ -168,8 +158,16 @@ namespace zore {
 	void GLShader::SetFloat4(const std::string& name, const glm::vec4& data) {
 		glUniform4f(GetUniformLoc(name), data.x, data.y, data.z, data.w);
 	}
+	// glUniformMatrix{2|3|4|2x3|3x2|2x4|4x2|3x4|4x3}fv
+	void GLShader::SetMat3(const std::string& name, const glm::mat3& data) {
+		glUniformMatrix3fv(GetUniformLoc(name), 1, GL_FALSE, &(data[0].x));
+	}
 
 	void GLShader::SetMat4(const std::string& name, const glm::mat4& data) {
-		glUniformMatrix4fv(GetUniformLoc(name), 1, GL_FALSE, glm::value_ptr(data));
+		glUniformMatrix4fv(GetUniformLoc(name), 1, GL_FALSE, &(data[0].x));
+	}
+
+	void GLShader::SetUniformBufferIndex(const std::string& name, unsigned int index) {
+		glUniformBlockBinding(id, glGetUniformBlockIndex(id, name.c_str()), index);
 	}
 }

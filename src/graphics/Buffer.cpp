@@ -9,26 +9,24 @@ namespace zore {
 	//	Platform Agnostic Vertex Buffer Class
 	//========================================================================
 
-	VertexBuffer* VertexBuffer::Create(void* vertices, unsigned int size) {
-		switch (RenderEngine::GetApi()) {
+	VertexBuffer* VertexBuffer::Create(void* data, unsigned int size, unsigned int stride) {
+		switch (RenderEngine::GetAPI()) {
 		case API::OpenGL:
-			return new GLVertexBuffer(vertices, size);
+			return new GLVertexBuffer(data, size, stride);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
-		return nullptr;
 	}
 
 	//========================================================================
 	//	Platform Agnostic Index Buffer Class
 	//========================================================================
 
-	IndexBuffer* IndexBuffer::Create(void* indices, unsigned int size) {
-		switch (RenderEngine::GetApi()) {
+	IndexBuffer* IndexBuffer::Create(void* data, unsigned int size) {
+		switch (RenderEngine::GetAPI()) {
 		case API::OpenGL:
-			return new GLIndexBuffer(indices, size);
+			return new GLIndexBuffer(data, size);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
-		return nullptr;
 	}
 
 	//========================================================================
@@ -36,12 +34,11 @@ namespace zore {
 	//========================================================================
 
 	ShaderStorageBuffer* ShaderStorageBuffer::Create(void* data, unsigned int size, unsigned int index) {
-		switch (RenderEngine::GetApi()) {
+		switch (RenderEngine::GetAPI()) {
 		case API::OpenGL:
 			return new GLShaderStorageBuffer(data, size, index);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
-		return nullptr;
 	}
 
 	//========================================================================
@@ -49,54 +46,52 @@ namespace zore {
 	//========================================================================
 
 	UniformBuffer* UniformBuffer::Create(void* data, unsigned int size, unsigned int index) {
-		switch (RenderEngine::GetApi()) {
+		switch (RenderEngine::GetAPI()) {
 		case API::OpenGL:
 			return new GLUniformBuffer(data, size, index);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
-		return nullptr;
 	}
 
 	//========================================================================
 	//	Platform Agnostic Vertex Buffer Layout Class
 	//========================================================================
 
-	std::vector<BufferLayout*> layouts;
+	std::vector<VertexLayout*> layouts;
+	const unsigned int VertexLayout::VertexDataTypeSize[] = { 1u, 1u, 1u, 4u, 4u };
 
-	BufferElement::BufferElement(std::string name, ShaderDataType type, unsigned int count, bool normalized) :
-		type(type), count(count), name(name), normalized(normalized), offset(0), size(ShaderDataTypeSize(type, count)), attribLocation(-1) {
+	VertexElement::VertexElement(std::string name, VertexDataType type, unsigned int count, bool normalize) :
+		type(type), count(count), name(name), normalize(normalize) {
 		ENSURE(count < 5 && count > 0, "Invalid number of components for BufferElement");
 	}
 
-	BufferLayout::BufferLayout(const std::string& name, const std::vector<BufferElement>& elements) :
-		name(name), elements(elements), stride(0) {
+	VertexLayout::VertexLayout(const std::string& name) : name(name), stride(0) {
 		layouts.push_back(this);
 	}
 
-	BufferLayout::~BufferLayout() {
-		auto iter = std::find(layouts.begin(), layouts.end(), this);
-		if (iter != layouts.end())
-			layouts.erase(iter);
-	}
-
-	BufferLayout* BufferLayout::Create(const std::string& name, Shader* shader, const std::vector<BufferElement>& elements) {
-		switch (RenderEngine::GetApi()) {
+	VertexLayout* VertexLayout::Create(const std::string& name, Shader* shader, const std::vector<VertexElement>& elements) {
+		switch (RenderEngine::GetAPI()) {
 		case API::OpenGL:
-			return new GLBufferLayout(name, shader, elements);
+			return new GLVertexLayout(name, shader, elements);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
-		return nullptr;
 	}
 
-	BufferLayout* BufferLayout::Get(const std::string& name) {
-		for (BufferLayout* layout : layouts) {
+	VertexLayout* VertexLayout::Get(const std::string& name) {
+		for (VertexLayout* layout : layouts) {
 			if (layout->name == name)
 				return layout;
 		}
 		throw ZORE_EXCEPTION("No vertex buffer layout with the name: " + name);
 	}
 
-	unsigned int BufferLayout::GetStride() const {
+	VertexLayout::~VertexLayout() {
+		auto iter = std::find(layouts.begin(), layouts.end(), this);
+		if (iter != layouts.end())
+			layouts.erase(iter);
+	}
+
+	unsigned int VertexLayout::GetStride() {
 		return stride;
 	}
 }

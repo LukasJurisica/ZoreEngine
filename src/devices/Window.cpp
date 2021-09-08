@@ -1,7 +1,10 @@
 #include "devices/Window.hpp"
+#include "devices/Keyboard.hpp"
+#include "devices/Mouse.hpp"
 #include "graphics/RenderEngine.hpp"
 #include "debug/Logger.hpp"
 #include "debug/debug.hpp"
+
 #include <glfw/glfw3.h>
 
 namespace zore {
@@ -10,17 +13,11 @@ namespace zore {
 	//	Window Class
 	//========================================================================
 
-	std::vector<Window*> windows;
+	Window* window;
 
-	Window::Window(const std::string& name, int width, int height) : name(name), size(width, height), mouse(name), keyboard(name) {
-		// Ensure the provided window name is valid
-		ENSURE(name != "", "Invalid window name");
-		for (auto iter : windows)
-			ENSURE(iter->name != name, "A Window with the name: \"" + name + "\" already exists");
-		windows.push_back(this);
-
-		// Register waiting window listeners
-		WindowListener::ClaimWaiters(this, name);
+	Window::Window(int width, int height) : size(width, height) {
+		ENSURE(!window, "Cannot create window, as there is already another active window and Zore Engine currently does not support multiple windows.");
+		window = this;
 
 		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
@@ -31,7 +28,7 @@ namespace zore {
 		glfwSetWindowUserPointer(windowHandle, this);
 		glfwMakeContextCurrent(windowHandle);
 
-		// Initiate RenderAPI (If it has not already been done so)
+		// Initiate Render Engine (If it has not already been done so)
 		RenderEngine::Init();
 
 		// Enable Various features
@@ -46,7 +43,7 @@ namespace zore {
 
 		double xpos, ypos;
 		glfwGetCursorPos(windowHandle, &xpos, &ypos);
-		mouse.ClearState(static_cast<float>(xpos), static_cast<float>(ypos));
+		Mouse::ClearState(static_cast<float>(xpos), static_cast<float>(ypos));
 
 		// Set GLFW event callbacks
 		glfwSetWindowPosCallback(windowHandle, MoveCallback);
@@ -61,11 +58,7 @@ namespace zore {
 
 	Window::~Window() {
 		glfwDestroyWindow(windowHandle);
-		WindowListener::ReleaseListeners(listeners);
-
-		auto iter = std::find(windows.begin(), windows.end(), this);
-		if (iter != windows.end())
-			windows.erase(iter);
+		window = nullptr;
 	}
 
 	void Window::Init() {
@@ -73,7 +66,7 @@ namespace zore {
 		glfwSetErrorCallback(ErrorCallback);
 		glfwWindowHint(GLFW_CENTER_CURSOR, true);
 
-		switch (RenderEngine::GetApi()) {
+		switch (RenderEngine::GetAPI()) {
 		case API::OpenGL:
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API); // Initialize OpenGL
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -87,30 +80,19 @@ namespace zore {
 		}
 		//glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, true); // Set Transparent Framebuffer
 		//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+		Logger::Info("Window Initialization Complete");
 	}
 
-	Window* Window::Get(const std::string& name) {
-		if (name == "" && windows.size() > 0)
-			return windows[0];
-		for (Window* window : windows) {
-			if (window->name == name)
-				return window;
-		}
-		return nullptr;
+	Window* Window::Get() {
+		if (!window)
+			Logger::Warn("No window is currently active, Window::Get() will return a null pointer.");
+		return window;
 	}
 
 	void Window::Cleanup() {
 		glfwTerminate();
-	}
-
-	void Window::RegisterListener(WindowListener* listener) {
-		listeners.push_back(listener);
-	}
-
-	void Window::UnregisterListener(WindowListener* listener) {
-		auto iter = std::find(listeners.begin(), listeners.end(), listener);
-		if (iter != listeners.end())
-			listeners.erase(iter);
+		Logger::Info("Window Cleanup Complete");
 	}
 
 	void Window::Bind() {
@@ -156,40 +138,31 @@ namespace zore {
 		return size;
 	}
 
-	Mouse* Window::GetMouse() {
-		return &mouse;
-	}
-
-	Keyboard* Window::GetKeyboard() {
-		return &keyboard;
-	}
-
 	//------------------------------------------------------------------------
 	//	Window Callback Functions
 	//------------------------------------------------------------------------
+
+	std::vector<WindowListener*> listeners;
 
 	void Window::ErrorCallback(int error, const char* description) {
 		Logger::Error("GLFW Error: (" + std::to_string(error) + "): " + description);
 	}
 
 	void Window::ResizeCallback(GLFWwindow* windowHandle, int width, int height) {
-		Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(windowHandle));
 		window->size = { width, height };
-		for (WindowListener* listener : window->listeners)
+		for (WindowListener* listener : listeners)
 			listener->OnWindowResize(width, height);
 	}
 	void Window::MoveCallback(GLFWwindow* windowHandle, int xpos, int ypos) {
-		Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(windowHandle));
 		//if (!window->fullscreen)
-		//	window->position = { xpos, ypos };
-		for (WindowListener* listener : window->listeners)
+		window->position = { xpos, ypos };
+		for (WindowListener* listener : listeners)
 			listener->OnWindowMove(xpos, ypos);
 	}
 
 	void Window::FocusCallback(GLFWwindow* windowHandle, int focused) {
-		Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(windowHandle));
 		// focused = true means window gained focus
-		for (WindowListener* listener : window->listeners)
+		for (WindowListener* listener : listeners)
 			listener->OnWindowFocus(focused);
 	}
 
@@ -197,47 +170,12 @@ namespace zore {
 	//	Window Listener Class
 	//========================================================================
 
-	std::vector<WindowListener*> waiters;
-
-	WindowListener::WindowListener(const std::string& name) : name(name), window(Window::Get(name)) {
-		if (window)
-			window->RegisterListener(this);
-		else
-			waiters.push_back(this);
+	WindowListener::WindowListener() {
+		listeners.push_back(this);
 	}
 
 	WindowListener::~WindowListener() {
-		if (window)
-			window->UnregisterListener(this);
-		else
-			RemoveWaiter(this);
-	}
-
-	void WindowListener::RemoveWaiter(WindowListener* listener) {
-		for (int i = 0; i < waiters.size();) {
-			if (waiters[i] == listener)
-				waiters.erase(waiters.begin() + i);
-			else
-				i++;
-		}
-	}
-
-	void WindowListener::ClaimWaiters(Window* window, const std::string& name) {
-		for (int i = 0; i < waiters.size();) {
-			if (waiters[i]->name == name || waiters[i]->name == "") {
-				window->RegisterListener(waiters[i]);
-				waiters[i]->window = window;
-				waiters.erase(waiters.begin() + i);
-			}
-			else
-				i++;
-		}
-	}
-
-	void WindowListener::ReleaseListeners(std::vector<WindowListener*>& listeners) {
-		for (WindowListener* listener : listeners) {
-			listener->window = nullptr;
-			waiters.push_back(listener);
-		}
+		auto iter = find(listeners.begin(), listeners.end(), this);
+		listeners.erase(iter);
 	}
 }

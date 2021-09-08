@@ -6,125 +6,192 @@
 namespace zore {
 
 	//========================================================================
-	//	OpenGL Base Buffer Class
-	//========================================================================
-
-	GLBuffer::GLBuffer(unsigned int type) : type(type) {
-		glCreateBuffers(1, &bufferID);
-	}
-
-	GLBuffer::GLBuffer(unsigned int type, void* data, unsigned int size, unsigned int mode) : type(type) {
-		glCreateBuffers(1, &bufferID);
-		glNamedBufferData(bufferID, size, data, mode);
-	}
-
-	GLBuffer::~GLBuffer() {
-		glDeleteBuffers(1, &bufferID);
-	}
-
-	void GLBuffer::Bind() const {
-		glBindBuffer(type, bufferID);
-	}
-
-	void GLBuffer::UnBind() const {
-		glBindBuffer(type, 0);
-	}
-
-	void GLBuffer::Set(const void* data, unsigned int size) {
-		glNamedBufferData(bufferID, size, data, GL_DYNAMIC_DRAW);
-	}
-
-	void GLBuffer::Update(const void* data, unsigned int size, unsigned int offset) {
-		void* ptr = glMapNamedBufferRange(bufferID, offset, size, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
-		memcpy(ptr, data, size);
-		glUnmapNamedBuffer(bufferID);
-	}
-
-	unsigned int GLBuffer::GetBufferID() const {
-		return bufferID;
-	}
-
-	//========================================================================
-	//	OpenGL Base Block Buffer Class
-	//========================================================================
-
-	GLBlockBuffer::GLBlockBuffer(unsigned int type, unsigned int index) : GLBuffer(GL_SHADER_STORAGE_BUFFER) {
-		this->index = index;
-	}
-
-	GLBlockBuffer::GLBlockBuffer(unsigned int type, void* data, unsigned int size, unsigned int mode, unsigned int index) : GLBuffer(GL_SHADER_STORAGE_BUFFER) {
-		this->index = index;
-	}
-
-	void GLBlockBuffer::Bind() const {
-		glBindBufferBase(type, index, bufferID);
-	}
-
-	void GLBlockBuffer::UnBind() const {
-		glBindBufferBase(type, index, 0);
-	}
-
-	//========================================================================
 	//	OpenGL Vertex Buffer Class
 	//========================================================================
 
-	GLVertexBuffer::GLVertexBuffer() : GLBuffer(GL_ARRAY_BUFFER) {};
+	GLVertexBuffer::GLVertexBuffer() : stride(0) {
+		glCreateBuffers(1, &id);
+	}
 
-	GLVertexBuffer::GLVertexBuffer(void* vertices, unsigned int size) :
-		GLBuffer(GL_ARRAY_BUFFER, vertices, size, GL_STATIC_DRAW) {}
+	GLVertexBuffer::GLVertexBuffer(void* data, unsigned int size, unsigned int stride) : stride(stride) {
+		glCreateBuffers(1, &id);
+		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
+	}
+
+	GLVertexBuffer::~GLVertexBuffer() {
+		glDeleteBuffers(1, &id);
+	}
+
+	void GLVertexBuffer::Set(const void* data, unsigned int size, unsigned int stride) {
+		if (stride > 0)
+			this->stride = stride;
+		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
+	}
+
+	void GLVertexBuffer::Update(const void* data, unsigned int size, unsigned int offset) {
+		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+		memcpy(ptr, data, size);
+		glUnmapNamedBuffer(id);
+	}
+
+	void GLVertexBuffer::Bind() const {
+		glBindVertexBuffer(0, id, 0, stride);
+	}
+
+	void GLVertexBuffer::Unbind() const {
+		glBindVertexBuffer(0, 0, 0, 0);
+	}
 
 	//========================================================================
 	//	OpenGL Index Buffer Class
 	//========================================================================
 
-	GLIndexBuffer::GLIndexBuffer() : GLBuffer(GL_ELEMENT_ARRAY_BUFFER) {};
+	GLIndexBuffer::GLIndexBuffer() {
+		glCreateBuffers(1, &id);
+	}
 
-	GLIndexBuffer::GLIndexBuffer(void* indices, unsigned int size) :
-		GLBuffer(GL_ELEMENT_ARRAY_BUFFER, indices, size, GL_STATIC_DRAW) {
+	GLIndexBuffer::GLIndexBuffer(void* data, unsigned int size) {
+		glCreateBuffers(1, &id);
+		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
+	}
+
+	GLIndexBuffer::~GLIndexBuffer() {
+		glDeleteBuffers(1, &id);
+	}
+
+	void GLIndexBuffer::Set(const void* data, unsigned int size) {
+		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
+	}
+
+	void GLIndexBuffer::Update(const void* data, unsigned int size, unsigned int offset) {
+		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+		memcpy(ptr, data, size);
+		glUnmapNamedBuffer(id);
+	}
+
+	void GLIndexBuffer::Bind() const {
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+	}
+
+	void GLIndexBuffer::Unbind() const {
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	//========================================================================
 	//	OpenGL Shader Storage Buffer Class
 	//========================================================================
 
-	GLShaderStorageBuffer::GLShaderStorageBuffer(unsigned int index) : GLBlockBuffer(GL_SHADER_STORAGE_BUFFER, index) {}
+	GLShaderStorageBuffer::GLShaderStorageBuffer(unsigned int index) : index(index) {
+		glCreateBuffers(1, &id);
+	}
 
-	GLShaderStorageBuffer::GLShaderStorageBuffer(void* data, unsigned int size, unsigned int index) :
-		GLBlockBuffer(GL_SHADER_STORAGE_BUFFER, data, size, GL_STATIC_DRAW, index) {}
+	GLShaderStorageBuffer::GLShaderStorageBuffer(void* data, unsigned int size, unsigned int index) : index(index) {
+		glCreateBuffers(1, &id);
+		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
+	}
+
+	GLShaderStorageBuffer::~GLShaderStorageBuffer() {
+		glDeleteBuffers(1, &id);
+	}
+
+	void GLShaderStorageBuffer::Set(const void* data, unsigned int size) {
+		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
+	}
+
+	void GLShaderStorageBuffer::Update(const void* data, unsigned int size, unsigned int offset) {
+		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+		memcpy(ptr, data, size);
+		glUnmapNamedBuffer(id);
+	}
+
+	void GLShaderStorageBuffer::Bind() const {
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, id);
+	}
+
+	void GLShaderStorageBuffer::Unbind() const {
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, 0);
+	}
 
 	//========================================================================
 	//	OpenGL Uniform Buffer Class
 	//========================================================================
 
-	GLUniformBuffer::GLUniformBuffer(unsigned int index) : GLBlockBuffer(GL_UNIFORM_BUFFER, index) {}
+	unsigned int GLUniformBufferIndex = 0;
 
-	GLUniformBuffer::GLUniformBuffer(void* data, unsigned int size, unsigned int index) :
-		GLBlockBuffer(GL_UNIFORM_BUFFER, data, size, GL_DYNAMIC_DRAW, index) {}
+	GLUniformBuffer::GLUniformBuffer(unsigned int index) : index(index) {
+		glCreateBuffers(1, &id);
+	}
 
-	void GLUniformBuffer::AttachToShader(Shader* shader, const std::string& name) {
-		unsigned int programID = reinterpret_cast<GLShader*>(shader)->GetShaderID();
-		unsigned int uniformBlockIndex = glGetUniformBlockIndex(programID, name.c_str());
-		glUniformBlockBinding(programID, uniformBlockIndex, index);
+	GLUniformBuffer::GLUniformBuffer(void* data, unsigned int size, unsigned int index) : index(index) {
+		glCreateBuffers(1, &id);
+		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
+	}
+
+	GLUniformBuffer::~GLUniformBuffer() {
+		glDeleteBuffers(1, &id);
+	}
+
+	void GLUniformBuffer::Set(const void* data, unsigned int size) {
+		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
+	}
+
+	void GLUniformBuffer::Update(const void* data, unsigned int size, unsigned int offset) {
+		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+		memcpy(ptr, data, size);
+		glUnmapNamedBuffer(id);
+	}
+
+	void GLUniformBuffer::Bind() const {
+		glBindBufferBase(GL_UNIFORM_BUFFER, index, id);
+	}
+
+	void GLUniformBuffer::Unbind() const {
+		glBindBufferBase(GL_UNIFORM_BUFFER, index, 0);
 	}
 
 	//========================================================================
 	//	OpenGL Vertex Buffer Layout Class
 	//========================================================================
 
-	GLBufferLayout::GLBufferLayout(const std::string& name, Shader* shader, const std::vector<BufferElement>& elements) : BufferLayout(name, elements) {
-		for (BufferElement& e : this->elements) {
-			e.attribLocation = glGetAttribLocation(reinterpret_cast<GLShader*>(shader)->GetShaderID(), e.name.c_str());
-			if (e.attribLocation == -1)
-				Logger::Warn("Invalid Buffer Element name \"" + e.name + "\" For layout: " + name);
-			e.offset = stride;
-			stride += e.size;
+	const unsigned int GLVertexLayout::VertexDataTypeToGLDataType[] = {
+		GL_BOOL, GL_BYTE, GL_UNSIGNED_BYTE, GL_INT, GL_FLOAT
+	};
+
+	GLVertexLayout::GLVertexLayout(const std::string& name, Shader* shader, const std::vector<VertexElement>& elements) : VertexLayout(name) {
+		// Create the Vertex Array Object
+		glCreateVertexArrays(1, &id);
+		glBindVertexArray(id);
+
+		// Get the ID of the Shader for retrieving Vertex Attribute Locations
+		unsigned int shaderID = reinterpret_cast<GLShader*>(shader)->GetShaderID();
+		for (const VertexElement& e : elements) {
+			int loc = glGetAttribLocation(shaderID, e.name.c_str());
+			if (loc == -1)
+				Logger::Warn("Invalid Buffer Element name \"" + e.name + "\" in layout: " + name);
+
+			// Get the OpenGL representation of the data type
+			unsigned int type = VertexDataTypeToGLDataType[static_cast<int>(e.type)];
+
+			// Set the Vertex Attribute Format
+			if (type == GL_DOUBLE)
+				glVertexAttribLFormat(loc, e.count, type, stride);
+			else if (type == GL_FLOAT || e.normalize)
+				glVertexAttribFormat(loc, e.count, type, true, stride);
+			else
+				glVertexAttribIFormat(loc, e.count, type, stride);
+
+			// Enable the Vertex Attribute. Change first parameter of "glVertexAttribBinding" to change the Vertex Buffer to read from (Not Implemented on VB side)
+			glVertexAttribBinding(0, loc);
+			glEnableVertexAttribArray(loc);
+			stride += VertexDataTypeSize[static_cast<int>(e.type)] * e.count;
 		}
 	}
 
-	void GLBufferLayout::Bind() const {
-		for (const BufferElement& e : elements) {
-			glVertexAttribPointer(e.attribLocation, e.count, SDTtoGLDT(e.type), e.normalized, stride, reinterpret_cast<void*>(e.offset));
-			glEnableVertexAttribArray(e.attribLocation);
-		}
+	void GLVertexLayout::Bind() const {
+		glBindVertexArray(id);
+	}
+
+	void GLVertexLayout::Unbind() const {
+		glBindVertexArray(0);
 	}
 }

@@ -9,24 +9,41 @@ namespace zore {
 	//	OpenGL Render Engine
 	//========================================================================
 
-	void GLRenderEngine::Init() {
+	const unsigned int GLRenderEngine::BufferTypeToGLBufferType[] = { GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT };
+
+	GLRenderEngine::GLRenderEngine() : clearMode(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) {
 		ENSURE(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)), "Failed to initialize GLAD");
+		glCullFace(GL_BACK);
 	}
 
-	GLRenderEngine::GLRenderEngine() {
+	void GLRenderEngine::SetViewport(unsigned int width, unsigned int height, unsigned int x, unsigned int y) {
+		glViewport(x, y, width, height);
+	}
 
+	void GLRenderEngine::SetBackFaceCulling(bool value) {
+		value ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+	}
+
+	void GLRenderEngine::SetWireframe(bool value) {
+		glPolygonMode(GL_FRONT_AND_BACK, value ? GL_LINE : GL_FILL);
+	}
+
+	void GLRenderEngine::SetVSync(bool value) {
+		glfwSwapInterval(value);
 	}
 
 	void GLRenderEngine::SetClearColour(float r, float g, float b, float a) {
 		glClearColor(r, g, b, a);
 	}
 
-	void GLRenderEngine::SetViewport(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
-		glViewport(x, y, width, height);
+	void GLRenderEngine::SetClearMode(const std::vector<BufferType>& buffers) {
+		clearMode = 0u;
+		for (const BufferType& b : buffers)
+			clearMode |= BufferTypeToGLBufferType[static_cast<int>(b)];
 	}
 
 	void GLRenderEngine::Clear() {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(clearMode);
 	}
 
 	void GLRenderEngine::DrawLinear(unsigned int count, unsigned int offset) {
@@ -34,6 +51,6 @@ namespace zore {
 	}
 
 	void GLRenderEngine::DrawIndexed(unsigned int count, unsigned int offset) {
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset));
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)));
 	}
 }

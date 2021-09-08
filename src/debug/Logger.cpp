@@ -37,7 +37,6 @@ namespace zore {
 		DEBUG_ONLY (
 			Console::SetTextColor(Console::Colour::Red);
 			std::cout << "[Error] " << s << std::endl;
-			system("pause");
 		)
 	}
 }

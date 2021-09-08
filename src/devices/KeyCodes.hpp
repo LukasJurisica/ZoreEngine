@@ -92,18 +92,33 @@
 #define KEY_F24 0x87
 
 // MISC
+#define KEY_SPACE  0x20
+
+#define KEY_ENTER 257
+#define KEY_TAB 258
+#define KEY_CAPSLOCK 280
+
+#define KEY_L_SHIFT 0x154
+#define KEY_L_CTRL  0x155
+#define KEY_L_ALT   0x156
+#define KEY_R_SHIFT 0x158
+#define KEY_R_CTRL  0x159
+#define KEY_R_ALT   0x15A
+
+#define KEY_MENU 348
+
+
+/*
 #define KEY_PLUS 0xBB
 #define KEY_MINUS 0xBD
 #define KEY_ESC 0x1B
 #define KEY_BACKSPACE 0x08
 #define KEY_TAB 0x09
 #define KEY_SHIFT 0x10
-#define KEY_CTRL 0x11
-#define KEY_ALT  0x12
 #define KEY_CAPSLOCK 0x14
 #define KEY_LWIN 0x5B
 #define KEY_RWIN 0x5C
 #define KEY_APPS 0x5D
 #define KEY_TILDE 0xC0
-
+*/
 #define KEY_COUNT 0x100

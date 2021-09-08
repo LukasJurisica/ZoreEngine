@@ -1,20 +1,25 @@
 #shaderstage vertex
-#version 330 core
+#version 430 core
 
-layout(location = 0) in vec2 position;
+layout (std140, binding = 0) uniform shaderData {
+	mat4 vp_mat;
+	vec3 cameraPos;
+	float time;
+};
+
+layout(location = 0) in ivec2 position;
 
 void main() {
-	gl_Position = vec4(position * 0.5, 0.0, 1.0);
+	vec2 pos = position + vec2(sin(time), cos(time));
+	gl_Position = vp_mat * vec4(pos * 0.5, -1.0, 1.0);
 }
 
 
 
 
 
-
-
 #shaderstage fragment
-#version 330 core
+#version 430 core
 out vec4 FragColor;
 
 void main() 

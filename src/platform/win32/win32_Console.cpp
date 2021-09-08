@@ -47,28 +47,16 @@ namespace zore {
             return;
         activeColour = c;
 
-        switch (c) {
-        case Colour::White:
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            break;
-        case Colour::Gray:
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            break;
-        case Colour::Blue:
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_BLUE);
-            break;
-        case Colour::Green:
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_GREEN);
-            break;
-        case Colour::Red:
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED);
-            break;
-        case Colour::Yellow:
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_RED);
-            break;
-        case Colour::Cyan:
-            SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_BLUE);
-            break;
-        }
+        char ConsoleColourLookupTable[7] = {
+            FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+            FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+            FOREGROUND_INTENSITY | FOREGROUND_BLUE,
+            FOREGROUND_INTENSITY | FOREGROUND_GREEN,
+            FOREGROUND_INTENSITY | FOREGROUND_RED,
+            FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_RED,
+            FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_BLUE
+        };
+
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), ConsoleColourLookupTable[static_cast<int>(c)]);
     }
 }

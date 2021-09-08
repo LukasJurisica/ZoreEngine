@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.8)
 project(ZoreEngine VERSION 0.1)
 
 # Specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set("SRC_DIR" "${PROJECT_SOURCE_DIR}/src")
@@ -45,7 +45,7 @@ endif(NOT WIN32)
 target_link_libraries(${PROJECT_NAME} ${GLFW_LIBRARY})
 
 # Copy over asset files
-file(COPY "assets" DESTINATION ${CMAKE_BINARY_DIR})
+#file(COPY "assets" DESTINATION ${CMAKE_BINARY_DIR})
 
 #set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # This will use the proper libraries in debug mode in Visual Studio

@@ -6,92 +6,98 @@
 
 namespace zore {
 
-	typedef unsigned short Index;
-
-	//========================================================================
-	//	Platform Agnostic GPU Buffer Base Class
-	//========================================================================
-
-	class Buffer {
-	public:
-		virtual ~Buffer() = default;
-		virtual void Set(const void* data, unsigned int size) = 0;
-		virtual void Update(const void* data, unsigned int size, unsigned int offset = 0) = 0;
-		virtual void Bind() const = 0;
-		virtual void UnBind() const = 0;
-	};
-
 	//========================================================================
 	//	Platform Agnostic Vertex Buffer Class
 	//========================================================================
 
-	class VertexBuffer : public virtual Buffer {
+	class VertexBuffer {
 	public:
-		static VertexBuffer* Create(void* vertices, unsigned int size);
+		static VertexBuffer* Create(void* data, unsigned int size, unsigned int stride);
 		virtual ~VertexBuffer() = default;
+
+		virtual void Set(const void* data, unsigned int size, unsigned int stride = 0u) = 0;
+		virtual void Update(const void* data, unsigned int size, unsigned int offset = 0u) = 0;
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
 	};
 
 	//========================================================================
 	//	Platform Agnostic Index Buffer Class
 	//========================================================================
 
-	class IndexBuffer : public virtual Buffer {
+	typedef unsigned short Index;
+
+	class IndexBuffer {
 	public:
-		static IndexBuffer* Create(void* indices, unsigned int size);
+		static IndexBuffer* Create(void* data, unsigned int size);
 		virtual ~IndexBuffer() = default;
+
+		virtual void Set(const void* data, unsigned int size) = 0;
+		virtual void Update(const void* data, unsigned int size, unsigned int offset = 0u) = 0;
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
 	};
 
 	//========================================================================
 	//	Platform Agnostic Shader Storage Buffer Class
 	//========================================================================
 
-	class ShaderStorageBuffer : public virtual Buffer {
+	class ShaderStorageBuffer {
 	public:
-		static ShaderStorageBuffer* Create(void* data, unsigned int size, unsigned int index);
+		static ShaderStorageBuffer* Create(void* data, unsigned int size, unsigned int index = 0u);
 		virtual ~ShaderStorageBuffer() = default;
+
+		virtual void Set(const void* data, unsigned int size) = 0;
+		virtual void Update(const void* data, unsigned int size, unsigned int offset = 0u) = 0;
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
 	};
 
 	//========================================================================
 	//	Platform Agnostic Uniform Buffer Class
 	//========================================================================
 
-	class UniformBuffer : public virtual Buffer {
+	class UniformBuffer {
 	public:
-		static UniformBuffer* Create(void* data, unsigned int size, unsigned int index);
+		static UniformBuffer* Create(void* data, unsigned int size, unsigned int index = 0u);
 		virtual ~UniformBuffer() = default;
-		virtual void AttachToShader(Shader* shader, const std::string& name) = 0;
+
+		virtual void Set(const void* data, unsigned int size) = 0;
+		virtual void Update(const void* data, unsigned int size, unsigned int offset = 0u) = 0;
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
 	};
 
 	//========================================================================
 	//	Platform Agnostic Vertex Buffer Layout Class
 	//========================================================================
 
-	struct BufferElement {
-		BufferElement(std::string name, ShaderDataType type, unsigned int count, bool normalized);
+	enum class VertexDataType { Bool, Byte, UByte, Int, Float };
+
+	struct VertexElement {
+		VertexElement(std::string name, VertexDataType type, unsigned int count, bool normalize = false);
 
 		std::string name;
-		ShaderDataType type;
+		VertexDataType type;
 		unsigned int count;
-		unsigned int size;
-		unsigned int offset;
-		int attribLocation;
-		bool normalized;
+		bool normalize;
 	};
 
-	class BufferLayout {
+	class VertexLayout {
 	public:
-		static BufferLayout* Create(const std::string& name, Shader* shader, const std::vector<BufferElement>& elements);
-		virtual ~BufferLayout();
-		static BufferLayout* Get(const std::string& name);
-		unsigned int GetStride() const;
+		static VertexLayout* Create(const std::string& name, Shader* shader, const std::vector<VertexElement>& elements);
+		static VertexLayout* Get(const std::string& name);
+		virtual ~VertexLayout();
+
+		unsigned int GetStride();
 		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
 
 	protected:
-		BufferLayout(const std::string& name, const std::vector<BufferElement>& elements);
-		std::vector<BufferElement> elements;
-		uint32_t stride;
+		VertexLayout(const std::string& name);
+		static const unsigned int VertexDataTypeSize[5];
 
-	private:
+		unsigned int stride;
 		std::string name;
 	};
 }

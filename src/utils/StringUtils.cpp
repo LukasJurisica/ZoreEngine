@@ -22,10 +22,6 @@ namespace zore {
 		} while (end != std::string::npos); 
 	}
 
-	std::string StringUtils::Strip(const std::string& str, const std::string& delimiter) {
-		return "";
-	}
-
 	std::wstring StringUtils::to_wstring(const std::string& string) {
 		//std::wstring result(string.length(), L' ');
 		//std::copy(string.begin(), string.end(), result.begin());

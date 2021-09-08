@@ -1,20 +1,31 @@
 #pragma once
-#include "devices/Window.hpp"
 #include "graphics/RenderEngine.hpp"
+#include "devices/Window.hpp"
+#include "core/Camera.hpp"
 
 namespace zore {
 
-	class Application : WindowListener {
+	struct ShaderData {
+		glm::mat4 vp_mat;
+		glm::vec3 cameraPos;
+		float time;
+	};
+
+	class Application : WindowListener, KeyListener {
 	public:
 		Application();
 		~Application() = default;
-		static void EntryPoint();
+		static void Init();
+		static void Cleanup();
 		void Run();
 
+	protected:
 		void OnWindowResize(int width, int height) override;
+		void OnKeyPress(unsigned char key, int mods) override;
 
 	private:
 		Window window;
 		RenderEngine* engine;
+		Camera camera;
 	};
 }
