@@ -14,6 +14,7 @@ namespace zore {
 	GLRenderEngine::GLRenderEngine() : clearMode(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) {
 		ENSURE(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)), "Failed to initialize GLAD");
 		glCullFace(GL_BACK);
+		glDepthFunc(GL_LEQUAL);
 	}
 
 	void GLRenderEngine::SetViewport(unsigned int width, unsigned int height, unsigned int x, unsigned int y) {
@@ -22,6 +23,10 @@ namespace zore {
 
 	void GLRenderEngine::SetBackFaceCulling(bool value) {
 		value ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+	}
+
+	void GLRenderEngine::SetDepthTest(bool value) {
+		value ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
 	}
 
 	void GLRenderEngine::SetWireframe(bool value) {

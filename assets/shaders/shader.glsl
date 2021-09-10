@@ -7,11 +7,12 @@ layout (std140, binding = 0) uniform shaderData {
 	float time;
 };
 
+uniform vec4 model;
+
 layout(location = 0) in ivec2 position;
 
 void main() {
-	vec2 pos = position + vec2(sin(time), cos(time));
-	gl_Position = vp_mat * vec4(pos * 0.5, -1.0, 1.0);
+	gl_Position = vp_mat * vec4((position * model.w) + model.xy, model.z, 1.0);
 }
 
 
@@ -22,7 +23,9 @@ void main() {
 #version 430 core
 out vec4 FragColor;
 
+uniform vec4 color;
+
 void main() 
 {
-    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+    FragColor = color;
 } 

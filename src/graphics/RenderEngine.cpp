@@ -41,10 +41,11 @@ namespace zore {
 		activeAPI = api;
 	}
 
-	void RenderEngine::Draw(Mesh* m, unsigned int offset) {
-		if (m->IsIndexed())
-			DrawIndexed(m->GetCount(), offset);
+	void RenderEngine::Draw(Mesh* mesh, unsigned int offset) {
+		mesh->Bind();
+		if (mesh->IsIndexed())
+			DrawIndexed(mesh->GetCount(), offset);
 		else
-			DrawLinear(m->GetCount(), offset);
+			DrawLinear(mesh->GetCount(), offset);
 	}
 }

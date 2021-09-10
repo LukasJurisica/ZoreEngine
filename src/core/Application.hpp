@@ -1,7 +1,8 @@
 #pragma once
-#include "graphics/RenderEngine.hpp"
-#include "devices/Window.hpp"
 #include "core/Camera.hpp"
+#include "devices/Window.hpp"
+#include "graphics/RenderEngine.hpp"
+#include "graphics/FrameBuffer.hpp"
 
 namespace zore {
 
@@ -27,5 +28,6 @@ namespace zore {
 		Window window;
 		RenderEngine* engine;
 		Camera camera;
+		FrameBuffer* frameBuffer;
 	};
 }

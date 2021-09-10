@@ -15,6 +15,7 @@ namespace zore {
 		
 		void SetViewport(unsigned int width, unsigned int height, unsigned int x, unsigned int y) override;
 		void SetBackFaceCulling(bool value) override;
+		void SetDepthTest(bool value) override;
 		void SetWireframe(bool value) override;
 		void SetVSync(bool value) override;
 		void SetClearColour(float r, float g, float b, float a) override;

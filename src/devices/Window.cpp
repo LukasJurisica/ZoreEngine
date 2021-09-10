@@ -124,6 +124,7 @@ namespace zore {
 	void Window::SetSize(int width, int height) {
 		size = { width, height };
 		glfwSetWindowSize(windowHandle, width, height);
+		ResizeCallback(windowHandle, width, height);
 	}
 
 	void Window::HideCursor(bool value) {

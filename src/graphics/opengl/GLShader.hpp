@@ -45,6 +45,7 @@ namespace zore {
 		void SetFloat4(const std::string& name, const glm::vec4& data) override;
 		void SetMat3(const std::string& name, const glm::mat3& data) override;
 		void SetMat4(const std::string& name, const glm::mat4& data) override;
+		void SetTextureIndex(const std::string& name, unsigned int index) override;
 		void SetUniformBufferIndex(const std::string& name, unsigned int index) override;
 
 	private:

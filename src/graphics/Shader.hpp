@@ -34,6 +34,7 @@ namespace zore {
 		virtual void SetFloat4(const std::string& name, const glm::vec4& data) = 0;
 		virtual void SetMat3(const std::string& name, const glm::mat3& data) = 0;
 		virtual void SetMat4(const std::string& name, const glm::mat4& data) = 0;
+		virtual void SetTextureIndex(const std::string& name, unsigned int index) = 0;
 		virtual void SetUniformBufferIndex(const std::string& name, unsigned int index) = 0;
 	};
 }

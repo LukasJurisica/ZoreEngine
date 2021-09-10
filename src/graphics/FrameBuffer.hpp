@@ -11,18 +11,7 @@ namespace zore {
 	//	Generic Frame Buffer Attachment Specifications
 	//========================================================================
 
-	enum class BufferBit {
-		COLOUR        = 1 << 0,
-		DEPTH         = 1 << 1,
-		STENCIl       = 1 << 2,
-		DEPTH_STENCIL = 1 << 3
-	};
-
-	struct FrameBufferAttachmentSpecification {
-		unsigned int channels;
-		BufferBit type;
-		bool readOnly = false;
-	};
+	enum class DepthFormat { NONE, DEPTH32_TEXTURE, DEPTH24_STENCIL8_TEXTURE, DEPTH32_BUFFER, DEPTH24_STENCIL8_BUFFER };
 
 	//========================================================================
 	//	Generic Frame Buffer Class
@@ -30,20 +19,15 @@ namespace zore {
 
 	class FrameBuffer {
 	public:
-		static FrameBuffer* Create(unsigned int width, unsigned int height, const std::vector<FrameBufferAttachmentSpecification>& attachments);
-		virtual ~FrameBuffer() = default;
+		static FrameBuffer* Create(unsigned int width, unsigned int height, unsigned int colorAttachmentCount, DepthFormat format = DepthFormat::NONE);
+		virtual ~FrameBuffer();
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-		virtual void Resize(unsigned int width, unsigned int height) = 0;
-		//virtual Texture2D* GetDepthTexture();
-		const Texture2D* GetTexture(unsigned int index);
+		virtual void SetSize(unsigned int width, unsigned int height) = 0;
+		const Texture2D* GetTexture(unsigned int index) const;
 
 	protected:
-		FrameBuffer(unsigned int width, unsigned int height);
-
 		std::vector<Texture2D*> attachments;
-		unsigned int width;
-		unsigned int height;
 	};
 }

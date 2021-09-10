@@ -10,24 +10,24 @@ namespace zore {
 	//	Generic Frame Buffer Class
 	//========================================================================
 
-	FrameBuffer::FrameBuffer(unsigned int width, unsigned int height) : width(width), height(height) {}
+	FrameBuffer::~FrameBuffer() {
+		for (Texture2D* tex : attachments)
+			delete tex;
+	}
 
-	FrameBuffer* FrameBuffer::Create(unsigned int width, unsigned int height, const std::vector<FrameBufferAttachmentSpecification>& attachments) {
-
-		Byte colourCount = 0;
-		for (const FrameBufferAttachmentSpecification& attachment : attachments)
-			colourCount += (attachment.type == BufferBit::COLOUR);
-		ENSURE(colourCount <= MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS, "Failed to create framebuffer - Colour Buffer Attachment count has exceeded the maximum.");
+	FrameBuffer* FrameBuffer::Create(unsigned int width, unsigned int height, unsigned int colorAttachmentCount, DepthFormat format) {
+		ENSURE(colorAttachmentCount <= MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS, "Failed to create framebuffer - Texture attachment count has exceeded the maximum.");
 
 		switch (RenderEngine::GetAPI()) {
 		case API::OpenGL:
-			return new GLFrameBuffer(width, height, attachments);
+			return new GLFrameBuffer(width, height, colorAttachmentCount, format);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
 		return nullptr;
 	}
 
-	const Texture2D* FrameBuffer::GetTexture(unsigned int index) {
+	const Texture2D* FrameBuffer::GetTexture(unsigned int index) const {
+		ENSURE(index < attachments.size(), "Texture index larger than attachment count.");
 		return attachments[index];
 	}
 }

@@ -72,7 +72,7 @@ namespace zore {
 	//	Platform Agnostic Vertex Buffer Layout Class
 	//========================================================================
 
-	enum class VertexDataType { Bool, Byte, UByte, Int, Float };
+	enum class VertexDataType { BOOL, BYTE, UBYTE, INT, FLOAT };
 
 	struct VertexElement {
 		VertexElement(std::string name, VertexDataType type, unsigned int count, bool normalize = false);

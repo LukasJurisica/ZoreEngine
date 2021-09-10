@@ -28,23 +28,26 @@ namespace zore {
 		engine(RenderEngine::Get()),
 		camera(90.f, window.GetAspectRatio(), 0.1f, 1000.f) {
 
+		frameBuffer = FrameBuffer::Create(1920, 1080, 1, DepthFormat::DEPTH32_TEXTURE);
+
 		engine->SetBackFaceCulling(true);
 		engine->SetVSync(false);
 		engine->SetClearColour(0.2f, 0.3f, 0.3f);
 		//engine->SetClearColour(0.0f, 0.0f, 0.0f, 0.0f);
-		engine->SetClearMode({ BufferType::COLOUR });
+		engine->SetClearMode({ BufferType::COLOUR, BufferType::DEPTH });
 
 		//window.SetBorderless(true);
-		window.HideCursor(true);
+		//window.HideCursor(true);
 	}
 
 	struct Vertex {
-		Byte x, y;
+		byte x, y;
 	};
 
 	void Application::Run() {
-		Shader* shader = Shader::Create("shader");
-		shader->Bind();
+		Shader* postProcessShader = Shader::Create("postprocess");
+		Shader* defaultShader = Shader::Create("shader");
+		defaultShader->Bind();
 
 		CameraController controller(&camera, 0.1f);
 		ShaderData shaderData = { camera.GetProjection(), camera.GetPosition(), 0.f };
@@ -52,25 +55,23 @@ namespace zore {
 		shaderDataBuffer->Bind();
 
 		// Create the screenspace quad
-		VertexLayout* SBx2 = VertexLayout::Create("SBx2", shader, { { "position", VertexDataType::Byte, 2 } });
+		VertexLayout* SBx2 = VertexLayout::Create("SBx2", defaultShader, { { "position", VertexDataType::BYTE, 2 } });
 		Vertex vertices[] = {{-1, 1}, {-1, -1}, {1, -1}, {-1, 1}, {1, -1}, {1, 1}};
-		Mesh* mesh = Mesh::Create(&vertices, sizeof(vertices), sizeof(Vertex));
-		mesh->Bind();
+		Mesh* quad = Mesh::Create(&vertices, sizeof(vertices), sizeof(Vertex));
+		quad->Bind();
 
 		Timer timer;
 		float deltaTime = 0;
 		float runningTime = 0;
 		unsigned int frameCount = 0;
 
-		while (!window.ShouldClose()) { 
-			engine->Clear();
-
+		while (!window.ShouldClose()) {
 			// Update Time and framerate counter
 			deltaTime = timer.DeltaTime(true);
 			runningTime += deltaTime;
 			frameCount++;
 			if (timer.TimeSinceStart() > 1) {
-				Logger::Log("FrameRate: " + std::to_string(frameCount));
+				//Logger::Log("FrameRate: " + std::to_string(frameCount));
 				frameCount = 0;
 				timer.Reset();
 			}
@@ -80,7 +81,32 @@ namespace zore {
 			shaderData = { camera.GetProjection() * camera.GetView(), camera.GetPosition(), runningTime };
 			shaderDataBuffer->Update(&shaderData, sizeof(shaderData));
 
-			engine->Draw(mesh);
+			// RENDER THE SCENE TO FRAMEBUFFER --------
+			engine->SetDepthTest(true);
+			frameBuffer->Bind();
+			engine->Clear();
+			defaultShader->Bind();
+
+			defaultShader->SetFloat4("model", { 1.0f, 0.0f,-1.0f, 0.5f });
+			defaultShader->SetFloat4("color", { 1.0f, 0.5f, 0.2f, 1.0f });
+			engine->DrawLinear(quad->GetCount());
+
+			defaultShader->SetFloat4("model", {-1.0f, 0.0f,-1.0f, 0.5f });
+			defaultShader->SetFloat4("color", { 0.2f, 0.5f, 1.0f, 1.0f });
+			engine->DrawLinear(quad->GetCount());
+
+			defaultShader->SetFloat4("model", { 0.0f, 0.2f,-1.5f, 1.0f });
+			defaultShader->SetFloat4("color", { 0.5f, 1.0f, 0.2f, 1.0f });
+			engine->DrawLinear(quad->GetCount());
+			// END RENDER THE SCENE TO FRAMEBUFFER --------
+
+			// RENDER FRAMEBUFFER TEXTURE TO SCREEN --------
+			engine->SetDepthTest(false);
+			frameBuffer->Unbind();
+			postProcessShader->Bind();
+			engine->DrawLinear(quad->GetCount());
+			// END RENDER FRAMEBUFFER TEXTURE TO SCREEN --------
+
 			window.Update();
 		}
 	}
@@ -88,7 +114,11 @@ namespace zore {
 	void Application::OnWindowResize(int width, int height) {
 		if (width && height) {
 			engine->SetViewport(width, height);
+			frameBuffer->SetSize(width, height);
 			camera.SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+		}
+		else {
+			Logger::Log("Window Minimized");
 		}
 	}
 

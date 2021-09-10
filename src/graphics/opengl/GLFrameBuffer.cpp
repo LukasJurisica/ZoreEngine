@@ -5,38 +5,89 @@
 
 namespace zore {
 
-	GLFrameBuffer::GLFrameBuffer(unsigned int width, unsigned int height, const std::vector<FrameBufferAttachmentSpecification>& attachments) : FrameBuffer(width, height) {
-		glCreateFramebuffers(1, &frameBufferID);
-		glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID);
+	//========================================================================
+	//	OpenGL Render Buffer Class
+	//========================================================================
 
+	GLRenderBuffer::GLRenderBuffer(unsigned int width, unsigned int height, unsigned int format) : format(format) {
+		glCreateRenderbuffers(1, &id);
+		glNamedRenderbufferStorage(id, format, width, height);
+	}
+
+	GLRenderBuffer::~GLRenderBuffer() {
+		glDeleteRenderbuffers(1, &id);
+	}
+
+	void GLRenderBuffer::SetSize(unsigned int width, unsigned int height) {
+		glNamedRenderbufferStorage(id, format, width, height);
+	}
+
+	unsigned int GLRenderBuffer::GetID() const {
+		return id;
+	}
+
+	//========================================================================
+	//	OpenGL Frame Buffer Class
+	//========================================================================
+
+	GLFrameBuffer::GLFrameBuffer(unsigned int width, unsigned int height, unsigned int colorAttachmentCount, DepthFormat depthFormat) : rbo(nullptr) {
+		glCreateFramebuffers(1, &id);
+
+		GLTexture2D* tex;
+		// Create colour attachments
 		unsigned int activeAttachments[MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS];
-		int attachmentCount = static_cast<int> (attachments.size());
-		for (int i = 0; i < attachmentCount; i++) {
-			GLTexture2D* tex = new GLTexture2D(width, height, attachments[i].channels);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, tex->GetTextureID(), 0);
-			activeAttachments[i] = GL_COLOR_ATTACHMENT0 + i;
-			this->attachments.push_back(tex);
+		for (unsigned int i = 0; i < colorAttachmentCount; i++) {
+			glActiveTexture(GL_TEXTURE0 + i);
+			tex = new GLTexture2D(width, height, GL_RGBA);
+			glNamedFramebufferTexture(id, GL_COLOR_ATTACHMENT0 + i, tex->GetID(), 0);
+			attachments.push_back(tex);
 		}
-		glDrawBuffers(attachmentCount, activeAttachments);
+
+		// Create Depth/Stencil attachments (if applicable)
+		switch (depthFormat) {
+		case DepthFormat::DEPTH32_TEXTURE:
+			glActiveTexture(GL_TEXTURE0 + colorAttachmentCount);
+			tex = new GLTexture2D(width, height, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT);
+			glNamedFramebufferTexture(id, GL_DEPTH_ATTACHMENT, tex->GetID(), 0);
+			attachments.push_back(tex);
+			break;
+		case DepthFormat::DEPTH24_STENCIL8_TEXTURE:
+			glActiveTexture(GL_TEXTURE0 + colorAttachmentCount);
+			tex = new GLTexture2D(width, height, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8);
+			glNamedFramebufferTexture(id, GL_DEPTH_STENCIL_ATTACHMENT, tex->GetID(), 0);
+			attachments.push_back(tex);
+			break;
+		case DepthFormat::DEPTH32_BUFFER:
+			rbo = new GLRenderBuffer(width, height, GL_DEPTH_COMPONENT32);
+			glNamedFramebufferRenderbuffer(id, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo->GetID());
+			break;
+		case DepthFormat::DEPTH24_STENCIL8_BUFFER:
+			rbo = new GLRenderBuffer(width, height, GL_DEPTH24_STENCIL8);
+			glNamedFramebufferRenderbuffer(id, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo->GetID());
+			break;
+		}
+
+		// Verify that the FrmaeBuffer has been created successfully
+		ENSURE(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Error creating FrameBuffer. Error code: " + std::to_string(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER)));
+		glNamedFramebufferDrawBuffers(id, colorAttachmentCount, activeAttachments);
 	}
 
 	GLFrameBuffer::~GLFrameBuffer() {
-		glDeleteFramebuffers(1, &frameBufferID);
+		glDeleteFramebuffers(1, &id);
 	}
 
 	void GLFrameBuffer::Bind() const {
-		glBindFramebuffer(GL_FRAMEBUFFER, frameBufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, id);
 	}
 
 	void GLFrameBuffer::Unbind() const {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void GLFrameBuffer::Resize(unsigned int width, unsigned int height) {
-		this->width = width;
-		this->height = height;
-
-		for (Texture2D* tex : attachments)
-			tex->Resize(width, height);
+	void GLFrameBuffer::SetSize(unsigned int width, unsigned int height) {
+		for (int i = 0; i < attachments.size(); i++)
+			attachments[i]->SetSize(width, height);
+		if (rbo)
+			rbo->SetSize(width, height);
 	}
 }

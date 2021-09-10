@@ -1,4 +1,5 @@
 #pragma once
 
-typedef unsigned char UByte;
-typedef char Byte;
+typedef unsigned int uint;
+typedef unsigned char ubyte;
+typedef char byte;

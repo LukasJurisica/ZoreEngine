@@ -23,6 +23,7 @@ namespace zore {
 
 		virtual void SetViewport(unsigned int width, unsigned int height, unsigned int x = 0u, unsigned int y = 0u) = 0;
 		virtual void SetBackFaceCulling(bool value) = 0;
+		virtual void SetDepthTest(bool value) = 0;
 		virtual void SetWireframe(bool value) = 0;
 		virtual void SetVSync(bool value) = 0;
 		virtual void SetClearColour(float r, float g, float b, float a = 1.0f) = 0;

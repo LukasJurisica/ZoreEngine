@@ -5,7 +5,7 @@
 #include "debug/Debug.hpp"
 
 int WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
-    //DEBUG_ONLY(zore::Console console);
+    DEBUG_ONLY(zore::Console console);
 
     int rc = EXIT_FAILURE;
     try {
