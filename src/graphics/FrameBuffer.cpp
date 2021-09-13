@@ -19,7 +19,7 @@ namespace zore {
 		ENSURE(colorAttachmentCount <= MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS, "Failed to create framebuffer - Texture attachment count has exceeded the maximum.");
 
 		switch (RenderEngine::GetAPI()) {
-		case API::OpenGL:
+		case API::OPENGL:
 			return new GLFrameBuffer(width, height, colorAttachmentCount, format);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");

@@ -67,16 +67,16 @@ namespace zore {
 		glDeleteProgram(id);
 	}
 
+	unsigned int GLShader::GetShaderID() {
+		return id;
+	}
+
 	void GLShader::Bind() {
 		glUseProgram(id);
 	}
 
 	void GLShader::Unbind() {
 		glUseProgram(0);
-	}
-
-	unsigned int GLShader::GetShaderID() {
-		return id;
 	}
 
 	void GLShader::Link(std::vector<GLShaderStage>& shaderStages) {

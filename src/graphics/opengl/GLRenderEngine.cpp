@@ -29,6 +29,10 @@ namespace zore {
 		value ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
 	}
 
+	void GLRenderEngine::SetStencilTest(bool value) {
+		value ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
+	}
+
 	void GLRenderEngine::SetWireframe(bool value) {
 		glPolygonMode(GL_FRONT_AND_BACK, value ? GL_LINE : GL_FILL);
 	}
@@ -57,5 +61,13 @@ namespace zore {
 
 	void GLRenderEngine::DrawIndexed(unsigned int count, unsigned int offset) {
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)));
+	}
+
+	void GLRenderEngine::DrawLinearInstanced(unsigned int vertexCount, unsigned int modelCount, unsigned int offset) {
+		glDrawArraysInstanced(GL_TRIANGLES, offset, vertexCount, modelCount);
+	}
+
+	void GLRenderEngine::DrawIndexedInstanced(unsigned int indexCount, unsigned int modelCount, unsigned int offset) {
+		glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)), modelCount);
 	}
 }

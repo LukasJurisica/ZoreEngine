@@ -7,9 +7,6 @@ namespace zore {
 	//	OpenGL Base Texture Class
 	//========================================================================
 
-	// Channel Count to OpenGL Texture Type
-	unsigned int CCtoGLTT(unsigned int channels);
-
 	class GLTexture {
 	public:
 		GLTexture(unsigned int target, unsigned int format);
@@ -22,6 +19,8 @@ namespace zore {
 		unsigned int dataFormat;
 		unsigned int type;
 		unsigned int id;
+
+		static const unsigned int TextureFormatToGLFormat[4];
 	};
 
 	//========================================================================
@@ -32,6 +31,7 @@ namespace zore {
 	public:
 		GLTexture2D(const std::string& name);
 		GLTexture2D(unsigned int width, unsigned int height, unsigned int format);
+		GLTexture2D(unsigned int width, unsigned int height, TextureFormat format);
 		GLTexture2D(unsigned int width, unsigned int height, unsigned int internalFormat, unsigned int dataFormat, unsigned int type, void* data = nullptr);
 		~GLTexture2D() = default;
 

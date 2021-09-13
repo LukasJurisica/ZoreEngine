@@ -67,7 +67,7 @@ namespace zore {
 			break;
 		}
 
-		// Verify that the FrmaeBuffer has been created successfully
+		// Verify that the FrameBuffer has been created successfully
 		ENSURE(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Error creating FrameBuffer. Error code: " + std::to_string(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER)));
 		glNamedFramebufferDrawBuffers(id, colorAttachmentCount, activeAttachments);
 	}

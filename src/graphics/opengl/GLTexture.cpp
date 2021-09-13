@@ -8,21 +8,7 @@ namespace zore {
 	//	OpenGL Base Texture Class
 	//========================================================================
 
-	unsigned int CCtoGLTT(unsigned int channels) {
-		switch (channels) {
-		case 1:
-			return GL_RED;
-		case 2:
-			return GL_RG;
-		case 3:
-			return GL_RGB;
-		case 4:
-			return GL_RGBA;
-		default:
-			throw ZORE_EXCEPTION("Invalid number of channels for texture creation");
-			return 0;
-		}
-	}
+	const unsigned int GLTexture::TextureFormatToGLFormat[] = { GL_RED, GL_RG, GL_RGB, GL_RGBA };
 
 	GLTexture::GLTexture(unsigned int target, unsigned int format) : internalFormat(format), dataFormat(format), type(GL_UNSIGNED_BYTE) {
 		//glCreateTextures(type, 1, &textureID);
@@ -54,6 +40,14 @@ namespace zore {
 	}
 
 	GLTexture2D::GLTexture2D(unsigned int width, unsigned int height, unsigned int format) : GLTexture(GL_TEXTURE_2D, format) {
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, type, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	}
+
+	GLTexture2D::GLTexture2D(unsigned int width, unsigned int height, TextureFormat format) : GLTexture(GL_TEXTURE_2D, TextureFormatToGLFormat[static_cast<int>(format)]) {
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, type, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

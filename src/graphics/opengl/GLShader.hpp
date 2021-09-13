@@ -27,9 +27,9 @@ namespace zore {
 		GLShader(const std::string& filename);
 		~GLShader();
 
+		unsigned int GetShaderID();
 		void Bind() override;
 		void Unbind() override;
-		unsigned int GetShaderID();
 
 		void SetInt(const std::string& name, int data) override;
 		void SetInt2(const std::string& name, const glm::ivec2& data) override;

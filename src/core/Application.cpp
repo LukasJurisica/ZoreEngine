@@ -1,19 +1,16 @@
 #include "core/Application.hpp"
-#include "graphics/Shader.hpp"
+#include "graphics/VertexLayout.hpp"
 #include "utils/FileManager.hpp"
 #include "utils/DataTypes.hpp"
 #include "utils/Timer.hpp"
 #include "debug/Debug.hpp"
-
-#include "math/MathUtils.hpp"
-#include "math/WhiteNoise.hpp"
 
 namespace zore {
 	
 	void Application::Init() {
 		FileManager::Init();
 		// load config from file
-		RenderEngine::SetAPI(zore::API::OpenGL);
+		RenderEngine::SetAPI(API::OPENGL);
 		Window::Init();
 		Application app;
 		app.Run();
@@ -60,6 +57,12 @@ namespace zore {
 		Mesh* quad = Mesh::Create(&vertices, sizeof(vertices), sizeof(Vertex));
 		quad->Bind();
 
+		// Create instancing array
+		//int data[] = { 0, 2, 4 };
+		//InstanceArrayBuffer* iba = InstanceArrayBuffer::Create(&data, sizeof(data), sizeof(data[0]));
+		//iba->Bind();
+		//SBx2->AddInstanceArrayLayout({ {"offset", VertexDataType::INT, 1} });
+
 		Timer timer;
 		float deltaTime = 0;
 		float runningTime = 0;
@@ -84,8 +87,8 @@ namespace zore {
 			// RENDER THE SCENE TO FRAMEBUFFER --------
 			engine->SetDepthTest(true);
 			frameBuffer->Bind();
-			engine->Clear();
 			defaultShader->Bind();
+			engine->Clear();
 
 			defaultShader->SetFloat4("model", { 1.0f, 0.0f,-1.0f, 0.5f });
 			defaultShader->SetFloat4("color", { 1.0f, 0.5f, 0.2f, 1.0f });

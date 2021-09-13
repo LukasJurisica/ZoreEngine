@@ -67,12 +67,12 @@ namespace zore {
 		glfwWindowHint(GLFW_CENTER_CURSOR, true);
 
 		switch (RenderEngine::GetAPI()) {
-		case API::OpenGL:
+		case API::OPENGL:
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API); // Initialize OpenGL
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 			break;
-		case API::Vulkan:
+		case API::VULKAN:
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // Initialize Vulkan
 			break;
 		default:

@@ -7,9 +7,9 @@ namespace zore {
 	//	Platform Agnostic Render Engine Interface
 	//========================================================================
 
-	enum class API { None, OpenGL, Vulkan };
+	enum class API { NONE, OPENGL, VULKAN };
 	enum class BufferType { COLOUR, DEPTH, STENCIL };
-	enum class MeshTopology { Point, Line, LineStrip, TriangleList, TriangleStrip, TriangleFan };
+	enum class MeshTopology { POINT, LINE, LINE_STRIP, TRIANGLE_LIST, TRIANGLE_STRIP, TRIANGLE_FAN };
 
 	class RenderEngine {
 		friend class Window;
@@ -19,11 +19,13 @@ namespace zore {
 
 		static API GetAPI();
 		static void SetAPI(API api);
-		void Draw(Mesh* m, unsigned int offset = 0u);
+		void Draw(Mesh* mesh, unsigned int offset = 0u);
+		void DrawInstanced(Mesh* mesh, unsigned int count, unsigned int offset = 0u);
 
 		virtual void SetViewport(unsigned int width, unsigned int height, unsigned int x = 0u, unsigned int y = 0u) = 0;
 		virtual void SetBackFaceCulling(bool value) = 0;
 		virtual void SetDepthTest(bool value) = 0;
+		virtual void SetStencilTest(bool value) = 0;
 		virtual void SetWireframe(bool value) = 0;
 		virtual void SetVSync(bool value) = 0;
 		virtual void SetClearColour(float r, float g, float b, float a = 1.0f) = 0;
@@ -31,6 +33,8 @@ namespace zore {
 		virtual void Clear() = 0;
 		virtual void DrawLinear(unsigned int count, unsigned int offset = 0u) = 0;
 		virtual void DrawIndexed(unsigned int count, unsigned int offset = 0u) = 0;
+		virtual void DrawLinearInstanced(unsigned int vertexCount, unsigned int modelCount, unsigned int offset = 0u) = 0;
+		virtual void DrawIndexedInstanced(unsigned int indexCount, unsigned int modelCount, unsigned int offset = 0u) = 0;
 
 		//void begin();
 		//void end();

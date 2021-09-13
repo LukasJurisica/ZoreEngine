@@ -11,7 +11,7 @@ namespace zore {
 
 	Shader* Shader::Create(const std::string& name) {
 		switch (RenderEngine::GetAPI()) {
-		case API::OpenGL:
+		case API::OPENGL:
 			return new GLShader(name);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");

@@ -7,17 +7,17 @@ namespace zore {
 
 	Texture2D* Texture2D::Create(const std::string& name) {
 		switch (RenderEngine::GetAPI()) {
-		case API::OpenGL:
+		case API::OPENGL:
 			return new GLTexture2D(name);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
 		return nullptr;
 	}
 
-	Texture2D* Texture2D::Create(uint width, uint height, uint channels) {
+	Texture2D* Texture2D::Create(uint width, uint height, TextureFormat format) {
 		switch (RenderEngine::GetAPI()) {
-		case API::OpenGL:
-			return new GLTexture2D(width, height, CCtoGLTT(channels));
+		case API::OPENGL:
+			return new GLTexture2D(width, height, format);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
 		return nullptr;
