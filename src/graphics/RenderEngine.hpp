@@ -1,5 +1,6 @@
 #pragma once
 #include "graphics/Mesh.hpp"
+#include <vector>
 
 namespace zore {
 
@@ -9,7 +10,7 @@ namespace zore {
 
 	enum class API { NONE, OPENGL, VULKAN };
 	enum class BufferType { COLOUR, DEPTH, STENCIL };
-	enum class MeshTopology { POINT, LINE, LINE_STRIP, TRIANGLE_LIST, TRIANGLE_STRIP, TRIANGLE_FAN };
+	enum class MeshTopology { POINT_LIST, LINE_LIST, LINE_STRIP, LINE_LOOP, TRIANGLE_LIST, TRIANGLE_STRIP, TRIANGLE_FAN };
 
 	class RenderEngine {
 		friend class Window;
@@ -30,6 +31,7 @@ namespace zore {
 		virtual void SetVSync(bool value) = 0;
 		virtual void SetClearColour(float r, float g, float b, float a = 1.0f) = 0;
 		virtual void SetClearMode(const std::vector<BufferType>& buffers) = 0;
+		virtual void SetTopology(MeshTopology topology) = 0;
 		virtual void Clear() = 0;
 		virtual void DrawLinear(unsigned int count, unsigned int offset = 0u) = 0;
 		virtual void DrawIndexed(unsigned int count, unsigned int offset = 0u) = 0;

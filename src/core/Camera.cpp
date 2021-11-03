@@ -12,13 +12,15 @@ namespace zore {
 	//========================================================================
 
 	Camera::Camera(float fov, float aspectRatio, float nearDist, float farDist) :
-		fov(glm::radians(fov)), aspectRatio(aspectRatio), nearDist(nearDist), farDist(farDist), viewMatrix(0), projectionMatrix(0) {
-		distance = 0;
+		distance(0), fov(glm::radians(fov)), aspectRatio(aspectRatio), nearDist(nearDist), farDist(farDist), viewMatrix(0), projectionMatrix(0) {
 		UpdateProjectionMatrix();
 	}
 
 	void Camera::UpdateViewMatrix() {
-		viewMatrix = glm::lookAt(position, position + forward, up);
+		if (distance)
+			viewMatrix = glm::lookAt(position - (forward * distance), position, up);
+		else
+			viewMatrix = glm::lookAt(position, position + forward, up);
 		UpdateFrustum();
 	}
 
@@ -44,8 +46,8 @@ namespace zore {
 		planeNormals[3] = glm::cross(right, (lForward - lUp));
 	}
 
-	bool Camera::TestPoint(float x, float y, float z) {
-		glm::vec3 vector = glm::vec3(x, y, z) - position;
+	bool Camera::TestPoint(const glm::vec3& point) const {
+		glm::vec3 vector = point - GetViewPosition();
 		for (int i = 0; i < 4; i++) {
 			if (glm::dot(vector, planeNormals[i]) < 0)
 				return false;
@@ -53,21 +55,27 @@ namespace zore {
 		return true;
 	}
 
-	bool Camera::TestAABB(glm::vec3 min, glm::vec3 size) {
+	bool Camera::TestAABB(const glm::vec3& min, const glm::vec3& size) const {
+		glm::vec3 pos = GetViewPosition();
 		for (int i = 0; i < 4; i++) {
-			glm::vec3 vector = glm::vec3(min); // vector = min?
+			glm::vec3 vector = min; // vector = min?
 			for (int j = 0; j < 3; j++) {
 				if (planeNormals[i][j] > 0)
 					vector[j] += size[j];
 			}
-			if (glm::dot(vector - position, planeNormals[i]) < 0)
+			if (glm::dot(vector - pos, planeNormals[i]) < 0)
 				return false;
 		}
 		return true;
 	}
 
 	void Camera::SetPosition(const glm::vec3& pos) {
-		position = pos;// -(forward * distance);
+		position = pos;
+		UpdateViewMatrix();
+	}
+
+	void Camera::Translate(glm::vec3& offset) {
+		position += offset;
 		UpdateViewMatrix();
 	}
 
@@ -79,8 +87,9 @@ namespace zore {
 		glm::vec2 sVal = glm::sin(glm::vec2(yaw, pitch));
 
 		front = glm::vec3(cVal.x, 0, sVal.x);
-		forward = glm::vec3(front.x * cVal.y, sVal.y, front.z * cVal.y);
+		forward = glm::vec3(cVal.x * cVal.y, sVal.y, sVal.x * cVal.y);
 		right = glm::cross(front, { 0.f, 1.f, 0.f });
+		up = glm::normalize(glm::cross(right, forward));
 		UpdateViewMatrix();
 	}
 
@@ -108,15 +117,21 @@ namespace zore {
 		UpdateProjectionMatrix();
 	}
 
-	glm::mat4& Camera::GetView() {
+	const glm::mat4& Camera::GetView() const {
 		return viewMatrix;
 	}
 
-	glm::mat4& Camera::GetProjection() {
+	const glm::mat4& Camera::GetProjection() const {
 		return projectionMatrix;
 	}
 
-	glm::vec3& Camera::GetPosition() {
+	const glm::vec3& Camera::GetPosition() const {
+		return position;
+	}
+
+	const glm::vec3 Camera::GetViewPosition() const {
+		if (distance)
+			return position - (forward * distance);
 		return position;
 	}
 
@@ -124,14 +139,14 @@ namespace zore {
 	//	Base Class for Camera controlling objects (like a player)
 	//========================================================================
 
-	CameraController::CameraController(Camera* camera, float sensitivity)
-		: camera(camera), sensitivity(sensitivity), yaw(-90.f), pitch(0.f), distance(0.f) {
-		camera->SetPosition({ 0, 0, 0 });
-		camera->SetViewVectors({ 0, 0, -1 }, {1, 0, 0});
+	CameraController::CameraController(Camera* camera, float sensitivity, const glm::vec3& position)
+		: camera(camera), sensitivity(sensitivity), yaw(-90.f), pitch(0.f) {
+		camera->SetPosition(position);
+		camera->SetViewVectors({ 0, 0,-1 }, { 1, 0, 0 });
 	}
 
 	void CameraController::Update(float deltaTime) {
-		float speed = 1.f * deltaTime;
+		float speed = 15.f * deltaTime;
 		glm::vec3 velocity = glm::vec3(0);
 
 		if (Keyboard::GetKey(KEY_W))
@@ -143,18 +158,21 @@ namespace zore {
 		if (Keyboard::GetKey(KEY_A))
 			velocity -= camera->right;
 		if (Keyboard::GetKey(KEY_SPACE))
-			velocity += camera->up;
+			velocity += glm::vec3(0.f, 1.f, 0.f);
 		if (Keyboard::GetKey(KEY_X))
-			velocity -= camera->up;
+			velocity -= glm::vec3(0.f, 1.f, 0.f);
+
+		if (Keyboard::GetKey(KEY_L_SHIFT))
+			speed *= 20;
 
 		if (velocity.x != 0 || velocity.y!= 0 || velocity.z != 0)
 			velocity = glm::normalize(velocity) * speed;
 
-		camera->SetPosition(camera->position + velocity);
+		camera->Translate(velocity);
 	}
 
 	void CameraController::OnMouseScroll(float xOffset, float yOffset) {
-		distance = zm::Clamp(distance - (yOffset * 10), 0.f, 100.f);
+		camera->distance = zm::Clamp(camera->distance - (yOffset * 10), 0.f, 100.f);
 	}
 
 	void CameraController::OnMouseMove(float x, float y, float dx, float dy) {

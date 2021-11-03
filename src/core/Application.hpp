@@ -3,6 +3,7 @@
 #include "devices/Window.hpp"
 #include "graphics/RenderEngine.hpp"
 #include "graphics/FrameBuffer.hpp"
+#include "graphics/Shader.hpp"
 
 namespace zore {
 
@@ -22,12 +23,13 @@ namespace zore {
 
 	protected:
 		void OnWindowResize(int width, int height) override;
-		void OnKeyPress(unsigned char key, int mods) override;
+		void OnKeyPress(int key, int mods) override;
 
 	private:
 		Window window;
-		RenderEngine* engine;
 		Camera camera;
+		RenderEngine* engine;
 		FrameBuffer* frameBuffer;
+		Shader* postProcessShader;
 	};
 }

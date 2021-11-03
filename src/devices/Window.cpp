@@ -15,7 +15,7 @@ namespace zore {
 
 	Window* window;
 
-	Window::Window(int width, int height) : size(width, height) {
+	Window::Window(int width, int height) : size(width, height), fullscreen(false), cursorHidden(false) {
 		ENSURE(!window, "Cannot create window, as there is already another active window and Zore Engine currently does not support multiple windows.");
 		window = this;
 
@@ -115,6 +115,11 @@ namespace zore {
 	void Window::SetFullscreen(bool value) {
 		GLFWmonitor* monitor = value ? glfwGetPrimaryMonitor() : nullptr;
 		glfwSetWindowMonitor(windowHandle, monitor, position.x, position.y, size.x, size.y, GLFW_DONT_CARE);
+		fullscreen = value;
+	}
+
+	void Window::ToggleFullscreen() {
+		SetFullscreen(!fullscreen);
 	}
 
 	void Window::SetBorderless(bool value) {
@@ -128,14 +133,24 @@ namespace zore {
 	}
 
 	void Window::HideCursor(bool value) {
+		cursorHidden = value;
 		glfwSetInputMode(windowHandle, GLFW_CURSOR, value ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+
+		if (!value) {
+			glfwSetCursorPos(windowHandle, size.x / 2, size.y / 2);
+			Mouse::ClearState(static_cast<float>(size.x / 2), static_cast<float>(size.y / 2));
+		}
+	}
+
+	void Window::ToggleCursor() {
+		HideCursor(!cursorHidden);
 	}
 
 	float Window::GetAspectRatio() {
 		return (static_cast<float>(size.x) / static_cast<float>(size.y));
 	}
 
-	glm::ivec2& Window::GetSize() {
+	const glm::ivec2& Window::GetSize() {
 		return size;
 	}
 

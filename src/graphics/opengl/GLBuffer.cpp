@@ -4,11 +4,15 @@
 
 namespace zore {
 
+	const unsigned int BufferModeToGLBufferUsage[] = {
+		GL_STATIC_DRAW, GL_DYNAMIC_DRAW
+	};
+
 	//========================================================================
 	//	OpenGL Vertex Buffer Class
 	//========================================================================
 
-	GLVertexBuffer::GLVertexBuffer(void* data, unsigned int size, unsigned int stride) : stride(stride) {
+	GLVertexBuffer::GLVertexBuffer(const void* data, unsigned int size, unsigned int stride) : stride(stride) {
 		glCreateBuffers(1, &id);
 		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
 	}
@@ -24,7 +28,7 @@ namespace zore {
 	}
 
 	void GLVertexBuffer::Update(const void* data, unsigned int size, unsigned int offset) {
-		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT);
 		memcpy(ptr, data, size);
 		glUnmapNamedBuffer(id);
 	}
@@ -41,7 +45,7 @@ namespace zore {
 	//	OpenGL Index Buffer Class
 	//========================================================================
 
-	GLIndexBuffer::GLIndexBuffer(void* data, unsigned int size) {
+	GLIndexBuffer::GLIndexBuffer(const void* data, unsigned int size) {
 		glCreateBuffers(1, &id);
 		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
 	}
@@ -55,7 +59,7 @@ namespace zore {
 	}
 
 	void GLIndexBuffer::Update(const void* data, unsigned int size, unsigned int offset) {
-		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT);
 		memcpy(ptr, data, size);
 		glUnmapNamedBuffer(id);
 	}
@@ -72,7 +76,7 @@ namespace zore {
 	//	OpenGL Instance Buffer Class
 	//========================================================================
 
-	GLInstanceArrayBuffer::GLInstanceArrayBuffer(void* data, unsigned int size, unsigned int stride) : stride(stride) {
+	GLInstanceArrayBuffer::GLInstanceArrayBuffer(const void* data, unsigned int size, unsigned int stride) : stride(stride) {
 		glCreateBuffers(1, &id);
 		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
 	}
@@ -82,11 +86,13 @@ namespace zore {
 	}
 
 	void GLInstanceArrayBuffer::Set(const void* data, unsigned int size, unsigned int stride) {
+		if (stride > 0)
+			this->stride = stride;
 		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
 	}
 
 	void GLInstanceArrayBuffer::Update(const void* data, unsigned int size, unsigned int offset) {
-		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT);
 		memcpy(ptr, data, size);
 		glUnmapNamedBuffer(id);
 	}
@@ -103,7 +109,7 @@ namespace zore {
 	//	OpenGL Shader Storage Buffer Class
 	//========================================================================
 
-	GLShaderStorageBuffer::GLShaderStorageBuffer(void* data, unsigned int size, unsigned int index) : index(index) {
+	GLShaderStorageBuffer::GLShaderStorageBuffer(const void* data, unsigned int size, unsigned int index) : index(index) {
 		glCreateBuffers(1, &id);
 		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
 	}
@@ -117,7 +123,7 @@ namespace zore {
 	}
 
 	void GLShaderStorageBuffer::Update(const void* data, unsigned int size, unsigned int offset) {
-		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT);
 		memcpy(ptr, data, size);
 		glUnmapNamedBuffer(id);
 	}
@@ -134,9 +140,9 @@ namespace zore {
 	//	OpenGL Uniform Buffer Class
 	//========================================================================
 
-	GLUniformBuffer::GLUniformBuffer(void* data, unsigned int size, unsigned int index) : index(index) {
+	GLUniformBuffer::GLUniformBuffer(const void* data, unsigned int size, unsigned int mode, unsigned int index) : index(index), usage(BufferModeToGLBufferUsage[mode]) {
 		glCreateBuffers(1, &id);
-		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
+		glNamedBufferData(id, size, data, usage);
 	}
 
 	GLUniformBuffer::~GLUniformBuffer() {
@@ -144,11 +150,11 @@ namespace zore {
 	}
 
 	void GLUniformBuffer::Set(const void* data, unsigned int size) {
-		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
+		glNamedBufferData(id, size, data, usage);
 	}
 
 	void GLUniformBuffer::Update(const void* data, unsigned int size, unsigned int offset) {
-		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT);
 		memcpy(ptr, data, size);
 		glUnmapNamedBuffer(id);
 	}

@@ -12,10 +12,10 @@ namespace zore {
 		)
 	}
 
-	void Logger::Log(float f) {
+	void Logger::Log(float v) {
 		DEBUG_ONLY(
 			Console::SetTextColor(Console::Colour::Cyan);
-			std::cout << f << std::endl;
+			std::cout << v << std::endl;
 		)
 	}
 

@@ -1,6 +1,5 @@
 #pragma once
 #include "graphics/Texture.hpp"
-#include <string>
 #include <vector>
 
 #define MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS 8

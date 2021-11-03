@@ -15,7 +15,7 @@ namespace zore {
 	class Keyboard {
 		friend class Window;
 	public:
-		static bool GetKey(unsigned char key);
+		static bool GetKey(int key);
 		static void ClearState();
 
 	private:
@@ -30,8 +30,8 @@ namespace zore {
 	class KeyListener {
 		friend class Keyboard;
 	private:
-		virtual void OnKeyPress(unsigned char key, int mods) { };
-		virtual void OnKeyRelease(unsigned char key) { };
+		virtual void OnKeyPress(int key, int mods) { };
+		virtual void OnKeyRelease(int key) { };
 		virtual void OnChar(char code) { };
 
 	protected:

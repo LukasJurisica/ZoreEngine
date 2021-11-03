@@ -13,11 +13,6 @@ namespace zore {
 	// Generic Shader String name to OpenGL Shader Type
 	unsigned int STRtoGLST(const std::string& stage);
 
-	struct GLShaderStage {
-		unsigned int id;
-		GLShaderStage(std::string source, const std::string& name);
-	};
-
 	//========================================================================
 	//	OpenGL Shader Class
 	//========================================================================
@@ -28,8 +23,8 @@ namespace zore {
 		~GLShader();
 
 		unsigned int GetShaderID();
-		void Bind() override;
-		void Unbind() override;
+		void Bind() const override;
+		void Unbind() const override;
 
 		void SetInt(const std::string& name, int data) override;
 		void SetInt2(const std::string& name, const glm::ivec2& data) override;
@@ -49,7 +44,8 @@ namespace zore {
 		void SetUniformBufferIndex(const std::string& name, unsigned int index) override;
 
 	private:
-		void Link(std::vector<GLShaderStage>& shaderStages);
+		unsigned int CreateShaderStage(std::string& source);
+		void Link(std::vector<unsigned int>& shaderStages);
 		unsigned int GetUniformLoc(const std::string& name);
 
 		std::unordered_map<std::string, int> uniforms;

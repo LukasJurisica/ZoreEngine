@@ -17,8 +17,8 @@ namespace zore {
 		static Shader* Create(const std::string& name);
 		virtual ~Shader() = default;
 
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
 		
 		virtual void SetInt(const std::string& name, int data) = 0;
 		virtual void SetInt2(const std::string& name, const glm::ivec2& data) = 0;

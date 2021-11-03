@@ -47,16 +47,6 @@ namespace zm {
 		dx -= sx; dy -= sy; dz -= sz;
 		return std::sqrt((dx * dx) + (dy * dy) + (dz * dz));
 	}
-
-	float SqrDist(float sx, float sy, float dx, float dy) {
-		dx -= sx; dy -= sy;
-		return (dx * dx) + (dy * dy);
-	}
-
-	float SqrDist(float sx, float sy, float sz, float dx, float dy, float dz) {
-		dx -= sx; dy -= sy; dz -= sz;
-		return (dx * dx) + (dy * dy) + (dz * dz);
-	}
 	
 	int Floor(float value) {
 		int i = static_cast<int>(value);

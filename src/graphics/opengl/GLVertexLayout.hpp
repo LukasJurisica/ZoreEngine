@@ -9,9 +9,8 @@ namespace zore {
 
 	class GLVertexLayout : public VertexLayout {
 	public:
-		GLVertexLayout(const std::string& name, Shader* shader, const std::vector<VertexElement>& elements);
+		GLVertexLayout(const std::string& name, Shader* shader, const std::vector<VertexElement>& vertexElements, const std::vector<VertexElement>& instanceElements, unsigned int interval);
 
-		void SetInstanceArrayLayout(const std::vector<VertexElement>& elements, unsigned int interval) override;
 		void Bind() const override;
 		void Unbind() const override;
 
@@ -20,6 +19,5 @@ namespace zore {
 
 		unsigned int id;
 		unsigned int shaderID;
-		static const unsigned int VertexDataTypeToGLDataType[5];
 	};
 }

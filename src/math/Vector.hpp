@@ -9,6 +9,7 @@ namespace zm {
 
 		// Constructors -------------------
 		vec2_base() : x(0), y(0) {};
+		vec2_base(T t) : x(t), y(t) {};
 		vec2_base(T x, T y) : x(x), y(y) {};
 		template <typename U>
 		vec2_base(const vec2_base<U>& o) : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)) {};

@@ -2,6 +2,8 @@
 #include "debug/Exception.hpp"
 #include "debug/Logger.hpp"
 
+#define PAUSE system("pause")
+
 #define ENSURE(expr, msg) (void)(!!(expr) || Exception::AssertionException(__LINE__, __FILE__, #expr "\n" msg))
 
 #ifdef _DEBUG

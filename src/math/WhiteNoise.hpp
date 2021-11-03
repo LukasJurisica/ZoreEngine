@@ -1,5 +1,6 @@
 #pragma once
-#include "glm/glm.hpp"
+#include "math/MathUtils.hpp"
+#include <glm/glm.hpp>
 
 namespace zm {
 	
@@ -25,7 +26,7 @@ namespace zm {
 
 		static float Eval1(glm::vec3 p3) {
 			p3 = glm::fract(p3 * .1031f);
-			p3 += glm::dot(p3, glm::vec3(p3.y, p3.z, p3.x) + 33.33f);
+			p3 += glm::dot(p3, glm::vec3(p3.y, p3.z, p3.x) + 31.32f);
 			return glm::fract((p3.x + p3.y) * p3.z);
 		}
 		

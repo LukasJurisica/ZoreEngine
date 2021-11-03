@@ -9,7 +9,7 @@ namespace zore {
 	//	Platform Agnostic Vertex Buffer Class
 	//========================================================================
 
-	VertexBuffer* VertexBuffer::Create(void* data, unsigned int size, unsigned int stride) {
+	VertexBuffer* VertexBuffer::Create(const void* data, unsigned int size, unsigned int stride) {
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
 			return new GLVertexBuffer(data, size, stride);
@@ -21,7 +21,7 @@ namespace zore {
 	//	Platform Agnostic Index Buffer Class
 	//========================================================================
 
-	IndexBuffer* IndexBuffer::Create(void* data, unsigned int size) {
+	IndexBuffer* IndexBuffer::Create(const void* data, unsigned int size) {
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
 			return new GLIndexBuffer(data, size);
@@ -33,7 +33,7 @@ namespace zore {
 	//	Platform Agnostic Instance Buffer Class
 	//========================================================================
 
-	InstanceArrayBuffer* InstanceArrayBuffer::Create(void* data, unsigned int size, unsigned int stride) {
+	InstanceArrayBuffer* InstanceArrayBuffer::Create(const void* data, unsigned int size, unsigned int stride) {
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
 			return new GLInstanceArrayBuffer(data, size, stride);
@@ -45,7 +45,7 @@ namespace zore {
 	//	Platform Agnostic Shader Storage Buffer Class
 	//========================================================================
 
-	ShaderStorageBuffer* ShaderStorageBuffer::Create(void* data, unsigned int size, unsigned int index) {
+	ShaderStorageBuffer* ShaderStorageBuffer::Create(const void* data, unsigned int size, unsigned int index) {
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
 			return new GLShaderStorageBuffer(data, size, index);
@@ -57,10 +57,10 @@ namespace zore {
 	//	Platform Agnostic Uniform Buffer Class
 	//========================================================================
 
-	UniformBuffer* UniformBuffer::Create(void* data, unsigned int size, unsigned int index) {
+	UniformBuffer* UniformBuffer::Create(const void* data, unsigned int size, BufferMode mode, unsigned int index) {
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
-			return new GLUniformBuffer(data, size, index);
+			return new GLUniformBuffer(data, size, static_cast<unsigned int>(mode), index);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
 	}

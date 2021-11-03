@@ -1,6 +1,6 @@
 #pragma once
 #include "graphics/Buffer.hpp"
-#include <string>
+#include <vector>
 
 namespace zore {
 
@@ -10,13 +10,12 @@ namespace zore {
 
 	class Mesh {
 	public:
-		static Mesh* Create(void* vertices, unsigned int size, unsigned int stride);
-		static Mesh* Create(void* vertices, unsigned int vsize, unsigned int stride, void* indices, unsigned int isize);
+		static Mesh* Create(const void* vertices, unsigned int stride, unsigned int count);
+		static Mesh* Create(const void* vertices, unsigned int stride, unsigned int vCount, const void* indices, unsigned int iCount);
 		virtual ~Mesh();
 
 		void Bind() const;
 		void Unbind() const;
-		void SetCount(unsigned int count);
 		unsigned int GetCount() const;
 		bool IsIndexed() const;
 

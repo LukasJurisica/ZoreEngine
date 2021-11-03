@@ -9,13 +9,14 @@ namespace zore {
 	//	Keyboard class
 	//========================================================================
 
-	std::bitset<KEY_COUNT> keyStates;
+	std::bitset<KEY_LAST> keyStates;
 
 	void Keyboard::ClearState() {
 		keyStates.reset();
 	}
 
-	bool Keyboard::GetKey(unsigned char key) {
+	bool Keyboard::GetKey(int key) {
+		DEBUG_ENSURE(key < KEY_LAST, "Attempted to access a key outside of the allowed range.");
 		return keyStates[key];
 	}
 
@@ -26,11 +27,8 @@ namespace zore {
 	std::vector<KeyListener*> listeners;
 
 	void Keyboard::KeyCallback(GLFWwindow* windowHandle, int key, int scancode, int action, int mods) {
-		if (action != GLFW_REPEAT) {
-			if (key > 0 && key < KEY_COUNT)
-				keyStates[key] = action;
-			else
-				Logger::Warn("Key Pressed out of range: " + std::to_string(key));
+		if (action != KEY_REPEAT) {
+			keyStates[key] = action;
 
 			if (action == GLFW_PRESS)
 				for (KeyListener* listener : listeners)

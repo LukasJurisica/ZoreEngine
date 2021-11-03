@@ -19,10 +19,11 @@ namespace zore {
 		void UpdateProjectionMatrix();
 		void UpdateFrustum();
 
-		bool TestPoint(float x, float y, float z);
-		bool TestAABB(glm::vec3 min, glm::vec3 size);
+		bool TestPoint(const glm::vec3& point) const;
+		bool TestAABB(const glm::vec3& min, const glm::vec3& size) const;
 
 		void SetPosition(const glm::vec3& position);
+		void Translate(glm::vec3& offset);
 		void SetYawPitch(float yaw, float pitch);
 		//void SetYawPitchRoll(float yaw, float pitch, float roll);
 		void SetViewVectors(const glm::vec3& forward, const glm::vec3& right);
@@ -30,9 +31,10 @@ namespace zore {
 		void SetAspectRatio(float aspectRatio);
 		void SetNearFarPlanes(float nearDist, float farDist);
 
-		glm::mat4& GetView();
-		glm::mat4& GetProjection();
-		glm::vec3& GetPosition();
+		const glm::mat4& GetView() const;
+		const glm::mat4& GetProjection() const;
+		const glm::vec3& GetPosition() const;
+		const glm::vec3 GetViewPosition() const;
 
 	private:
 		float distance;
@@ -58,7 +60,7 @@ namespace zore {
 	
 	class CameraController : MouseListener, KeyListener {
 	public:
-		CameraController(Camera* camera, float sensitivity);
+		CameraController(Camera* camera, float sensitivity, const glm::vec3& position = glm::vec3(0, 0, 0));
 		~CameraController() = default;
 
 		void Update(float deltaTime);
@@ -68,7 +70,6 @@ namespace zore {
 		void OnMouseMove(float x, float y, float dx, float dy) override;
 
 	private:
-		float distance;
 		float yaw, pitch;
 		float sensitivity;
 		Camera* camera;

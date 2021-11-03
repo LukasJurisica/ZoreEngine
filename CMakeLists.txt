@@ -6,11 +6,14 @@ project(ZoreEngine VERSION 0.1)
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+# This requires more research - May need to recompile glfw as well
+set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+set(CMAKE_CXX_FLAGS_DEBUG "/MDd")
 
 set("SRC_DIR" "${PROJECT_SOURCE_DIR}/src")
 
 # Specify project files
-file(GLOB_RECURSE SRC_FILES "src/*.cpp" "src/*.hpp")
+file(GLOB_RECURSE SRC_FILES "src/*.cpp" "src/*.hpp" "src/*.inl")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" PREFIX "src" FILES ${SRC_FILES})
 include_directories("src")
 file (GLOB_RECURSE SHADER_FILES "assets/shaders/*.glsl")

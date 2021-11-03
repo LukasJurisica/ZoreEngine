@@ -9,7 +9,7 @@ namespace zore {
 
 	class GLVertexBuffer : public VertexBuffer {
 	public:
-		GLVertexBuffer(void* data, unsigned int size, unsigned int stride);
+		GLVertexBuffer(const void* data, unsigned int size, unsigned int stride);
 		~GLVertexBuffer();
 
 		void Set(const void* data, unsigned int size, unsigned int stride) override;
@@ -28,7 +28,7 @@ namespace zore {
 
 	class GLIndexBuffer : public IndexBuffer {
 	public:
-		GLIndexBuffer(void* data, unsigned int size);
+		GLIndexBuffer(const void* data, unsigned int size);
 		~GLIndexBuffer();
 
 		void Set(const void* data, unsigned int size) override;
@@ -46,7 +46,7 @@ namespace zore {
 
 	class GLInstanceArrayBuffer : public InstanceArrayBuffer {
 	public:
-		GLInstanceArrayBuffer(void* data, unsigned int size, unsigned int stride);
+		GLInstanceArrayBuffer(const void* data, unsigned int size, unsigned int stride);
 		~GLInstanceArrayBuffer();
 
 		void Set(const void* data, unsigned int size, unsigned int stride) override;
@@ -65,7 +65,7 @@ namespace zore {
 
 	class GLShaderStorageBuffer : public ShaderStorageBuffer {
 	public:
-		GLShaderStorageBuffer(void* data, unsigned int size, unsigned int index);
+		GLShaderStorageBuffer(const void* data, unsigned int size, unsigned int index);
 		~GLShaderStorageBuffer();
 
 		void Set(const void* data, unsigned int size) override;
@@ -84,7 +84,7 @@ namespace zore {
 
 	class GLUniformBuffer : public UniformBuffer {
 	public:
-		GLUniformBuffer(void* data, unsigned int size, unsigned int index);
+		GLUniformBuffer(const void* data, unsigned int size, unsigned int mode, unsigned int index);
 		~GLUniformBuffer();
 
 		void Set(const void* data, unsigned int size) override;
@@ -95,5 +95,6 @@ namespace zore {
 	private:
 		unsigned int id;
 		unsigned int index;
+		unsigned int usage;
 	};
 }

@@ -1,8 +1,8 @@
 #pragma once
-#include <vector>
-#include "graphics/Shader.hpp"
 
 namespace zore {
+
+	enum class BufferMode { STATIC, DYNAMIC };
 
 	//========================================================================
 	//	Platform Agnostic Vertex Buffer Class
@@ -10,7 +10,7 @@ namespace zore {
 
 	class VertexBuffer {
 	public:
-		static VertexBuffer* Create(void* data, unsigned int size, unsigned int stride);
+		static VertexBuffer* Create(const void* data, unsigned int size, unsigned int stride);
 		virtual ~VertexBuffer() = default;
 
 		virtual void Set(const void* data, unsigned int size, unsigned int stride = 0u) = 0;
@@ -27,7 +27,7 @@ namespace zore {
 
 	class IndexBuffer {
 	public:
-		static IndexBuffer* Create(void* data, unsigned int size);
+		static IndexBuffer* Create(const void* data, unsigned int size);
 		virtual ~IndexBuffer() = default;
 
 		virtual void Set(const void* data, unsigned int size) = 0;
@@ -42,7 +42,7 @@ namespace zore {
 
 	class InstanceArrayBuffer {
 	public:
-		static InstanceArrayBuffer* Create(void* data, unsigned int size, unsigned int stride);
+		static InstanceArrayBuffer* Create(const void* data, unsigned int size, unsigned int stride);
 		virtual ~InstanceArrayBuffer() = default;
 
 		virtual void Set(const void* data, unsigned int size, unsigned int stride = 0u) = 0;
@@ -57,7 +57,7 @@ namespace zore {
 
 	class ShaderStorageBuffer {
 	public:
-		static ShaderStorageBuffer* Create(void* data, unsigned int size, unsigned int index = 0u);
+		static ShaderStorageBuffer* Create(const void* data, unsigned int size, unsigned int index = 0u);
 		virtual ~ShaderStorageBuffer() = default;
 
 		virtual void Set(const void* data, unsigned int size) = 0;
@@ -72,7 +72,7 @@ namespace zore {
 
 	class UniformBuffer {
 	public:
-		static UniformBuffer* Create(void* data, unsigned int size, unsigned int index = 0u);
+		static UniformBuffer* Create(const void* data, unsigned int size, BufferMode mode, unsigned int index = 0u);
 		virtual ~UniformBuffer() = default;
 
 		virtual void Set(const void* data, unsigned int size) = 0;

@@ -9,12 +9,11 @@ namespace zore {
 	//	OpenGL Render Engine
 	//========================================================================
 
-	const unsigned int GLRenderEngine::BufferTypeToGLBufferType[] = { GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT, GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT };
+	const unsigned int BufferTypeToGLBufferType[] = { GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT };
+	const unsigned int MeshTopologyToGLMeshTopology[] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN };
 
-	GLRenderEngine::GLRenderEngine() : clearMode(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) {
+	GLRenderEngine::GLRenderEngine() : clearMode(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT), topology(GL_TRIANGLES) {
 		ENSURE(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)), "Failed to initialize GLAD");
-		glCullFace(GL_BACK);
-		glDepthFunc(GL_LEQUAL);
 	}
 
 	void GLRenderEngine::SetViewport(unsigned int width, unsigned int height, unsigned int x, unsigned int y) {
@@ -51,23 +50,27 @@ namespace zore {
 			clearMode |= BufferTypeToGLBufferType[static_cast<int>(b)];
 	}
 
+	void GLRenderEngine::SetTopology(MeshTopology t) {
+		topology = MeshTopologyToGLMeshTopology[static_cast<int>(t)];
+	}
+
 	void GLRenderEngine::Clear() {
 		glClear(clearMode);
 	}
 
 	void GLRenderEngine::DrawLinear(unsigned int count, unsigned int offset) {
-		glDrawArrays(GL_TRIANGLES, offset, count);
+		glDrawArrays(topology, offset, count);
 	}
 
 	void GLRenderEngine::DrawIndexed(unsigned int count, unsigned int offset) {
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)));
+		glDrawElements(topology, count, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)));
 	}
 
 	void GLRenderEngine::DrawLinearInstanced(unsigned int vertexCount, unsigned int modelCount, unsigned int offset) {
-		glDrawArraysInstanced(GL_TRIANGLES, offset, vertexCount, modelCount);
+		glDrawArraysInstanced(topology, offset, vertexCount, modelCount);
 	}
 
 	void GLRenderEngine::DrawIndexedInstanced(unsigned int indexCount, unsigned int modelCount, unsigned int offset) {
-		glDrawElementsInstanced(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)), modelCount);
+		glDrawElementsInstanced(topology, indexCount, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)), modelCount);
 	}
 }

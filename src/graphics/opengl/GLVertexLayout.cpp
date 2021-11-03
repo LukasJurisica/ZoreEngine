@@ -10,11 +10,11 @@ namespace zore {
 	//	OpenGL Vertex Buffer Layout Class
 	//========================================================================
 
-	const unsigned int GLVertexLayout::VertexDataTypeToGLDataType[] = {
-		GL_BOOL, GL_BYTE, GL_UNSIGNED_BYTE, GL_INT, GL_FLOAT
+	const unsigned int VertexDataTypeToGLDataType[] = {
+		GL_BOOL, GL_BYTE, GL_UNSIGNED_BYTE, GL_INT, GL_UNSIGNED_INT, GL_FLOAT
 	};
 
-	GLVertexLayout::GLVertexLayout(const std::string& name, Shader* shader, const std::vector<VertexElement>& elements) : VertexLayout(name) {
+	GLVertexLayout::GLVertexLayout(const std::string& name, Shader* shader, const std::vector<VertexElement>& vertexElements, const std::vector<VertexElement>& instanceElements, unsigned int interval) : VertexLayout(name) {
 		// Create the Vertex Array Object
 		glCreateVertexArrays(1, &id);
 		glBindVertexArray(id);
@@ -22,11 +22,8 @@ namespace zore {
 		// Get the ID of the Shader for retrieving Vertex Attribute Locations
 		shaderID = reinterpret_cast<GLShader*>(shader)->GetShaderID();
 
-		InitAttributes(elements, 0, 0);
-	}
-
-	void GLVertexLayout::SetInstanceArrayLayout(const std::vector<VertexElement>& elements, unsigned int interval) {
-		InitAttributes(elements, 1, interval);
+		InitAttributes(vertexElements, 0, 0);
+		InitAttributes(instanceElements, 1, interval);
 	}
 
 	void GLVertexLayout::Bind() const {

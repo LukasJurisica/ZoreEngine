@@ -24,12 +24,14 @@ namespace zore {
 
 		void SetTitle(const char* title);
 		void SetFullscreen(bool value);
+		void ToggleFullscreen();
 		void SetBorderless(bool value);
 		void SetSize(int width, int height);
 		void HideCursor(bool value);
+		void ToggleCursor();
 
 		float GetAspectRatio();
-		glm::ivec2& GetSize();
+		const glm::ivec2& GetSize();
 
 	private:
 		static void ErrorCallback(int error, const char* description);
@@ -40,6 +42,8 @@ namespace zore {
 		glm::ivec2 size;
 		glm::ivec2 position;
 		GLFWwindow* windowHandle;
+		bool fullscreen;
+		bool cursorHidden;
 	};
 
 	//========================================================================

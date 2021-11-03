@@ -17,29 +17,11 @@ namespace zore {
 			return GL_VERTEX_SHADER;
 		else if (stage == "fragment")
 			return GL_FRAGMENT_SHADER;
+		else if (stage == "geometry")
+			return GL_GEOMETRY_SHADER;
 
 		Logger::Error("Invalid Shader Stage requested");
 		return 0;
-	}
-
-	GLShaderStage::GLShaderStage(std::string s, const std::string& name) {
-		size_t index = s.find("\n");
-		std::string type = s.substr(0, index);
-		StringUtils::TrimInPlace(type);
-		id = glCreateShader(STRtoGLST(type));
-
-		const char* source = s.erase(0, index + 1).c_str();
-		glShaderSource(id, 1, &source, nullptr);
-		glCompileShader(id);
-
-		// Check if shader stage was created successfully
-		GLint status;
-		glGetShaderiv(id, GL_COMPILE_STATUS, &status);
-		if (status != GL_TRUE) {
-			char buffer[SHADER_ERROR_BUFFER_LENGTH];
-			glGetShaderInfoLog(id, SHADER_ERROR_BUFFER_LENGTH, nullptr, buffer);
-			throw ZORE_EXCEPTION("Error compiling " + type + " shader: " + name + "\n" + std::string(buffer));
-		}
 	}
 
 	//========================================================================
@@ -49,14 +31,14 @@ namespace zore {
 	GLShader::GLShader(const std::string& filename) : name(filename + ".glsl") {
 		id = glCreateProgram();
 
-		std::vector<GLShaderStage> shaderStages;
+		std::vector<unsigned int> shaderStages;
 		std::string source;
 		FileManager::ReadContent(source, "assets/shaders/" + name, IS_DEBUG);
 
 		size_t index = 0;
 		do {
 			index = source.rfind("#shaderstage", std::string::npos);
-			shaderStages.push_back({ source.substr(index + 13, std::string::npos), name });
+			shaderStages.push_back(CreateShaderStage(source.substr(index + 13, std::string::npos)));
 			source.erase(index, std::string::npos);
 		} while (index > 0);
 
@@ -71,31 +53,53 @@ namespace zore {
 		return id;
 	}
 
-	void GLShader::Bind() {
+	void GLShader::Bind() const {
 		glUseProgram(id);
 	}
 
-	void GLShader::Unbind() {
+	void GLShader::Unbind() const {
 		glUseProgram(0);
 	}
 
-	void GLShader::Link(std::vector<GLShaderStage>& shaderStages) {
-		for (GLShaderStage& stage : shaderStages)
-			glAttachShader(id, stage.id);
+	unsigned int GLShader::CreateShaderStage(std::string& s) {
+		size_t index = s.find("\n");
+		std::string type = s.substr(0, index);
+		StringUtils::TrimInPlace(type);
+		unsigned int stageID = glCreateShader(STRtoGLST(type));
+
+		const char* source = s.erase(0, index + 1).c_str();
+		glShaderSource(stageID, 1, &source, nullptr);
+		glCompileShader(stageID);
+
+		// Check if shader stage was created successfully
+		GLint status;
+		glGetShaderiv(stageID, GL_COMPILE_STATUS, &status);
+		if (status != GL_TRUE) {
+			char buffer[SHADER_ERROR_BUFFER_LENGTH];
+			glGetShaderInfoLog(stageID, SHADER_ERROR_BUFFER_LENGTH, nullptr, buffer);
+			throw ZORE_EXCEPTION("Error compiling " + type + " shader: " + name + "\n" + std::string(buffer));
+		}
+
+		return stageID;
+	}
+
+	void GLShader::Link(std::vector<unsigned int>& shaderStages) {
+		for (unsigned int stageID : shaderStages)
+			glAttachShader(id, stageID);
 
 		glLinkProgram(id);
 		// Check if shaders were linked successfully
 		int status;
 		glGetProgramiv(id, GL_LINK_STATUS, &status);
-		if (!status) {
+		if (status != GL_TRUE) {
 			char buffer[SHADER_ERROR_BUFFER_LENGTH];
 			glGetProgramInfoLog(id, SHADER_ERROR_BUFFER_LENGTH, nullptr, buffer);
 			throw ZORE_EXCEPTION("Error linking shader: " + name + "\n" + std::string(buffer));
 		}
 
-		for (GLShaderStage& stage : shaderStages) {
-			glDetachShader(id, stage.id);
-			glDeleteShader(stage.id);
+		for (unsigned int stageID : shaderStages) {
+			glDetachShader(id, stageID);
+			glDeleteShader(stageID);
 		}
 	}
 

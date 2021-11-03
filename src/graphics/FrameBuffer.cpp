@@ -1,7 +1,6 @@
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/opengl/GLFrameBuffer.hpp"
 #include "graphics/RenderEngine.hpp"
-#include "utils/DataTypes.hpp"
 #include "debug/Debug.hpp"
 
 namespace zore {

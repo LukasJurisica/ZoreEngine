@@ -14,8 +14,7 @@ namespace zm {
 	float Fract(float t);
 	float Dist(float sx, float sy, float dx, float dy);
 	float Dist(float sx, float sy, float sz, float dx, float dy, float dz);
-	float SqrDist(float sx, float sy, float dx, float dy);
-	float SqrDist(float sx, float sy, float sz, float dx, float dy, float dz);
+
 	int Floor(float value);
 	int Ceil(float value);
 	int Round(float value);
@@ -38,6 +37,18 @@ namespace zm {
 		while (value >= max)
 			value -= delta;
 		return value;
+	}
+
+	template <class type>
+	type SqrDist(type x1, type y1, type x2, type y2) {
+		x2 -= x1; y2 -= y1;
+		return (x2 * x2) + (y2 * y2);
+	}
+
+	template <class type>
+	type SqrDist(type x1, type y1, type z1, type x2, type y2, type z2) {
+		x2 -= x1; y2 -= y1; z2 -= z1;
+		return (x2 * x2) + (y2 * y2) + (z2 * z2);
 	}
 
 	template <class type>

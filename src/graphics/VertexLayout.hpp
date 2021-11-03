@@ -1,7 +1,6 @@
 #pragma once
-#include <vector>
 #include "graphics/Shader.hpp"
-#include "graphics/Buffer.hpp"
+#include <vector>
 
 namespace zore {
 
@@ -9,7 +8,7 @@ namespace zore {
 	//	Platform Agnostic Vertex Buffer Layout Class
 	//========================================================================
 
-	enum class VertexDataType { BOOL, BYTE, UBYTE, INT, FLOAT };
+	enum class VertexDataType { BOOL, BYTE, UBYTE, INT, UINT, FLOAT };
 
 	struct VertexElement {
 		VertexElement(std::string name, VertexDataType type, unsigned int count, bool normalize = false);
@@ -23,10 +22,10 @@ namespace zore {
 	class VertexLayout {
 	public:
 		static VertexLayout* Create(const std::string& name, Shader* shader, const std::vector<VertexElement>& elements);
+		static VertexLayout* Create(const std::string& name, Shader* shader, const std::vector<VertexElement>& vertexElements, const std::vector<VertexElement>& instanceElements, unsigned int interval = 1u);
 		static VertexLayout* Get(const std::string& name);
 		virtual ~VertexLayout();
 
-		virtual void SetInstanceArrayLayout(const std::vector<VertexElement>& elements, unsigned int interval = 1u) = 0;
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
@@ -34,6 +33,6 @@ namespace zore {
 		VertexLayout(const std::string& name);
 
 		std::string name;
-		static const unsigned int VertexDataTypeSize[5];
+		static const unsigned int VertexDataTypeSize[6];
 	};
 }

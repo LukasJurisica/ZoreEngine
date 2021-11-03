@@ -17,18 +17,18 @@ namespace zore {
 		delete ib;
 	}
 
-	Mesh* Mesh::Create(void* vertices, unsigned int size, unsigned int stride) {
+	Mesh* Mesh::Create(const void* vertices, unsigned int stride, unsigned int count) {
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
-			return new Mesh(size / stride, new GLVertexBuffer(vertices, size, stride), nullptr);
+			return new Mesh(count, new GLVertexBuffer(vertices, count * stride, stride), nullptr);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
 	}
 
-	Mesh* Mesh::Create(void* vertices, unsigned int vsize, unsigned int stride, void* indices, unsigned int isize) {
+	Mesh* Mesh::Create(const void* vertices, unsigned int stride, unsigned int vCount, const void* indices, unsigned int iCount) {
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
-			return new Mesh(isize / sizeof(Index), new GLVertexBuffer(vertices, vsize, stride), new GLIndexBuffer(indices, isize));
+			return new Mesh(iCount, new GLVertexBuffer(vertices, vCount * stride, stride), new GLIndexBuffer(indices, iCount * sizeof(Index)));
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
 	}
@@ -41,10 +41,6 @@ namespace zore {
 	void Mesh::Unbind() const {
 		vb->Unbind();
 		if (ib) ib->Unbind();
-	}
-
-	void Mesh::SetCount(unsigned int count) {
-		this->count = count;
 	}
 
 	unsigned int Mesh::GetCount() const {
