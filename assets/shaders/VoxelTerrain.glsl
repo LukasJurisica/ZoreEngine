@@ -5,6 +5,7 @@
 layout (std140, binding = 1) uniform modelData { ivec4 offsets[24]; };
 uniform ivec3 chunkPos;
 uniform mat4 vp_mat;
+uniform vec3 cameraPos;
 const float ao_weights[4] = float[4](1.0f, 0.8f, 0.6f, 0.4f);
 
 layout(location = 0) in int vertexID;
@@ -14,11 +15,12 @@ out flat unsigned int dir;
 out flat vec4 ao;
 out vec3 position;
 out vec2 uv;
+out float dist;
 
 void main() {
 	unsigned int x = (face.x >> 26) & 0x3F;
-	unsigned int y = (face.x >> 20) & 0x3F;
-	unsigned int z = (face.x >> 14) & 0x3F;
+	unsigned int y = (face.x >> 17) & 0x1FF;
+	unsigned int z = (face.x >> 11) & 0x3F;
 
 	// Send blockID to fragment shader
 	blockID = (face.y >> 16) & 0xFF;
@@ -29,9 +31,13 @@ void main() {
 	// Send UV coordinate to fragment shader
 	uv = vec2(floor(vertexID >> 1), vertexID & 1);
 	// Determine vertex offset, and send to fragment shader
-	position = offsets[(dir * 4) + vertexID].xyz + vec3(x, y, z);
+	position = offsets[(dir * 4) + vertexID].xyz + vec3(x, y, z) + chunkPos;
 
-	gl_Position = vp_mat * vec4(position + chunkPos, 1.f);
+	dist = distance(position, cameraPos) / 1000;
+	//float fs = 4.1f;
+	//y = 1 - sqrt(pow(1 - pow(x, 2.f/a), a));
+
+	gl_Position = vp_mat * vec4(position, 1.f);
 }
 
 
@@ -49,6 +55,7 @@ in flat unsigned int dir;
 in flat vec4 ao;
 in vec3 position;
 in vec2 uv;
+in float dist;
 out vec4 FragColor;
 
 float hash13(in vec3 p3) {
@@ -66,5 +73,7 @@ void main() {
 	float noise = hash13(floor(pos)) * 0.1f + 0.9f;
 	float ao_interp = mix(mix(ao[0], ao[2], uv.x), mix(ao[1], ao[3], uv.x), uv.y);
 
-	FragColor = vec4(color[blockID] * ao_interp * noise * lighting[dir], 1.0f);
+	//float depth = (1.f/gl_FragCoord.w - 0.1f) / (900.f - 0.1f);
+
+	FragColor = vec4(color[blockID] * ao_interp * noise * lighting[dir], dist);
 } 

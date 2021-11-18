@@ -24,7 +24,9 @@ namespace zore {
 		Window::Cleanup();
 	}
 
-	Application::Application() : window(1920, 1080), engine(RenderEngine::Get()), camera(75.f, window.GetAspectRatio(), 0.1f, 1000.f) {
+#define RENDER_DISTANCE 16u
+
+	Application::Application() : window(1920, 1080), engine(RenderEngine::Get()), camera(75.f, window.GetAspectRatio(), 0.1f, RENDER_DISTANCE * Chunk::CHUNK_WIDTH * 2) {
 		frameBuffer = FrameBuffer::Create(1920, 1080, 1, DepthFormat::DEPTH32_BUFFER);
 		postProcessShader = nullptr;
 
@@ -72,7 +74,7 @@ namespace zore {
 		quad->Bind();
 
 		// Initialize the chunk manager
-		ChunkManager::Init(16u, camera.GetPosition());
+		ChunkManager::Init(RENDER_DISTANCE, camera.GetPosition());
 
 		Timer timer;
 		float deltaTime, runningTime = 0;
@@ -102,6 +104,7 @@ namespace zore {
 			engine->Clear();
 
 			voxelShader->SetMat4("vp_mat", camera.GetProjection() * camera.GetView());
+			voxelShader->SetFloat3("cameraPos", camera.GetViewPosition());
 
 			ChunkManager::Update(camera.GetPosition());
 			for (const std::pair<size_t, Chunk*>& pair : ChunkManager::GetChunks()) {
@@ -141,7 +144,7 @@ namespace zore {
 	void Application::OnKeyPress(int key, int mods) {
 		switch (key) {
 		case KEY_ESCAPE:
-			//window.ToggleCursor();
+			window.ToggleCursor();
 			break;
 		}
 	}

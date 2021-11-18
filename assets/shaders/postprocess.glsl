@@ -51,6 +51,7 @@ void main() {
 
     // Returning here skips anti aliasing
     FragColor = rgbM;
+    //FragColor = vec4(mix(rgbM.rgb, vec3(0.8), rgbM.a), 1.f);
     return;
 
     float lumaM  = r2l(rgbM.rgb);
@@ -73,7 +74,7 @@ void main() {
     
     float lumaB = r2l(rgbB);
     if ((lumaB < lumaMin) || (lumaB > lumaMax))
-        FragColor = vec4(rgbA, 1.0);
+        FragColor = vec4(rgbA, 1.f);
     else
-        FragColor = vec4(rgbB, 1.0);
+        FragColor = vec4(rgbB, 1.f);
 } 

@@ -39,27 +39,27 @@ struct QuadFloat {
 		fr = _mm_setzero_ps();
 	}
 
-	__m128 add(__m128 a, __m128 b) {
+	static __m128 add(__m128 a, __m128 b) {
 		return _mm_add_ps(a, b);
 	}
 
-	__m128 sub(__m128 a, __m128 b) {
+	static __m128 sub(__m128 a, __m128 b) {
 		return _mm_sub_ps(a, b);
 	}
 
-	__m128 mul(__m128 a, __m128 b) {
+	static __m128 mul(__m128 a, __m128 b) {
 		return _mm_mul_ps(a, b);
 	}
 
-	__m128 div(__m128 a, __m128 b) {
+	static __m128 div(__m128 a, __m128 b) {
 		return _mm_div_ps(a, b);
 	}
 
-	__m128 sqrt(__m128 a) {
+	static __m128 sqrt(__m128 a) {
 		return _mm_sqrt_ps(a);
 	}
 
-	__m128 rcp(__m128 a) {
+	static __m128 rcp(__m128 a) {
 		return _mm_rcp_ps(a);
 	}
 };
@@ -82,27 +82,27 @@ struct OctFloat {
 		fr = _mm256_setzero_ps();
 	}
 
-	__m256 add(__m256 a, __m256 b) {
+	static __m256 add(__m256 a, __m256 b) {
 		return _mm256_add_ps(a, b);
 	}
 
-	__m256 sub(__m256 a, __m256 b) {
+	static __m256 sub(__m256 a, __m256 b) {
 		return _mm256_sub_ps(a, b);
 	}
 
-	__m256 mul(__m256 a, __m256 b) {
+	static __m256 mul(__m256 a, __m256 b) {
 		return _mm256_mul_ps(a, b);
 	}
 
-	__m256 div(__m256 a, __m256 b) {
+	static __m256 div(__m256 a, __m256 b) {
 		return _mm256_div_ps(a, b);
 	}
 
-	__m256 sqrt(__m256 a) {
+	static __m256 sqrt(__m256 a) {
 		return _mm256_sqrt_ps(a);
 	}
 
-	__m256 rcp(__m256 a) {
+	static __m256 rcp(__m256 a) {
 		return _mm256_rcp_ps(a);
 	}
 };
@@ -125,27 +125,27 @@ struct HexaDecaFloat {
 		fr = _mm512_setzero_ps();
 	}
 
-	__m256 add(__m256 a, __m256 b) {
-		return _mm256_add_ps(a, b);
+	static __m512 add(__m512 a, __m512 b) {
+		return _mm512_add_ps(a, b);
 	}
 
-	__m256 sub(__m256 a, __m256 b) {
-		return _mm256_sub_ps(a, b);
+	static __m512 sub(__m512 a, __m512 b) {
+		return _mm512_sub_ps(a, b);
 	}
 
-	__m256 mul(__m256 a, __m256 b) {
-		return _mm256_mul_ps(a, b);
+	static __m512 mul(__m512 a, __m512 b) {
+		return _mm512_mul_ps(a, b);
 	}
 
-	__m256 div(__m256 a, __m256 b) {
-		return _mm256_div_ps(a, b);
+	static __m512 div(__m512 a, __m512 b) {
+		return _mm512_div_ps(a, b);
 	}
 
-	__m256 sqrt(__m256 a) {
-		return _mm256_sqrt_ps(a);
+	static __m512 sqrt(__m512 a) {
+		return _mm512_sqrt_ps(a);
 	}
 
-	__m256 rcp(__m256 a) {
-		return _mm256_rcp_ps(a);
+	static __m512 rcp(__m512 a) {
+		return _mm512_rcp14_ps(a);
 	}
 };

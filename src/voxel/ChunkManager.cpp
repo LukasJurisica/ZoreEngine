@@ -1,23 +1,21 @@
 #include "voxel/ChunkManager.hpp"
+#include "voxel/TerrainGenerator.hpp"
 #include "math/MathUtils.hpp"
 #include "debug/Debug.hpp"
 
 #include <condition_variable>
-#include <thread>
 #include <algorithm>
-
-#include <iostream>
+#include <thread>
 
 namespace zore {
+
+	const glm::ivec2 moore[] = { {-1,-1}, {-1, 0}, {-1, 1}, { 0,-1}, { 0, 1}, { 1,-1}, { 1, 0}, { 1, 1} };
+	enum class Task { NONE, GENERATE, MESH };
+	struct Job { Task task; Chunk* chunk; };
 
 	//========================================================================
 	// Chunk Manager Data Members
 	//========================================================================
-
-	enum class Task { NONE, GENERATE, MESH };
-	struct Job { Task task; Chunk* chunk; };
-
-	const glm::ivec2 moore[] = { {-1,-1}, {-1, 0}, {-1, 1}, { 0,-1}, { 0, 1}, { 1,-1}, { 1, 0}, { 1, 1} };
 
 	std::mutex jobMutex;
 	std::vector<Job> jobs;
@@ -33,6 +31,8 @@ namespace zore {
 	glm::ivec2 fulcrum;
 	glm::ivec2 quadrant;
 
+	TerrainGenerator generator;
+
 	//========================================================================
 	// Chunk Manager Class
 	//========================================================================
@@ -42,7 +42,7 @@ namespace zore {
 		int radius = renderDistance + 1;
 		chunkRadiusSquared = (radius + 0.5f) * (radius + 0.5f);
 
-		fulcrum = { zm::Floor(pos.x / Chunk::CHUNK_SIZE), zm::Floor(pos.z / Chunk::CHUNK_SIZE) };
+		fulcrum = { zm::Floor(pos.x / Chunk::CHUNK_WIDTH), zm::Floor(pos.z / Chunk::CHUNK_WIDTH) };
 		quadrant = { zm::Floor(pos.x) & 32, zm::Floor(pos.z) & 32 };
 
 		// Create chunk columns
@@ -87,15 +87,13 @@ namespace zore {
 		uploadMutex.unlock();
 
 		// Check if the position crossed a chunk quadrant since last update
-		glm::ivec2 newQuadrant = { zm::Floor(pos.x) & 32, zm::Floor(pos.z) & 32 };
-
+		glm::ivec2 newQuadrant = { zm::Floor(pos.x) & Chunk::CHUNK_HALF_WIDTH, zm::Floor(pos.z) & Chunk::CHUNK_HALF_WIDTH };
 		if (quadrant != newQuadrant) {
 			quadrant = newQuadrant;
 
 			std::lock_guard<std::mutex> lk(jobMutex);
-
 			// Additionally check if the position crossed a chunk border
-			glm::ivec2 newFulcrum = { zm::Floor(pos.x / Chunk::CHUNK_SIZE), zm::Floor(pos.z / Chunk::CHUNK_SIZE) };
+			glm::ivec2 newFulcrum = { zm::Floor(pos.x / Chunk::CHUNK_WIDTH), zm::Floor(pos.z / Chunk::CHUNK_WIDTH) };
 			if (fulcrum != newFulcrum) {
 				fulcrum = newFulcrum;
 				LoadChunks();
@@ -105,6 +103,8 @@ namespace zore {
 				UnloadChunks();
 			}
 		}
+
+		//UpdateChunks();
 	}
 
 	//------------------------------------------------------------------------
@@ -127,9 +127,9 @@ namespace zore {
 
 	glm::ivec3 ChunkManager::GetChunkCoord(const glm::vec3& pos) {
 		return {
-			zm::Floor(pos.x / Chunk::CHUNK_SIZE),
-			zm::Floor(pos.y / Chunk::CHUNK_SIZE),
-			zm::Floor(pos.z / Chunk::CHUNK_SIZE)
+			zm::Floor(pos.x / Chunk::CHUNK_WIDTH),
+			zm::Floor(pos.y / Chunk::CHUNK_HEIGHT),
+			zm::Floor(pos.z / Chunk::CHUNK_WIDTH)
 		};
 	}
 
@@ -254,7 +254,7 @@ namespace zore {
 
 			switch (j.task) {
 			case Task::GENERATE:
-				j.chunk->Generate();
+				generator.Generate(j.chunk);
 				jobMutex.lock();
 				j.chunk->state = Chunk::State::GENERATED;
 				jobMutex.unlock();
@@ -301,7 +301,6 @@ namespace zore {
 	}
 
 	int ChunkManager::GetDistanceToJob(const Job& job) {
-		glm::ivec3 position = job.chunk->GetPosition() / Chunk::CHUNK_SIZE;
-		return zm::SqrDist(position.x, position.z, fulcrum.x, fulcrum.y);
+		return zm::SqrDist(job.chunk->chunkPos.x, job.chunk->chunkPos.y, fulcrum.x, fulcrum.y);
 	}
 }

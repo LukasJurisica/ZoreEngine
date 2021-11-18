@@ -1,62 +1,41 @@
 #include "voxel/Chunk.hpp"
-#include "math/WhiteNoise.hpp"
 #include "debug/Debug.hpp"
-
 #include "utils/Timer.hpp"
+
+#include "math/WhiteNoise.hpp"
+#include "math/MathUtils.hpp"
 
 namespace zore {
 
 	FaceData::FaceData(uint x, uint y, uint z, uint blockID, uint ao, uint dir) {
-		// 6 bits for each of x, y, z. This leaves 14 bits in value.x
-		value.x = (x << 26) | (y << 20) | (z << 14);
+		// 6 bits for x, 9 bits for y, 6 bits for z. This leaves 11 bits in value.x
+		value.x = (x << 26) | (y << 17) | (z << 11);
 		// 16 bits blockID, 8 bits AO, 3 bits dir. This leaves 5 bits in value.y
 		value.y = (blockID << 16) | (ao << 8) | (dir);
 	}
-
-
 
 	//========================================================================
 	// Chunk Class
 	//========================================================================
 
 	Chunk::Chunk(int x, int z) :
-		mesh(nullptr), faceCount(0), chunkPos(x, z), renderPos(x * CHUNK_SIZE, 0, z * CHUNK_SIZE),
-		blockData{}, neighbours{}, numNeighbours(1), state(State::INITIATED) {
+		terrainMesh(nullptr), terrainFaceCount(0), chunkPos(x, z), renderPos(x * CHUNK_WIDTH, 0, z * CHUNK_WIDTH),
+		blockData(nullptr), neighbours{}, numNeighbours(1), state(State::INITIATED) {
 		neighbours[4] = this;
 	}
 
 	Chunk::~Chunk() {
-		delete mesh;
-	}
-
-	void Chunk::Generate() {
-		float hcs = CHUNK_SIZE * 0.5f;
-		float off = zm::Ceil(hcs) - 0.5f;
-		float radsqrd = hcs * hcs;
-		for (int x = 0; x < CHUNK_SIZE; x++) {
-			for (int y = 0; y < CHUNK_SIZE; y++) {
-				for (int z = 0; z < CHUNK_SIZE; z++) {
-					//if ((x - off) * (x - off) + (y - off) * (y - off) + (z - off) * (z - off) <= radsqrd)
-					//	SetBlockLocal(x, y, z, zm::Floor(zm::WhiteNoise::Eval1(glm::vec3(x, y, z)) * 6) + 1);
-					//else
-					//	SetBlockLocal(x, y, z, 0);
-					if (y > zm::Max(zm::Abs(chunkPos.x), zm::Abs(chunkPos.y)))
-					//if (y > zm::Floor(zm::WhiteNoise::Eval1(glm::vec2(x, z)) * 16) + 1)
-						SetBlockLocal(x, y, z, 0);
-					else
-						SetBlockLocal(x, y, z, 2);
-				}
-			}
-		}
+		delete terrainMesh;
+		delete[] blockData;
 	}
 
 	void Chunk::Mesh() {
-		faceCount = 0;
-		faceData.clear();
+		terrainFaceCount = 0;
+		terrainFaceData.clear();
 
-		for (uint x = 0; x < CHUNK_SIZE; x++) {
-			for (uint y = 0; y < CHUNK_SIZE; y++) {
-				for (uint z = 0; z < CHUNK_SIZE; z++) {
+		for (uint x = 0; x < CHUNK_WIDTH; x++) {
+			for (uint z = 0; z < CHUNK_WIDTH; z++) {
+				for (uint y = 0; y < CHUNK_HEIGHT; y++) {
 					uint blockID = GetBlockLocal(x, y, z);
 					if (!blockID)
 						continue;
@@ -65,78 +44,32 @@ namespace zore {
 					if (!GetOpaque(x - 1, y, z)) { // WEST
 						ao = GetAO(GetOpaque(x - 1, y + 1, z - 1), GetOpaque(x - 1, y + 1, z), GetOpaque(x - 1, y + 1, z + 1), GetOpaque(x - 1, y, z + 1),
 							       GetOpaque(x - 1, y - 1, z + 1), GetOpaque(x - 1, y - 1, z), GetOpaque(x - 1, y - 1, z - 1), GetOpaque(x - 1, y, z - 1));
-						faceData.emplace_back(x, y, z, blockID, ao, 0);
+						terrainFaceData.emplace_back(x, y, z, blockID, ao, 0);
 					}
 					if (!GetOpaque(x + 1, y, z)) { // EAST
 						ao = GetAO(GetOpaque(x + 1, y + 1, z + 1), GetOpaque(x + 1, y + 1, z), GetOpaque(x + 1, y + 1, z - 1), GetOpaque(x + 1, y, z - 1),
 							       GetOpaque(x + 1, y - 1, z - 1), GetOpaque(x + 1, y - 1, z), GetOpaque(x + 1, y - 1, z + 1), GetOpaque(x + 1, y, z + 1));
-						faceData.emplace_back(x, y, z, blockID, ao, 1);
+						terrainFaceData.emplace_back(x, y, z, blockID, ao, 1);
 					}
 					if (!GetOpaque(x, y - 1, z)) { // DOWN
 						ao = GetAO(GetOpaque(x - 1, y - 1, z + 1), GetOpaque(x, y - 1, z + 1), GetOpaque(x + 1, y - 1, z + 1), GetOpaque(x + 1, y - 1, z),
 							       GetOpaque(x + 1, y - 1, z - 1), GetOpaque(x, y - 1, z - 1), GetOpaque(x - 1, y - 1, z - 1), GetOpaque(x - 1, y - 1, z));
-						faceData.emplace_back(x, y, z, blockID, ao, 2);
+						terrainFaceData.emplace_back(x, y, z, blockID, ao, 2);
 					}
 					if (!GetOpaque(x, y + 1, z)) { // UP
 						ao = GetAO(GetOpaque(x - 1, y + 1, z - 1), GetOpaque(x, y + 1, z - 1), GetOpaque(x + 1, y + 1, z - 1), GetOpaque(x + 1, y + 1, z),
 							       GetOpaque(x + 1, y + 1, z + 1), GetOpaque(x, y + 1, z + 1), GetOpaque(x - 1, y + 1, z + 1), GetOpaque(x - 1, y + 1, z));
-						faceData.emplace_back(x, y, z, blockID, ao, 3);
+						terrainFaceData.emplace_back(x, y, z, blockID, ao, 3);
 					}
 					if (!GetOpaque(x, y, z - 1)) { // NORTH
 						ao = GetAO(GetOpaque(x + 1, y + 1, z - 1), GetOpaque(x, y + 1, z - 1), GetOpaque(x - 1, y + 1, z - 1), GetOpaque(x - 1, y, z - 1),
 							       GetOpaque(x - 1, y - 1, z - 1), GetOpaque(x, y - 1, z - 1), GetOpaque(x + 1, y - 1, z - 1), GetOpaque(x + 1, y, z - 1));
-						faceData.emplace_back(x, y, z, blockID, ao, 4);
+						terrainFaceData.emplace_back(x, y, z, blockID, ao, 4);
 					}
 					if (!GetOpaque(x, y, z + 1)) { // SOUTH
 						ao = GetAO(GetOpaque(x - 1, y + 1, z + 1), GetOpaque(x, y + 1, z + 1), GetOpaque(x + 1, y + 1, z + 1), GetOpaque(x + 1, y, z + 1),
 							       GetOpaque(x + 1, y - 1, z + 1), GetOpaque(x, y - 1, z + 1), GetOpaque(x - 1, y - 1, z + 1), GetOpaque(x - 1, y, z + 1));
-						faceData.emplace_back(x, y, z, blockID, ao, 5);
-					}
-				}
-			}
-		}
-	}
-
-	void Chunk::MeshInternal() {
-		faceData.clear();
-
-		for (uint x = 1; x < CHUNK_SIZE - 1; x++) {
-			for (uint y = 1; y < CHUNK_SIZE - 1; y++) {
-				for (uint z = 1; z < CHUNK_SIZE - 1; z++) {
-					uint blockID = GetBlockLocal(x, y, z);
-					if (!blockID)
-						continue;
-
-					ubyte ao;
-					if (!GetOpaqueLocal(x - 1, y, z)) { // WEST
-						ao = GetAO(GetOpaqueLocal(x - 1, y + 1, z - 1), GetOpaqueLocal(x - 1, y + 1, z), GetOpaqueLocal(x - 1, y + 1, z + 1), GetOpaqueLocal(x - 1, y, z + 1),
-							GetOpaqueLocal(x - 1, y - 1, z + 1), GetOpaqueLocal(x - 1, y - 1, z), GetOpaqueLocal(x - 1, y - 1, z - 1), GetOpaqueLocal(x - 1, y, z - 1));
-						faceData.emplace_back(x, y, z, blockID, ao, 0);
-					}
-					if (!GetOpaqueLocal(x + 1, y, z)) { // EAST
-						ao = GetAO(GetOpaqueLocal(x + 1, y + 1, z + 1), GetOpaqueLocal(x + 1, y + 1, z), GetOpaqueLocal(x + 1, y + 1, z - 1), GetOpaqueLocal(x + 1, y, z - 1),
-							GetOpaqueLocal(x + 1, y - 1, z - 1), GetOpaqueLocal(x + 1, y - 1, z), GetOpaqueLocal(x + 1, y - 1, z + 1), GetOpaqueLocal(x + 1, y, z + 1));
-						faceData.emplace_back(x, y, z, blockID, ao, 1);
-					}
-					if (!GetOpaqueLocal(x, y - 1, z)) { // DOWN
-						ao = GetAO(GetOpaqueLocal(x - 1, y - 1, z + 1), GetOpaqueLocal(x, y - 1, z + 1), GetOpaqueLocal(x + 1, y - 1, z + 1), GetOpaqueLocal(x + 1, y - 1, z),
-							GetOpaqueLocal(x + 1, y - 1, z - 1), GetOpaqueLocal(x, y - 1, z - 1), GetOpaqueLocal(x - 1, y - 1, z - 1), GetOpaqueLocal(x - 1, y - 1, z));
-						faceData.emplace_back(x, y, z, blockID, ao, 2);
-					}
-					if (!GetOpaqueLocal(x, y + 1, z)) { // UP
-						ao = GetAO(GetOpaqueLocal(x - 1, y + 1, z - 1), GetOpaqueLocal(x, y + 1, z - 1), GetOpaqueLocal(x + 1, y + 1, z - 1), GetOpaqueLocal(x + 1, y + 1, z),
-							GetOpaqueLocal(x + 1, y + 1, z + 1), GetOpaqueLocal(x, y + 1, z + 1), GetOpaqueLocal(x - 1, y + 1, z + 1), GetOpaqueLocal(x - 1, y + 1, z));
-						faceData.emplace_back(x, y, z, blockID, ao, 3);
-					}
-					if (!GetOpaqueLocal(x, y, z - 1)) { // NORTH
-						ao = GetAO(GetOpaqueLocal(x + 1, y + 1, z - 1), GetOpaqueLocal(x, y + 1, z - 1), GetOpaqueLocal(x - 1, y + 1, z - 1), GetOpaqueLocal(x - 1, y, z - 1),
-							GetOpaqueLocal(x - 1, y - 1, z - 1), GetOpaqueLocal(x, y - 1, z - 1), GetOpaqueLocal(x + 1, y - 1, z - 1), GetOpaqueLocal(x + 1, y, z - 1));
-						faceData.emplace_back(x, y, z, blockID, ao, 4);
-					}
-					if (!GetOpaqueLocal(x, y, z + 1)) { // SOUTH
-						ao = GetAO(GetOpaqueLocal(x - 1, y + 1, z + 1), GetOpaqueLocal(x, y + 1, z + 1), GetOpaqueLocal(x + 1, y + 1, z + 1), GetOpaqueLocal(x + 1, y, z + 1),
-							GetOpaqueLocal(x + 1, y - 1, z + 1), GetOpaqueLocal(x, y - 1, z + 1), GetOpaqueLocal(x - 1, y - 1, z + 1), GetOpaqueLocal(x - 1, y, z + 1));
-						faceData.emplace_back(x, y, z, blockID, ao, 5);
+						terrainFaceData.emplace_back(x, y, z, blockID, ao, 5);
 					}
 				}
 			}
@@ -144,12 +77,10 @@ namespace zore {
 	}
 
 	bool Chunk::ShouldBeDrawn(const Camera& camera) const {
-		return faceCount > 0 && camera.TestAABB(renderPos, glm::vec3(Chunk::CHUNK_SIZE));
+		return terrainFaceCount > 0 && camera.TestAABB(renderPos, glm::vec3(CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_WIDTH));
 	}
 
 	bool Chunk::CanBeMeshed() const {
-		if (numNeighbours != 9)
-			return false;
 		for (int i = 0; i < 9; i++)
 			if (neighbours[i]->state < State::GENERATED)
 				return false;
@@ -157,16 +88,16 @@ namespace zore {
 	}
 
 	unsigned int Chunk::Bind() const {
-		mesh->Bind();
-		return faceCount;
+		terrainMesh->Bind();
+		return terrainFaceCount;
 	}
 
 	void Chunk::UploadMesh() {
-		faceCount = static_cast<uint>(faceData.size());
-		if (mesh)
-			mesh->Set(faceData.data(), sizeof(FaceData) * faceCount, sizeof(FaceData));
+		terrainFaceCount = static_cast<uint>(terrainFaceData.size());
+		if (terrainMesh)
+			terrainMesh->Set(terrainFaceData.data(), sizeof(FaceData) * terrainFaceCount, sizeof(FaceData));
 		else
-			mesh = InstanceArrayBuffer::Create(faceData.data(), sizeof(FaceData) * faceCount, sizeof(FaceData));
+			terrainMesh = InstanceArrayBuffer::Create(terrainFaceData.data(), sizeof(FaceData) * terrainFaceCount, sizeof(FaceData));
 	}
 
 	//------------------------------------------------------------------------
@@ -174,8 +105,8 @@ namespace zore {
 	//------------------------------------------------------------------------
 
 	void Chunk::SetBlock(int x, int y, int z, ushort value) {
-		if (x >= 0 && y >= 0 && z >= 0 && x < CHUNK_SIZE && y < CHUNK_SIZE && z < CHUNK_SIZE)
-		blockData[(x * CHUNK_SIZE_SQRD) + (y * CHUNK_SIZE) + z] = value;
+		if (x >= 0 && y >= 0 && z >= 0 && x < CHUNK_WIDTH && y < CHUNK_HEIGHT && z < CHUNK_WIDTH)
+		blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y] = value;
 	}
 
 	ushort Chunk::GetBlock(int x, int y, int z) {
@@ -183,43 +114,31 @@ namespace zore {
 			return 1;
 		else if (y >= CHUNK_HEIGHT)
 			return 0;
-		else if (x < 0 || z < 0 || x >= CHUNK_SIZE || z >= CHUNK_SIZE)
+		else if (x < 0 || z < 0 || x >= CHUNK_WIDTH || z >= CHUNK_WIDTH)
 			return 0;
-		return blockData[(x * CHUNK_SIZE_SQRD) + (y * CHUNK_SIZE) + z];
+		return blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y];
 	}
 
 	const glm::ivec3& Chunk::GetPosition() {
 		return renderPos;
 	}
 
-	void Chunk::SetBlockLocal(ubyte x, ubyte y, ubyte z, ushort value) {
-		blockData[(x * CHUNK_SIZE_SQRD) + (y * CHUNK_SIZE) + z] = value;
-	}
-
-	ushort Chunk::GetBlockLocal(ubyte x, ubyte y, ubyte z) {
-		return blockData[(x * CHUNK_SIZE_SQRD) + (y * CHUNK_SIZE) + z];
-	}
-
 	bool Chunk::GetOpaque(int x, int y, int z) {
 		if (y < 0)
-			return 1;
+			return true;
 		else if (y >= CHUNK_HEIGHT)
-			return 0;
+			return false;
 
-		int dx = (x + CHUNK_SIZE) / CHUNK_SIZE - 1;
-		int dz = (z + CHUNK_SIZE) / CHUNK_SIZE - 1;
+		int dx = ((x + CHUNK_WIDTH) / CHUNK_WIDTH) - 1;
+		int dz = ((z + CHUNK_WIDTH) / CHUNK_WIDTH) - 1;
 
 		if (dx || dz) {
-			x -= dx * CHUNK_SIZE;
-			z -= dz * CHUNK_SIZE;
-			return neighbours[(dx * 3) + dz + 4]->blockData[(x * CHUNK_SIZE_SQRD) + (y * CHUNK_SIZE) + z];
+			x -= dx * CHUNK_WIDTH;
+			z -= dz * CHUNK_WIDTH;
+			return neighbours[(dx * 3) + dz + 4]->blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y];
 		}
 		else
-			return blockData[(x * CHUNK_SIZE_SQRD) + (y * CHUNK_SIZE) + z];
-	}
-
-	bool Chunk::GetOpaqueLocal(ubyte x, ubyte y, ubyte z) {
-		return blockData[(x * CHUNK_SIZE_SQRD) + (y * CHUNK_SIZE) + z];
+			return blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y];
 	}
 
 	ubyte Chunk::GetAO(ubyte ao1, ubyte ao2, ubyte ao3, ubyte ao4, ubyte ao5, ubyte ao6, ubyte ao7, ubyte ao8) {		
