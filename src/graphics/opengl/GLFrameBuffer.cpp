@@ -33,43 +33,31 @@ namespace zore {
 	GLFrameBuffer::GLFrameBuffer(unsigned int width, unsigned int height, unsigned int colorAttachmentCount, DepthFormat depthFormat) : rbo(nullptr) {
 		glCreateFramebuffers(1, &id);
 
-		GLTexture2D* tex;
 		// Create colour attachments
+		GLTexture2D* tex;
 		unsigned int activeAttachments[MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS];
 		for (unsigned int i = 0; i < colorAttachmentCount; i++) {
 			glActiveTexture(GL_TEXTURE0 + i);
 			tex = new GLTexture2D(width, height, GL_RGBA);
 			glNamedFramebufferTexture(id, GL_COLOR_ATTACHMENT0 + i, tex->GetID(), 0);
+			activeAttachments[i] = GL_COLOR_ATTACHMENT0 + i;
 			attachments.push_back(tex);
 		}
+		glNamedFramebufferDrawBuffers(id, colorAttachmentCount, activeAttachments);
 
-		// Create Depth/Stencil attachments (if applicable)
-		switch (depthFormat) {
-		case DepthFormat::DEPTH32_TEXTURE:
-			glActiveTexture(GL_TEXTURE0 + colorAttachmentCount);
-			tex = new GLTexture2D(width, height, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT);
-			glNamedFramebufferTexture(id, GL_DEPTH_ATTACHMENT, tex->GetID(), 0);
-			attachments.push_back(tex);
-			break;
-		case DepthFormat::DEPTH24_STENCIL8_TEXTURE:
-			glActiveTexture(GL_TEXTURE0 + colorAttachmentCount);
-			tex = new GLTexture2D(width, height, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8);
-			glNamedFramebufferTexture(id, GL_DEPTH_STENCIL_ATTACHMENT, tex->GetID(), 0);
-			attachments.push_back(tex);
-			break;
-		case DepthFormat::DEPTH32_BUFFER:
+		// Create Depth/Stencil Buffer (If requested)
+		if (depthFormat == DepthFormat::DEPTH32) {
 			rbo = new GLRenderBuffer(width, height, GL_DEPTH_COMPONENT32);
 			glNamedFramebufferRenderbuffer(id, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo->GetID());
-			break;
-		case DepthFormat::DEPTH24_STENCIL8_BUFFER:
+		}
+		else if (depthFormat == DepthFormat::DEPTH24_STENCIL8) {
 			rbo = new GLRenderBuffer(width, height, GL_DEPTH24_STENCIL8);
 			glNamedFramebufferRenderbuffer(id, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo->GetID());
-			break;
 		}
-
-		// Verify that the FrameBuffer has been created successfully
-		ENSURE(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Error creating FrameBuffer. Error code: " + std::to_string(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER)));
-		glNamedFramebufferDrawBuffers(id, colorAttachmentCount, activeAttachments);
+		
+		// Ensure FrameBuffer was created successfully
+		unsigned int retval = glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER);
+		ENSURE(retval == GL_FRAMEBUFFER_COMPLETE, "Error creating FrameBuffer. Error code: " + std::to_string(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER)));
 	}
 
 	GLFrameBuffer::~GLFrameBuffer() {

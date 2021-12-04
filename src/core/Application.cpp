@@ -27,7 +27,7 @@ namespace zore {
 #define RENDER_DISTANCE 16u
 
 	Application::Application() : window(1920, 1080), engine(RenderEngine::Get()), camera(75.f, window.GetAspectRatio(), 0.1f, RENDER_DISTANCE * Chunk::CHUNK_WIDTH * 2) {
-		frameBuffer = FrameBuffer::Create(1920, 1080, 1, DepthFormat::DEPTH32_BUFFER);
+		frameBuffer = FrameBuffer::Create(1920, 1080, 1, DepthFormat::DEPTH32);
 		postProcessShader = nullptr;
 
 		engine->SetVSync(false);
