@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.8)
-
 # Name of project
 project(ZoreEngine VERSION 0.1)
 
@@ -37,8 +36,9 @@ endif(WIN32)
 
 # Import libraries
 include_directories("deps")
-
 add_subdirectory("deps/glad")
+add_subdirectory("deps/fnl")
+
 if(NOT WIN32)
     find_library(GLFW_LIBRARY GLFW)
 elseif(WIN32)
@@ -46,6 +46,7 @@ elseif(WIN32)
 endif(NOT WIN32)
 target_link_libraries(${PROJECT_NAME} 
 	glad
+	fastnoiselite
 	${GLFW_LIBRARY}
 )
 

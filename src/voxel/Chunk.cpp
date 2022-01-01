@@ -7,6 +7,10 @@
 
 namespace zore {
 
+	//========================================================================
+	// Chunk Meshing Data Structures
+	//========================================================================
+
 	FaceData::FaceData(uint x, uint y, uint z, uint blockID, uint ao, uint dir) {
 		// 6 bits for x, 9 bits for y, 6 bits for z. This leaves 11 bits in value.x
 		value.x = (x << 26) | (y << 17) | (z << 11);
@@ -14,24 +18,33 @@ namespace zore {
 		value.y = (blockID << 16) | (ao << 8) | (dir);
 	}
 
+	ChunkMesh::ChunkMesh() : buffer(nullptr), count(0) {}
+
+	ChunkMesh::~ChunkMesh() {
+		delete buffer;
+	}
+
+	void ChunkMesh::Reset() {
+		count = 0;
+		faces.clear();
+	}
+
 	//========================================================================
 	// Chunk Class
 	//========================================================================
 
 	Chunk::Chunk(int x, int z) :
-		terrainMesh(nullptr), terrainFaceCount(0), chunkPos(x, z), renderPos(x * CHUNK_WIDTH, 0, z * CHUNK_WIDTH),
+		chunkPos(x, z), renderPos(x * CHUNK_WIDTH, 0, z * CHUNK_WIDTH),
 		blockData(nullptr), neighbours{}, numNeighbours(1), state(State::INITIATED) {
 		neighbours[4] = this;
 	}
 
 	Chunk::~Chunk() {
-		delete terrainMesh;
 		delete[] blockData;
 	}
 
 	void Chunk::Mesh() {
-		terrainFaceCount = 0;
-		terrainFaceData.clear();
+		blockMesh.Reset();
 
 		for (uint x = 0; x < CHUNK_WIDTH; x++) {
 			for (uint z = 0; z < CHUNK_WIDTH; z++) {
@@ -44,32 +57,32 @@ namespace zore {
 					if (!GetOpaque(x - 1, y, z)) { // WEST
 						ao = GetAO(GetOpaque(x - 1, y + 1, z - 1), GetOpaque(x - 1, y + 1, z), GetOpaque(x - 1, y + 1, z + 1), GetOpaque(x - 1, y, z + 1),
 							       GetOpaque(x - 1, y - 1, z + 1), GetOpaque(x - 1, y - 1, z), GetOpaque(x - 1, y - 1, z - 1), GetOpaque(x - 1, y, z - 1));
-						terrainFaceData.emplace_back(x, y, z, blockID, ao, 0);
+						blockMesh.faces.emplace_back(x, y, z, blockID, ao, 0);
 					}
 					if (!GetOpaque(x + 1, y, z)) { // EAST
 						ao = GetAO(GetOpaque(x + 1, y + 1, z + 1), GetOpaque(x + 1, y + 1, z), GetOpaque(x + 1, y + 1, z - 1), GetOpaque(x + 1, y, z - 1),
 							       GetOpaque(x + 1, y - 1, z - 1), GetOpaque(x + 1, y - 1, z), GetOpaque(x + 1, y - 1, z + 1), GetOpaque(x + 1, y, z + 1));
-						terrainFaceData.emplace_back(x, y, z, blockID, ao, 1);
+						blockMesh.faces.emplace_back(x, y, z, blockID, ao, 1);
 					}
 					if (!GetOpaque(x, y - 1, z)) { // DOWN
 						ao = GetAO(GetOpaque(x - 1, y - 1, z + 1), GetOpaque(x, y - 1, z + 1), GetOpaque(x + 1, y - 1, z + 1), GetOpaque(x + 1, y - 1, z),
 							       GetOpaque(x + 1, y - 1, z - 1), GetOpaque(x, y - 1, z - 1), GetOpaque(x - 1, y - 1, z - 1), GetOpaque(x - 1, y - 1, z));
-						terrainFaceData.emplace_back(x, y, z, blockID, ao, 2);
+						blockMesh.faces.emplace_back(x, y, z, blockID, ao, 2);
 					}
 					if (!GetOpaque(x, y + 1, z)) { // UP
 						ao = GetAO(GetOpaque(x - 1, y + 1, z - 1), GetOpaque(x, y + 1, z - 1), GetOpaque(x + 1, y + 1, z - 1), GetOpaque(x + 1, y + 1, z),
 							       GetOpaque(x + 1, y + 1, z + 1), GetOpaque(x, y + 1, z + 1), GetOpaque(x - 1, y + 1, z + 1), GetOpaque(x - 1, y + 1, z));
-						terrainFaceData.emplace_back(x, y, z, blockID, ao, 3);
+						blockMesh.faces.emplace_back(x, y, z, blockID, ao, 3);
 					}
 					if (!GetOpaque(x, y, z - 1)) { // NORTH
 						ao = GetAO(GetOpaque(x + 1, y + 1, z - 1), GetOpaque(x, y + 1, z - 1), GetOpaque(x - 1, y + 1, z - 1), GetOpaque(x - 1, y, z - 1),
 							       GetOpaque(x - 1, y - 1, z - 1), GetOpaque(x, y - 1, z - 1), GetOpaque(x + 1, y - 1, z - 1), GetOpaque(x + 1, y, z - 1));
-						terrainFaceData.emplace_back(x, y, z, blockID, ao, 4);
+						blockMesh.faces.emplace_back(x, y, z, blockID, ao, 4);
 					}
 					if (!GetOpaque(x, y, z + 1)) { // SOUTH
 						ao = GetAO(GetOpaque(x - 1, y + 1, z + 1), GetOpaque(x, y + 1, z + 1), GetOpaque(x + 1, y + 1, z + 1), GetOpaque(x + 1, y, z + 1),
 							       GetOpaque(x + 1, y - 1, z + 1), GetOpaque(x, y - 1, z + 1), GetOpaque(x - 1, y - 1, z + 1), GetOpaque(x - 1, y, z + 1));
-						terrainFaceData.emplace_back(x, y, z, blockID, ao, 5);
+						blockMesh.faces.emplace_back(x, y, z, blockID, ao, 5);
 					}
 				}
 			}
@@ -77,7 +90,7 @@ namespace zore {
 	}
 
 	bool Chunk::ShouldBeDrawn(const Camera& camera) const {
-		return terrainFaceCount > 0 && camera.TestAABB(renderPos, glm::vec3(CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_WIDTH));
+		return blockMesh.count > 0 && camera.TestAABB(renderPos, glm::vec3(CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_WIDTH));
 	}
 
 	bool Chunk::CanBeMeshed() const {
@@ -88,16 +101,16 @@ namespace zore {
 	}
 
 	unsigned int Chunk::Bind() const {
-		terrainMesh->Bind();
-		return terrainFaceCount;
+		blockMesh.buffer->Bind();
+		return blockMesh.count;
 	}
 
 	void Chunk::UploadMesh() {
-		terrainFaceCount = static_cast<uint>(terrainFaceData.size());
-		if (terrainMesh)
-			terrainMesh->Set(terrainFaceData.data(), sizeof(FaceData) * terrainFaceCount, sizeof(FaceData));
+		blockMesh.count = static_cast<uint>(blockMesh.faces.size());
+		if (blockMesh.buffer)
+			blockMesh.buffer->Set(blockMesh.faces.data(), sizeof(FaceData) * blockMesh.count, sizeof(FaceData));
 		else
-			terrainMesh = InstanceArrayBuffer::Create(terrainFaceData.data(), sizeof(FaceData) * terrainFaceCount, sizeof(FaceData));
+			blockMesh.buffer = InstanceArrayBuffer::Create(blockMesh.faces.data(), sizeof(FaceData) * blockMesh.count, sizeof(FaceData));
 	}
 
 	//------------------------------------------------------------------------
@@ -129,8 +142,8 @@ namespace zore {
 		else if (y >= CHUNK_HEIGHT)
 			return false;
 
-		int dx = ((x + CHUNK_WIDTH) / CHUNK_WIDTH) - 1;
-		int dz = ((z + CHUNK_WIDTH) / CHUNK_WIDTH) - 1;
+		int dx = x < 0 ? -1 : (x >= CHUNK_WIDTH ? 1 : 0);
+		int dz = z < 0 ? -1 : (z >= CHUNK_WIDTH ? 1 : 0);
 
 		if (dx || dz) {
 			x -= dx * CHUNK_WIDTH;

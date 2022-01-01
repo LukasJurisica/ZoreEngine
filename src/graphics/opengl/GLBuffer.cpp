@@ -4,7 +4,7 @@
 
 namespace zore {
 
-	const unsigned int BufferModeToGLBufferUsage[] = {
+	static const unsigned int BufferModeToGLBufferUsage[] = {
 		GL_STATIC_DRAW, GL_DYNAMIC_DRAW
 	};
 

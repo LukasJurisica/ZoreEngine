@@ -46,7 +46,7 @@ void main() {
 #shaderstage fragment
 #version 430 core
 
-const vec3 color[8] = vec3[8]( vec3(0.3, 0.3, 0.3), vec3(0, 0, 1), vec3(0, 1, 0), vec3(0, 1, 1), vec3(1, 0, 0), vec3(1, 0, 1), vec3(1, 1, 0), vec3(1, 1, 1) );
+const vec3 color[8] = vec3[8]( vec3(0.3, 0.3, 0.3), vec3(0, 0, 1), vec3(0.403, 0.831, 0.023), vec3(0, 1, 1), vec3(1, 0, 0), vec3(1, 0, 1), vec3(1, 1, 0), vec3(0.631, 0.666, 0.639) );
 const float lighting[6] = float[6](0.9f, 0.9f, 0.7f, 1.0f, 0.9f, 0.9f);
 const int blockSubDivisions = 4;
 

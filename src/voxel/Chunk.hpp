@@ -19,6 +19,16 @@ namespace zore {
 		glm::uvec2 value;
 	};
 
+	struct ChunkMesh {
+		ChunkMesh();
+		~ChunkMesh();
+		void Reset();
+
+		std::vector<FaceData> faces;
+		InstanceArrayBuffer* buffer;
+		uint count;
+	};
+
 	//========================================================================
 	// Chunk Class
 	//========================================================================
@@ -62,9 +72,9 @@ namespace zore {
 		Chunk* neighbours[9];
 		ubyte numNeighbours;
 
-		uint terrainFaceCount;
-		std::vector<FaceData> terrainFaceData;
-		InstanceArrayBuffer* terrainMesh;
+		ChunkMesh blockMesh;
+		//ChunkMesh fluidMesh;
+		//ChunkMesh billboardMesh;
 
 		glm::ivec3 renderPos;
 		glm::ivec2 chunkPos;

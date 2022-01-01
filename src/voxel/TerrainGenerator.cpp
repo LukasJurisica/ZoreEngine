@@ -5,43 +5,59 @@
 
 #include <platform/win32/win32_Core.hpp>
 
-zm::SimplexGenerator dw(123);
-
 namespace zore {
+
+	static constexpr int ChunkSizeWithBorder = Chunk::CHUNK_WIDTH + 2;
 
 	//========================================================================
 	// Terrain Generator Class
 	//========================================================================
 
-	TerrainGenerator::TerrainGenerator() : sg(123) {
-		sg.SetFrequency(0.005f);
-		sg.SetOctaves(3);
+	TerrainGenerator::TerrainGenerator() : terrain(123), biome(321) {
+		terrain.SetNoiseType(fnl::NoiseType::OpenSimplex2S);
+		terrain.SetFrequency(0.003f);
+		terrain.SetFractalType(fnl::FractalType::Ridged);
+		//terrain.SetFractalLacunarity(2.f);
+		terrain.SetFractalOctaves(3);
 
-		dw.SetFrequency(0.001f);
+		biome.SetNoiseType(fnl::NoiseType::Cellular);
+		biome.SetCellularReturnType(fnl::CellularReturnType::CellValue);
+		biome.SetCellularDistanceFunction(fnl::CellularDistanceFunction::EuclideanSq);
 	}
 
 	void TerrainGenerator::Generate(Chunk* chunk) {
 		if (!chunk->blockData)
 			chunk->blockData = new ushort[Chunk::CHUNK_VOLUME];
 
+		short* heightMap = new short[ChunkSizeWithBorder * ChunkSizeWithBorder];
+		GenerateHeightmap(heightMap, chunk);
+
 		for (int x = 0; x < Chunk::CHUNK_WIDTH; x++) {
 			for (int z = 0; z < Chunk::CHUNK_WIDTH; z++) {
 
-				//float a = (dw.Eval(x + chunk->renderPos.x, z + chunk->renderPos.z) + 1.f) * 3.14159265359f;
-				float dx = 0;// cos(a) * 1;
-				float dz = 0;// sin(a) * 1;
+				int index = (x + 1) * ChunkSizeWithBorder + z + 1;
+				int h = heightMap[index];
 
-				float n = sg.Fractal(x + chunk->renderPos.x + dx, z + chunk->renderPos.z + dz);
-				n = (n + 1) * 0.5f;
-				n = zm::Clamp(n, 0.f, 1.f);
-				int h = zm::Floor(n * 64);
-
-				//int h = zm::Max(zm::Abs(x + chunk->renderPos.x), zm::Abs(z + chunk->renderPos.z)) & 255;
+				ushort block = 2;
+				if (zm::Abs(heightMap[index - 1] - heightMap[index + 1]) > 2 || zm::Abs(heightMap[index - ChunkSizeWithBorder] - heightMap[index + ChunkSizeWithBorder]) > 2)
+					block = 7;
 
 				for (int y = 0; y <= h; y++)
-					chunk->SetBlockLocal(x, y, z, 2);
+					chunk->SetBlockLocal(x, y, z, block);
 				for (int y = h + 1; y < Chunk::CHUNK_HEIGHT; y++)
 					chunk->SetBlockLocal(x, y, z, 0);
+			}
+		}
+	}
+
+	void TerrainGenerator::GenerateHeightmap(short* heightMap, Chunk* chunk) {
+		for (int x = 0; x < ChunkSizeWithBorder; x++) {
+			for (int z = 0; z < ChunkSizeWithBorder; z++) {
+				float n = terrain.GetNoise(x + chunk->renderPos.x - 1, z + chunk->renderPos.z - 1);
+				//int h = zm::Floor(zm::SmoothMax(0.8f, zm::NormalizeNoise(-n) * 3.2f, 0.5f) * 20);
+				//int h = zm::Floor(zm::Max(16.f, zm::NormalizeNoise(-n) * 64));
+				int h = zm::Floor(zm::SmoothMax(24.f, zm::NormalizeNoise(n) * 128.f, 15.f));
+				heightMap[x * ChunkSizeWithBorder + z] = h;
 			}
 		}
 	}

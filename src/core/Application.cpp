@@ -6,7 +6,7 @@
 #include "voxel/ChunkManager.hpp"
 #include "debug/Debug.hpp"
 
-#include <iostream>
+#include "math/MathUtils.hpp"
 
 namespace zore {
 	
@@ -36,7 +36,7 @@ namespace zore {
 		engine->SetClearMode({ BufferType::COLOUR, BufferType::DEPTH });
 		engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
 
-		//window.SetBorderless(true);
+		window.SetBorderless(true);
 		window.HideCursor(true);
 		//window.SetFullscreen(true);
 	}

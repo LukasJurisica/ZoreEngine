@@ -28,7 +28,8 @@ namespace zore {
 
 	void Keyboard::KeyCallback(GLFWwindow* windowHandle, int key, int scancode, int action, int mods) {
 		if (action != KEY_REPEAT) {
-			keyStates[key] = action;
+			if (key > 0 && key < KEY_LAST)
+				keyStates[key] = action;
 
 			if (action == GLFW_PRESS)
 				for (KeyListener* listener : listeners)
