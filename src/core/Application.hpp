@@ -1,9 +1,12 @@
 #pragma once
 #include "core/Camera.hpp"
 #include "devices/Window.hpp"
+#include "devices/Keyboard.hpp"
 #include "graphics/RenderEngine.hpp"
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/Shader.hpp"
+
+#include "game/Player.hpp"
 
 namespace zore {
 
@@ -16,7 +19,7 @@ namespace zore {
 	class Application : WindowListener, KeyListener {
 	public:
 		Application();
-		~Application() = default;
+		~Application();
 		static void Init();
 		static void Cleanup();
 		void Run();
@@ -28,8 +31,11 @@ namespace zore {
 	private:
 		Window window;
 		Camera camera;
+
 		RenderEngine* engine;
 		FrameBuffer* frameBuffer;
 		Shader* postProcessShader;
+		Shader* blockShader;
+		Shader* spriteShader;
 	};
 }

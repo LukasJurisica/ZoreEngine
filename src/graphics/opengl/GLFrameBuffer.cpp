@@ -34,13 +34,11 @@ namespace zore {
 		glCreateFramebuffers(1, &id);
 
 		// Create colour attachments
-		GLTexture2D* tex;
 		unsigned int activeAttachments[MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS];
 		for (unsigned int i = 0; i < colorAttachmentCount; i++) {
-			glActiveTexture(GL_TEXTURE0 + i);
-			tex = new GLTexture2D(width, height, GL_RGBA);
-			glNamedFramebufferTexture(id, GL_COLOR_ATTACHMENT0 + i, tex->GetID(), 0);
+			GLTexture2D* tex = new GLTexture2D(width, height, TextureFormat::RGBA);
 			activeAttachments[i] = GL_COLOR_ATTACHMENT0 + i;
+			glNamedFramebufferTexture(id, activeAttachments[i], tex->GetID(), 0);
 			attachments.push_back(tex);
 		}
 		glNamedFramebufferDrawBuffers(id, colorAttachmentCount, activeAttachments);
@@ -57,7 +55,7 @@ namespace zore {
 		
 		// Ensure FrameBuffer was created successfully
 		unsigned int retval = glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER);
-		ENSURE(retval == GL_FRAMEBUFFER_COMPLETE, "Error creating FrameBuffer. Error code: " + std::to_string(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER)));
+		ENSURE(retval == GL_FRAMEBUFFER_COMPLETE, "Error creating FrameBuffer. Error code: " + std::to_string(retval));
 	}
 
 	GLFrameBuffer::~GLFrameBuffer() {
@@ -73,8 +71,12 @@ namespace zore {
 	}
 
 	void GLFrameBuffer::SetSize(unsigned int width, unsigned int height) {
-		for (int i = 0; i < attachments.size(); i++)
-			attachments[i]->SetSize(width, height);
+		for (int i = 0; i < attachments.size(); i++) {
+			delete attachments[i];
+			GLTexture2D* tex = new GLTexture2D(width, height, TextureFormat::RGBA);
+			glNamedFramebufferTexture(id, GL_COLOR_ATTACHMENT0 + i, tex->GetID(), 0);
+			attachments[i] = tex;
+		}
 		if (rbo)
 			rbo->SetSize(width, height);
 	}

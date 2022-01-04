@@ -9,18 +9,14 @@ namespace zore {
 
 	class GLTexture {
 	public:
-		GLTexture(unsigned int target, unsigned int format);
-		GLTexture(unsigned int target, unsigned int internalFormat, unsigned int dataFormat, unsigned int type);
+		GLTexture(unsigned int target, unsigned int textureFormat);
 		virtual ~GLTexture();
 		unsigned int GetID();
 
 	protected:
-		unsigned int internalFormat;
-		unsigned int dataFormat;
-		unsigned int type;
+		unsigned int format;
+		unsigned int unit;
 		unsigned int id;
-
-		static const unsigned int TextureFormatToGLFormat[4];
 	};
 
 	//========================================================================
@@ -30,13 +26,12 @@ namespace zore {
 	class GLTexture2D : public Texture2D, public GLTexture {
 	public:
 		GLTexture2D(const std::string& name);
-		GLTexture2D(unsigned int width, unsigned int height, unsigned int format);
-		GLTexture2D(unsigned int width, unsigned int height, TextureFormat format);
-		GLTexture2D(unsigned int width, unsigned int height, unsigned int internalFormat, unsigned int dataFormat, unsigned int type, void* data = nullptr);
+		GLTexture2D(unsigned int width, unsigned int height, TextureFormat textureFormat);
+		GLTexture2D(unsigned int width, unsigned int height, TextureFormat internalFormat, unsigned int dataFormat, unsigned int type, void* data = nullptr);
 		~GLTexture2D() = default;
-
+		
 		void Bind() const override;
 		void Unbind() const override;
-		void SetSize(unsigned int width, unsigned int height) override;
+		void SetTextureSlot(unsigned int slot) override;
 	};
 }

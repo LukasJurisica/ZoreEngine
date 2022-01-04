@@ -12,7 +12,6 @@ namespace zore {
 		GLRenderEngine();
 		~GLRenderEngine() = default;
 
-		
 		void SetViewport(unsigned int width, unsigned int height, unsigned int x, unsigned int y) override;
 		void SetBackFaceCulling(bool value) override;
 		void SetDepthTest(bool value) override;

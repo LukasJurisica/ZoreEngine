@@ -59,18 +59,22 @@ namespace zore {
 	}
 
 	void GLRenderEngine::DrawLinear(unsigned int count, unsigned int offset) {
-		glDrawArrays(topology, offset, count);
+		if (count > 0)
+			glDrawArrays(topology, offset, count);
 	}
 
 	void GLRenderEngine::DrawIndexed(unsigned int count, unsigned int offset) {
-		glDrawElements(topology, count, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)));
+		if (count > 0)
+			glDrawElements(topology, count, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)));
 	}
 
 	void GLRenderEngine::DrawLinearInstanced(unsigned int vertexCount, unsigned int modelCount, unsigned int offset) {
-		glDrawArraysInstanced(topology, offset, vertexCount, modelCount);
+		if (vertexCount > 0 && modelCount > 0)
+			glDrawArraysInstanced(topology, offset, vertexCount, modelCount);
 	}
 
 	void GLRenderEngine::DrawIndexedInstanced(unsigned int indexCount, unsigned int modelCount, unsigned int offset) {
-		glDrawElementsInstanced(topology, indexCount, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)), modelCount);
+		if (indexCount > 0 && modelCount > 0)
+			glDrawElementsInstanced(topology, indexCount, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)), modelCount);
 	}
 }

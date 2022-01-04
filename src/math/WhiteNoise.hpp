@@ -1,5 +1,6 @@
 #pragma once
 #include "math/MathUtils.hpp"
+#include "glm/glm.hpp"
 
 namespace zm {
 	

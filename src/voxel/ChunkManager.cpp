@@ -21,6 +21,7 @@ namespace zore {
 	std::vector<Job> jobs;
 	std::mutex uploadMutex;
 	std::vector<Chunk*> toBeUploaded;
+	std::vector<Chunk*> visibleChunks;
 
 	std::condition_variable cv;
 	std::vector<std::thread> threadPool;
@@ -79,21 +80,25 @@ namespace zore {
 			delete pair.second;
 	}
 
-	void ChunkManager::Update(const glm::vec3& pos) {
+	void ChunkManager::Update(const Camera& camera) {
 		uploadMutex.lock();
-		for (Chunk* chunk : toBeUploaded)
-			chunk->UploadMesh();
+		for (Chunk* chunk : toBeUploaded) {
+			chunk->blockMesh.Upload();
+			chunk->fluidMesh.Upload();
+			chunk->spriteMesh.Upload();
+		}
 		toBeUploaded.clear();
 		uploadMutex.unlock();
 
+		glm::vec3 position = camera.GetPosition();
 		// Check if the position crossed a chunk quadrant since last update
-		glm::ivec2 newQuadrant = { zm::Floor(pos.x) & Chunk::CHUNK_HALF_WIDTH, zm::Floor(pos.z) & Chunk::CHUNK_HALF_WIDTH };
+		glm::ivec2 newQuadrant = { zm::Floor(position.x) & Chunk::CHUNK_HALF_WIDTH, zm::Floor(position.z) & Chunk::CHUNK_HALF_WIDTH };
 		if (quadrant != newQuadrant) {
 			quadrant = newQuadrant;
 
 			std::lock_guard<std::mutex> lk(jobMutex);
 			// Additionally check if the position crossed a chunk border
-			glm::ivec2 newFulcrum = { zm::Floor(pos.x / Chunk::CHUNK_WIDTH), zm::Floor(pos.z / Chunk::CHUNK_WIDTH) };
+			glm::ivec2 newFulcrum = { zm::Floor(position.x * (1.f / Chunk::CHUNK_WIDTH)), zm::Floor(position.z * (1.f / Chunk::CHUNK_WIDTH)) };
 			if (fulcrum != newFulcrum) {
 				fulcrum = newFulcrum;
 				LoadChunks();
@@ -103,6 +108,11 @@ namespace zore {
 				UnloadChunks();
 			}
 		}
+		
+		visibleChunks.clear();
+		for (const std::pair<size_t, Chunk*>& pair : chunks)
+			if (camera.TestAABB(pair.second->renderPos, glm::vec3(Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT, Chunk::CHUNK_WIDTH)))
+				visibleChunks.push_back(pair.second);
 
 		//UpdateChunks();
 	}
@@ -116,15 +126,6 @@ namespace zore {
 		return (iter == chunks.end()) ? nullptr : iter->second;
 	}
 
-	const std::unordered_map<size_t, Chunk*>& ChunkManager::GetChunks() {
-		return chunks;
-	}
-
-	size_t ChunkManager::GetChunkKey(int x, int z) {
-		size_t result = static_cast<uint>(x);
-		return (result << 32) | static_cast<uint>(z);
-	}
-
 	glm::ivec3 ChunkManager::GetChunkCoord(const glm::vec3& pos) {
 		return {
 			zm::Floor(pos.x / Chunk::CHUNK_WIDTH),
@@ -133,9 +134,12 @@ namespace zore {
 		};
 	}
 
-	bool ChunkManager::CoordInRenderRange(int x, int z) {
-		x -= fulcrum.x; z -= fulcrum.y;
-		return (x * x) + (z * z) <= chunkRadiusSquared;
+	const std::unordered_map<size_t, Chunk*>& ChunkManager::GetChunks() {
+		return chunks;
+	}
+
+	const std::vector<Chunk*>& ChunkManager::GetVisibleChunks() {
+		return visibleChunks;
 	}
 
 	//------------------------------------------------------------------------
@@ -182,6 +186,16 @@ namespace zore {
 			else
 				++iter;
 		}
+	}
+
+	size_t ChunkManager::GetChunkKey(int x, int z) {
+		size_t result = static_cast<uint>(x);
+		return (result << 32) | static_cast<uint>(z);
+	}
+
+	bool ChunkManager::CoordInRenderRange(int x, int z) {
+		x -= fulcrum.x; z -= fulcrum.y;
+		return (x * x) + (z * z) <= chunkRadiusSquared;
 	}
 
 	Chunk* ChunkManager::EnsureChunk(int x, int z) {

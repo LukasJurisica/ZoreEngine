@@ -29,6 +29,6 @@ namespace zore {
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-		virtual void SetSize(uint width, uint height) = 0;
+		virtual void SetTextureSlot(unsigned int slot) = 0;
 	};
 }

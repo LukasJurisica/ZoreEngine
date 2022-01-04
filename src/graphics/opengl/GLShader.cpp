@@ -171,7 +171,7 @@ namespace zore {
 		glUniformMatrix4fv(GetUniformLoc(name), 1, GL_FALSE, &(data[0].x));
 	}
 
-	void GLShader::SetTextureIndex(const std::string& name, unsigned int index) {
+	void GLShader::SetTextureSlot(const std::string& name, unsigned int index) {
 		glUniform1i(GetUniformLoc(name), index);
 	}
 

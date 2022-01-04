@@ -14,8 +14,8 @@ namespace zore {
 			delete tex;
 	}
 
-	FrameBuffer* FrameBuffer::Create(unsigned int width, unsigned int height, unsigned int colorAttachmentCount, DepthFormat format) {
-		ENSURE(colorAttachmentCount <= MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS, "Failed to create framebuffer - Texture attachment count has exceeded the maximum.");
+	FrameBuffer* FrameBuffer::Create(uint width, uint height, uint colorAttachmentCount, DepthFormat format) {
+		DEBUG_ENSURE(colorAttachmentCount <= MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS, "Failed to create framebuffer - Texture attachment count is larger than the maximum.");
 
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
@@ -25,8 +25,12 @@ namespace zore {
 		return nullptr;
 	}
 
-	const Texture2D* FrameBuffer::GetTexture(unsigned int index) const {
-		ENSURE(index < attachments.size(), "Texture index larger than attachment count.");
+	Texture2D* FrameBuffer::GetTexture(uint index) const {
+		DEBUG_ENSURE(index < attachments.size(), "Texture index larger than attachment count.");
 		return attachments[index];
+	}
+
+	uint FrameBuffer::GetNumTextureAttachments() {
+		return attachments.size();
 	}
 }

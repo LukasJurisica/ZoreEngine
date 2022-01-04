@@ -1,11 +1,9 @@
 #shaderstage vertex
 #version 430 core
 
-//layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; vec3 cameraPos; float time; };
-layout (std140, binding = 1) uniform modelData { ivec4 offsets[24]; };
+layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; vec3 cameraPos; float time; };
+layout (std140, binding = 1) uniform modelData { ivec4 offsets[32]; };
 uniform ivec3 chunkPos;
-uniform mat4 vp_mat;
-uniform vec3 cameraPos;
 const float ao_weights[4] = float[4](1.0f, 0.8f, 0.6f, 0.4f);
 
 layout(location = 0) in int vertexID;
@@ -23,7 +21,7 @@ void main() {
 	unsigned int z = (face.x >> 11) & 0x3F;
 
 	// Send blockID to fragment shader
-	blockID = (face.y >> 16) & 0xFF;
+	blockID = (face.y >> 16) & 0xFFFF;
 	// Send Ambient Occlusion values to fragment shader
 	ao = vec4( ao_weights[(face.y >> 14) & 0x3], ao_weights[(face.y >> 12) & 0x3], ao_weights[(face.y >> 10) & 0x3], ao_weights[(face.y >> 8 ) & 0x3] );
 	// Determine the direction/normal vector of the face being drawn, and send to fragmant shader
@@ -46,7 +44,7 @@ void main() {
 #shaderstage fragment
 #version 430 core
 
-const vec3 color[8] = vec3[8]( vec3(0.3, 0.3, 0.3), vec3(0, 0, 1), vec3(0.403, 0.831, 0.023), vec3(0, 1, 1), vec3(1, 0, 0), vec3(1, 0, 1), vec3(1, 1, 0), vec3(0.631, 0.666, 0.639) );
+const vec3 color[4] = vec3[4]( vec3(0.482, 0.247, 0.0), vec3(0.403, 0.831, 0.023), vec3(0.631, 0.666, 0.639), vec3(0.584, 0.271, 0.208) );
 const float lighting[6] = float[6](0.9f, 0.9f, 0.7f, 1.0f, 0.9f, 0.9f);
 const int blockSubDivisions = 4;
 

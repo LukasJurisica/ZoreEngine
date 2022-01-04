@@ -1,5 +1,6 @@
 #pragma once
 #include "voxel/Chunk.hpp"
+#include "core/Camera.hpp"
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_int3.hpp>
 #include <glm/ext/vector_int2.hpp>
@@ -17,19 +18,20 @@ namespace zore {
 	public:
 		static void Init(uint renderDistance, const glm::vec3& pos);
 		static void Cleanup();
-		static void Update(const glm::vec3& pos);
 
+		static void Update(const Camera& camera);
 		static Chunk* GetChunk(int x, int z);
-		static const std::unordered_map<size_t, Chunk*>& GetChunks();
-		static size_t GetChunkKey(int x, int z);
 		static glm::ivec3 GetChunkCoord(const glm::vec3& pos);
-		static bool CoordInRenderRange(int x, int z);
+		static const std::unordered_map<size_t, Chunk*>& GetChunks();
+		static const std::vector<Chunk*>& GetVisibleChunks();
 
 	private:
 		static void UpdateChunks();
 		static void LoadChunks();
 		static void UnloadChunks();
 
+		static size_t GetChunkKey(int x, int z);
+		static bool CoordInRenderRange(int x, int z);
 		static Chunk* EnsureChunk(int x, int z);
 		static void LoadNeighbours(Chunk* chunk);
 		static bool UnloadNeighbours(Chunk* chunk);

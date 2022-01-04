@@ -38,14 +38,16 @@ namespace zore {
 				int index = (x + 1) * ChunkSizeWithBorder + z + 1;
 				int h = heightMap[index];
 
-				ushort block = 2;
+				ushort surface = BLOCK_GRASS;
 				if (zm::Abs(heightMap[index - 1] - heightMap[index + 1]) > 2 || zm::Abs(heightMap[index - ChunkSizeWithBorder] - heightMap[index + ChunkSizeWithBorder]) > 2)
-					block = 7;
+					surface = BLOCK_DIRT;
 
 				for (int y = 0; y <= h; y++)
-					chunk->SetBlockLocal(x, y, z, block);
+					chunk->SetBlockLocal(x, y, z, surface);
 				for (int y = h + 1; y < Chunk::CHUNK_HEIGHT; y++)
 					chunk->SetBlockLocal(x, y, z, 0);
+				if (zm::WhiteNoise::Eval1(glm::vec2(x, z)) > 0.8f && surface == BLOCK_GRASS)
+					chunk->SetBlockLocal(x, h + 1, z, SPRITE_PLANT);
 			}
 		}
 	}

@@ -1,10 +1,10 @@
 #pragma once
 #include "utils/DataTypes.hpp"
 #include "graphics/Buffer.hpp"
-#include "core/Camera.hpp"
+#include "voxel/Block.hpp"
 
 #include <glm/ext/vector_int3.hpp>
-#include <glm/ext/vector_uint2.hpp>
+#include <glm/ext/vector_int2.hpp>
 #include <vector>
 
 namespace zore {
@@ -16,18 +16,21 @@ namespace zore {
 		FaceData(uint x, uint y, uint z, uint blockID, uint ao, uint dir);
 		FaceData(const FaceData&) = delete; // This can be removed once I fix the chunk class and chunk column class
 		FaceData(FaceData&&) = default;
-		glm::uvec2 value;
+		uint a, b;
 	};
 
 	struct ChunkMesh {
 		ChunkMesh();
 		~ChunkMesh();
 		void Reset();
-
+		void Upload();
+		unsigned int Bind() const;
+		
 		std::vector<FaceData> faces;
 		InstanceArrayBuffer* buffer;
 		uint count;
 	};
+	enum class ChunkMeshType { BLOCKS, FLUIDS, SPRITES };
 
 	//========================================================================
 	// Chunk Class
@@ -41,14 +44,12 @@ namespace zore {
 		~Chunk();
 
 		void Mesh();
-		bool ShouldBeDrawn(const Camera& camera) const;
 		bool CanBeMeshed() const;
-		unsigned int Bind() const;
-		void UploadMesh();
 
 		void SetBlock(int x, int y, int z, ushort value);
 		ushort GetBlock(int x, int y, int z);
-		const glm::ivec3& GetPosition();
+		const glm::ivec3& GetPosition() const;
+		const ChunkMesh& GetChunkMesh(ChunkMeshType type) const;
 
 		static constexpr int CHUNK_WIDTH = 64;
 		static constexpr int CHUNK_HALF_WIDTH = CHUNK_WIDTH / 2;
@@ -66,6 +67,9 @@ namespace zore {
 		// Functions for Meshing
 		inline bool GetOpaque(int x, int y, int z);
 		inline ubyte GetAO(ubyte ao1, ubyte ao2, ubyte ao3, ubyte ao4, ubyte ao5, ubyte ao6, ubyte ao7, ubyte ao8);
+		inline void AddBlock(ushort block, ubyte x, ubyte y, ubyte z);
+		inline void AddFluid(ushort fluid, ubyte x, ubyte y, ubyte z);
+		inline void AddSprite(ushort sprite, ubyte x, ubyte y, ubyte z);
 
 		// Data Members
 		ushort* blockData;
@@ -73,8 +77,8 @@ namespace zore {
 		ubyte numNeighbours;
 
 		ChunkMesh blockMesh;
-		//ChunkMesh fluidMesh;
-		//ChunkMesh billboardMesh;
+		ChunkMesh fluidMesh;
+		ChunkMesh spriteMesh;
 
 		glm::ivec3 renderPos;
 		glm::ivec2 chunkPos;

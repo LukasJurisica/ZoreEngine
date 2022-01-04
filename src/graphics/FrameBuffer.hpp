@@ -18,13 +18,14 @@ namespace zore {
 
 	class FrameBuffer {
 	public:
-		static FrameBuffer* Create(unsigned int width, unsigned int height, unsigned int colorAttachmentCount = 1, DepthFormat format = DepthFormat::NONE);
+		static FrameBuffer* Create(uint width, uint height, uint colorAttachmentCount = 1, DepthFormat format = DepthFormat::NONE);
 		virtual ~FrameBuffer();
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-		virtual void SetSize(unsigned int width, unsigned int height) = 0;
-		const Texture2D* GetTexture(unsigned int index) const;
+		virtual void SetSize(uint width, uint height) = 0;
+		Texture2D* GetTexture(uint index) const;
+		uint GetNumTextureAttachments();
 
 	protected:
 		std::vector<Texture2D*> attachments;

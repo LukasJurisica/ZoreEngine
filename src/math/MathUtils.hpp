@@ -59,9 +59,13 @@ namespace zm {
 	template <typename type>
 	inline type Max(type a, type b) { return a > b ? a : b; }
 
-	// Returns the absolute value of value
+	// Returns the absolute value of t
 	template <typename type>
-	inline type Abs(type value) { return value > 0 ? value : -value; }
+	inline type Abs(type t) { return t > 0 ? t : -t; }
+
+	// Returns the sign of t
+	template <typename type>
+	inline int Sign(type t) { return t < 0 ? -1 : (t > 0 ? 1 : 0); }
 
 	// Ensures value is clamped within the range [min, max]
 	template <typename type>
