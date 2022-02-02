@@ -1,21 +1,15 @@
 #shaderstage vertex
 #version 430 core
 
-// Vertex Inputs
 layout(location = 0) in int vertexID;
-
-// Vertex Shader to Fragment Shader Passthrough
 out vec2 uv;
 
-// Constant Data
-const vec2 offsets[4] = vec2[4]( vec2(-1, 1), vec2(-1,-1), vec2( 1, 1), vec2( 1,-1) );
-
-
+const vec2 offsets[4] = vec2[4]( vec2(-1.0, 1.0), vec2(-1.0,-1.0), vec2( 1.0, 1.0), vec2( 1.0,-1.0) );
 
 void main() {
 	vec2 position = offsets[vertexID];
-	uv = (position + 1.0f) * 0.5f;
-	gl_Position = vec4(position, 0.0f, 1.0f);
+	uv = (position + 1.0) * 0.5;
+	gl_Position = vec4(position, 0.0, 1.0);
 }
 
 
@@ -25,22 +19,14 @@ void main() {
 #shaderstage fragment
 #version 430 core
 
-// Vertex Shader to Fragment Shader Passthrough
 in vec2 uv;
-
-// Uniform Variables and Textures
 layout(binding = 0) uniform sampler2D screen;
 uniform vec2 resolution;
-
-// Fragment Shader Outputs
 out vec4 FragColor;
 
-// Constant Data
-#define FXAA_REDUCE_MIN  (1.0f / 128.0f)
-#define FXAA_REDUCE_MUL  (1.0f / 8.0f)
-#define FXAA_SPAN_MAX     8.0f
-
-
+#define FXAA_REDUCE_MIN  (1.0 / 128.0)
+#define FXAA_REDUCE_MUL  (1.0 / 8.0)
+#define FXAA_SPAN_MAX     8.0
 
 float r2l(vec3 rgb) {
 	return dot(rgb, vec3(0.299, 0.587, 0.114));
@@ -49,10 +35,21 @@ float r2l(vec3 rgb) {
 void main() {
     vec4 rgbM = texture(screen, uv);
 
+
+    vec2 ssc = uv * 2 - 1;
+    ssc.y *= resolution.x / resolution.y;
+
+
+    if (sqrt(ssc.x * ssc.x + ssc.y * ssc.y) < 0.002)
+        FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    else {
+        FragColor = rgbM;
+        //FragColor = vec4(mix(rgbM.rgb, vec3(0.8), rgbM.a), 1.f);
+    }
+
     // Returning here skips anti aliasing
-    FragColor = rgbM;
-    //FragColor = vec4(mix(rgbM.rgb, vec3(0.8), rgbM.a), 1.f);
     return;
+
 
     float lumaM  = r2l(rgbM.rgb);
     float lumaNW = r2l(textureOffset(screen, uv, ivec2(-1, 1)).rgb);

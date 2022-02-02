@@ -13,8 +13,8 @@ namespace zore {
 	enum class MeshTopology { POINT_LIST, LINE_LIST, LINE_STRIP, LINE_LOOP, TRIANGLE_LIST, TRIANGLE_STRIP, TRIANGLE_FAN };
 
 	class RenderEngine {
-		friend class Window;
 	public:
+		static void Init();
 		static RenderEngine* Get();
 		virtual ~RenderEngine() = default;
 
@@ -41,8 +41,5 @@ namespace zore {
 		//void begin();
 		//void end();
 		//void submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader);
-
-	private:
-		static void Init();
 	};
 }

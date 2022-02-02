@@ -5,6 +5,8 @@
 
 namespace zore {
 
+	class Chunk;
+
 	//========================================================================
 	//	Player Class
 	//========================================================================
@@ -17,13 +19,21 @@ namespace zore {
 		void Update(float deltaTime);
 
 	protected:
-		void OnMouseScroll(float xOffset, float yOffset) override;
 		void OnMouseMove(float x, float y, float dx, float dy) override;
+		void OnMousePress(int button) override;
+		void OnMouseScroll(float xOffset, float yOffset) override;
+		void OnKeyPress(int key, int mods) override;
 
 	private:
 		glm::vec3 position;
+		glm::vec3 size;
+		float vSpeed;
 		float yaw, pitch;
 		float sensitivity;
 		Camera* camera;
+
+		bool grounded;
+		bool flying;
+		bool noclip;
 	};
 }

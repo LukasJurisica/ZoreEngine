@@ -25,13 +25,28 @@ namespace zore {
 
 	class GLTexture2D : public Texture2D, public GLTexture {
 	public:
-		GLTexture2D(const std::string& name);
-		GLTexture2D(unsigned int width, unsigned int height, TextureFormat textureFormat);
-		GLTexture2D(unsigned int width, unsigned int height, TextureFormat internalFormat, unsigned int dataFormat, unsigned int type, void* data = nullptr);
+		GLTexture2D(const std::string& name, TextureFormat textureFormat);
+		GLTexture2D(unsigned int width, unsigned int height, TextureFormat textureFormat, void* data = nullptr);
 		~GLTexture2D() = default;
 		
 		void Bind() const override;
 		void Unbind() const override;
 		void SetTextureSlot(unsigned int slot) override;
+	};
+
+	//========================================================================
+	//	OpenGL 2D Texture Array Class
+	//========================================================================
+
+	class GLTexture2DArray : public Texture2DArray, public GLTexture {
+	public:
+		GLTexture2DArray(uint width, uint height, const std::vector<std::string>& filenames, TextureFormat textureFormat = TextureFormat::RGBA);
+		GLTexture2DArray(uint width, uint height, uint layers, void* data = nullptr, TextureFormat textureFormat = TextureFormat::RGBA);
+		~GLTexture2DArray() = default;
+
+		void Bind() const override;
+		void Unbind() const override;
+		void SetTextureSlot(unsigned int slot) override;
+		void SetTextureData(uint first, uint count, void* data) override;
 	};
 }

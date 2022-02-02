@@ -23,7 +23,6 @@ namespace zore {
 	ChunkMesh::~ChunkMesh() { delete buffer; }
 
 	void ChunkMesh::Reset() {
-		count = 0;
 		faces.clear();
 	}
 
@@ -91,18 +90,35 @@ namespace zore {
 	//------------------------------------------------------------------------
 
 	void Chunk::SetBlock(int x, int y, int z, ushort value) {
-		if (x >= 0 && y >= 0 && z >= 0 && x < CHUNK_WIDTH && y < CHUNK_HEIGHT && z < CHUNK_WIDTH)
+		if (y < 0 || y >= CHUNK_HEIGHT)
+			return;
+
+		DEBUG_ENSURE(x >= -CHUNK_WIDTH && x < CHUNK_WIDTH * 2 && z >= -CHUNK_WIDTH && z < CHUNK_WIDTH * 2,
+			"Chunk::SetBlock only accepts coordinates that are within the moore neighbourhood range (only directly neighbouring chunks)");
+
+		int dx = x >> CHUNK_WIDTH_BIT_DEPTH;
+		int dz = z >> CHUNK_WIDTH_BIT_DEPTH;
+
+		if (dx || dz) {
+			Chunk* neighbour = neighbours[(dx * 3) + dz + 4];
+			if (neighbour)
+				neighbour->blockData[((x - dx * CHUNK_WIDTH) * CHUNK_SLICE) + ((z - dz * CHUNK_WIDTH) * CHUNK_HEIGHT) + y] = value;
+		}
+		else
 			blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y] = value;
 	}
 
 	ushort Chunk::GetBlock(int x, int y, int z) {
 		if (y < 0)
-			return 1;
+			return BLOCK_STONE;
 		else if (y >= CHUNK_HEIGHT)
-			return 0;
+			return BLOCK_AIR;
 		
-		int dx = x < 0 ? -1 : (x >= CHUNK_WIDTH ? 1 : 0);
-		int dz = z < 0 ? -1 : (z >= CHUNK_WIDTH ? 1 : 0);
+		DEBUG_ENSURE(x >= -CHUNK_WIDTH && x < CHUNK_WIDTH*2 && z >= -CHUNK_WIDTH && z < CHUNK_WIDTH * 2,
+			"Chunk::GetBlock only accepts coordinates that are within the moore neighbourhood range (only directly neighbouring chunks)");
+
+		int dx = x >> CHUNK_WIDTH_BIT_DEPTH;
+		int dz = z >> CHUNK_WIDTH_BIT_DEPTH;
 
 		if (dx || dz) {
 			if (neighbours[(dx * 3) + dz + 4])
@@ -128,14 +144,29 @@ namespace zore {
 		}
 	}
 
+	Chunk* Chunk::GetNeighbour(int dx, int dz) {
+		Chunk* result = this;
+		while (dx || dz) {
+			int sx = zm::Sign(dx);
+			int sz = zm::Sign(dz);
+			result = result->neighbours[(sx * 3) + sz + 4];
+			dx -= sx;
+			dz -= sz;
+		}
+		return result;
+	}
+
 	bool Chunk::GetOpaque(int x, int y, int z) {
 		if (y < 0)
 			return true;
 		else if (y >= CHUNK_HEIGHT)
 			return false;
 
-		int dx = x < 0 ? -1 : (x >= CHUNK_WIDTH ? 1 : 0);
-		int dz = z < 0 ? -1 : (z >= CHUNK_WIDTH ? 1 : 0);
+		DEBUG_ENSURE(x >= -CHUNK_WIDTH && x < CHUNK_WIDTH * 2 && z >= -CHUNK_WIDTH && z < CHUNK_WIDTH * 2,
+			"Chunk::GetOpaque only accepts coordinates that are within the moore neighbourhood range (only directly neighbouring chunks)");
+
+		int dx = x >> CHUNK_WIDTH_BIT_DEPTH;
+		int dz = z >> CHUNK_WIDTH_BIT_DEPTH;
 
 		ushort block;
 		if (dx || dz)

@@ -21,4 +21,6 @@ namespace zore {
 	// Sprites and Other
 	static constexpr ushort BLOCK_AIR    = 0;
 	static constexpr ushort SPRITE_PLANT = 1;
+	static constexpr ushort SPRITE_MUSHROOM = 2;
+	
 }

@@ -1,14 +1,10 @@
 #include "utils/FileManager.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
 #include "debug/Debug.hpp"
 #include "path_config.h"
 #include <filesystem>
 #include <fstream>
-
-#if IS_DEBUG
-std::string workingDirectory = std::string(BASE_DIRECTORY) + "/";
-#else
-std::string workingDirectory = "./";
-#endif
 
 namespace zore {
 
@@ -16,14 +12,16 @@ namespace zore {
 		// Get the current working file directory
 		//std::filesystem::current_path();
 		
-		// Set the current working file directory
-		//std::filesystem::current_path(workingDirectory);
+#if IS_DEBUG
+		std::filesystem::current_path(std::string(BASE_DIRECTORY) + "/");
+#else
+		std::filesystem::current_path("./");
+#endif
 	}
 
 	void FileManager::ReadContent(std::string& result, const std::string& filename, bool includeEmptyLines) {
-		result = "";
 		// Open file
-		std::ifstream f(workingDirectory + filename);
+		std::ifstream f(filename);
 		ENSURE(f.is_open(), "Error opening file: " + filename);
 
 		// Read file
@@ -34,9 +32,8 @@ namespace zore {
 	}
 
 	void FileManager::ReadLines(std::vector<std::string>& result, const std::string& filename, bool includeEmptyLines) {
-		result.clear();
 		// Open file
-		std::ifstream f(workingDirectory + filename);
+		std::ifstream f(filename);
 		ENSURE(f.is_open(), "Error opening file: " + filename);
 
 		// Read file
@@ -51,6 +48,6 @@ namespace zore {
 	}
 
 	std::string FileManager::GetPath(const std::string& filename) {
-		return workingDirectory + filename;
+		return filename;
 	}
 }

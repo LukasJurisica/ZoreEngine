@@ -12,24 +12,21 @@ namespace zore {
 	API activeAPI = API::NONE;
 	RenderEngine* engine = nullptr;
 
-	RenderEngine* RenderEngine::Get() {
-		DEBUG_ENSURE(engine, "The Render Engine has not yet been initialized. You must create a window before retrieving the render engine.");
-		return engine;
+	void RenderEngine::Init() {
+		if (engine)
+			return;
+
+		switch (activeAPI) {
+		case API::OPENGL:
+			engine = new GLRenderEngine();
+			break;
+		default:
+			throw ZORE_EXCEPTION("The Render Engine cannot be intialized before the Render API is set with RenderEngine::SetApi.");
+		}
 	}
 
-	void RenderEngine::Init() {
-		DEBUG_ENSURE(activeAPI != API::NONE, "The Render Engine cannot be intialized before the Render API is set with RenderEngine::SetApi.");
-
-		// This ensures that if multiple windows are created this operation is not repeated.
-		if (!engine) {
-			switch (activeAPI) {
-			case API::OPENGL:
-				engine = new GLRenderEngine();
-				break;
-			default:
-				throw ZORE_EXCEPTION("Invalid RenderAPI");
-			}
-		}
+	RenderEngine* RenderEngine::Get() {
+		return engine;
 	}
 
 	API RenderEngine::GetAPI() {
@@ -38,6 +35,7 @@ namespace zore {
 
 	void RenderEngine::SetAPI(API api) {
 		DEBUG_ENSURE(activeAPI == API::NONE, "The render API has already been set - this operation cannot be performed multiple times.");
+		DEBUG_ENSURE(api != API::NONE, "Cannot set the Render API to None");
 		activeAPI = api;
 	}
 

@@ -11,39 +11,28 @@ namespace zore {
 
 	class Window {
 	public:
-		Window(int width, int height);
-		~Window();
-
-		static void Init();
-		static Window* Get();
+		static void Init(int width, int height);
 		static void Cleanup();
 
-		void Bind();
-		void Update();
-		bool ShouldClose();
+		static void Update();
+		static bool ShouldClose();
+		static void SetTitle(const char* title);
+		static void SetFullscreen(bool value);
+		static void ToggleFullscreen();
+		static void SetBorderless(bool value);
+		static void SetSize(int width, int height);
+		static void HideCursor(bool value);
+		static void ToggleCursor();
 
-		void SetTitle(const char* title);
-		void SetFullscreen(bool value);
-		void ToggleFullscreen();
-		void SetBorderless(bool value);
-		void SetSize(int width, int height);
-		void HideCursor(bool value);
-		void ToggleCursor();
-
-		float GetAspectRatio();
-		const glm::ivec2& GetSize();
+		static float GetAspectRatio();
+		static const glm::ivec2& GetSize();
 
 	private:
+		
 		static void ErrorCallback(int error, const char* description);
 		static void ResizeCallback(GLFWwindow* windowHandle, int width, int height);
 		static void MoveCallback(GLFWwindow* windowHandle, int xpos, int ypos);
 		static void FocusCallback(GLFWwindow* windowHandle, int focused);
-
-		glm::ivec2 size;
-		glm::ivec2 position;
-		GLFWwindow* windowHandle;
-		bool fullscreen;
-		bool cursorHidden;
 	};
 
 	//========================================================================

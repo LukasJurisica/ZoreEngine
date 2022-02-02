@@ -38,13 +38,14 @@ namespace zore {
 	// Chunk Manager Class
 	//========================================================================
 
-	void ChunkManager::Init(uint renderDistance, const glm::vec3& pos) {
+	void ChunkManager::Init(uint renderDistance, const glm::vec3& position) {
 		// Initialize data for chunk management
 		int radius = renderDistance + 1;
 		chunkRadiusSquared = (radius + 0.5f) * (radius + 0.5f);
 
-		fulcrum = { zm::Floor(pos.x / Chunk::CHUNK_WIDTH), zm::Floor(pos.z / Chunk::CHUNK_WIDTH) };
-		quadrant = { zm::Floor(pos.x) & 32, zm::Floor(pos.z) & 32 };
+		glm::ivec2 fpos = { zm::Floor(position.x), zm::Floor(position.z) };
+		fulcrum = { fpos.x >> Chunk::CHUNK_WIDTH_BIT_DEPTH, fpos.y >> Chunk::CHUNK_WIDTH_BIT_DEPTH };
+		quadrant = { fpos.x & Chunk::CHUNK_HALF_WIDTH, fpos.y & Chunk::CHUNK_HALF_WIDTH };
 
 		// Create chunk columns
 		for (int x = -radius; x <= radius; x++) {
@@ -80,7 +81,7 @@ namespace zore {
 			delete pair.second;
 	}
 
-	void ChunkManager::Update(const Camera& camera) {
+	void ChunkManager::Update(Camera* camera) {
 		uploadMutex.lock();
 		for (Chunk* chunk : toBeUploaded) {
 			chunk->blockMesh.Upload();
@@ -90,15 +91,16 @@ namespace zore {
 		toBeUploaded.clear();
 		uploadMutex.unlock();
 
-		glm::vec3 position = camera.GetPosition();
+		glm::vec3 position = camera->GetPosition();
+		glm::ivec2 fpos = { zm::Floor(position.x), zm::Floor(position.z) };
 		// Check if the position crossed a chunk quadrant since last update
-		glm::ivec2 newQuadrant = { zm::Floor(position.x) & Chunk::CHUNK_HALF_WIDTH, zm::Floor(position.z) & Chunk::CHUNK_HALF_WIDTH };
+		glm::ivec2 newQuadrant = { fpos.x & Chunk::CHUNK_HALF_WIDTH, fpos.y & Chunk::CHUNK_HALF_WIDTH };
 		if (quadrant != newQuadrant) {
 			quadrant = newQuadrant;
 
 			std::lock_guard<std::mutex> lk(jobMutex);
 			// Additionally check if the position crossed a chunk border
-			glm::ivec2 newFulcrum = { zm::Floor(position.x * (1.f / Chunk::CHUNK_WIDTH)), zm::Floor(position.z * (1.f / Chunk::CHUNK_WIDTH)) };
+			glm::ivec2 newFulcrum = { fpos.x >> Chunk::CHUNK_WIDTH_BIT_DEPTH, fpos.y >> Chunk::CHUNK_WIDTH_BIT_DEPTH };
 			if (fulcrum != newFulcrum) {
 				fulcrum = newFulcrum;
 				LoadChunks();
@@ -111,10 +113,26 @@ namespace zore {
 		
 		visibleChunks.clear();
 		for (const std::pair<size_t, Chunk*>& pair : chunks)
-			if (camera.TestAABB(pair.second->renderPos, glm::vec3(Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT, Chunk::CHUNK_WIDTH)))
+			if (camera->TestAABB(pair.second->renderPos, glm::vec3(Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT, Chunk::CHUNK_WIDTH)))
 				visibleChunks.push_back(pair.second);
 
 		//UpdateChunks();
+	}
+
+	void ChunkManager::RemeshChunk(Chunk* chunk, int xNeighbour, int zNeighbour) {
+		std::lock_guard<std::mutex> lk(jobMutex);
+		int jobCount = jobs.size();
+
+		for (int x = 0; x <= zm::Abs(xNeighbour); x++) {
+			for (int z = 0; z <= zm::Abs(zNeighbour); z++) {
+				Chunk* neighbour = chunk->GetNeighbour(x * xNeighbour, z * zNeighbour);
+				neighbour->state = Chunk::State::GENERATED;
+				jobs.insert(jobs.begin(), { Task::MESH, neighbour });
+			}
+		}
+
+		if (jobCount == 0)
+			cv.notify_all();
 	}
 
 	//------------------------------------------------------------------------
@@ -126,11 +144,17 @@ namespace zore {
 		return (iter == chunks.end()) ? nullptr : iter->second;
 	}
 
-	glm::ivec3 ChunkManager::GetChunkCoord(const glm::vec3& pos) {
+	Chunk* ChunkManager::GetChunk(const glm::vec3& position) {
+		size_t chunkKey = GetChunkKey(zm::Floor(position.x) >> Chunk::CHUNK_WIDTH_BIT_DEPTH, zm::Floor(position.z) >> Chunk::CHUNK_WIDTH_BIT_DEPTH);
+		std::unordered_map<size_t, Chunk*>::iterator iter = chunks.find(chunkKey);
+		return (iter == chunks.end()) ? nullptr : iter->second;
+	}
+
+	glm::ivec3 ChunkManager::GetChunkCoord(const glm::vec3& position) {
 		return {
-			zm::Floor(pos.x / Chunk::CHUNK_WIDTH),
-			zm::Floor(pos.y / Chunk::CHUNK_HEIGHT),
-			zm::Floor(pos.z / Chunk::CHUNK_WIDTH)
+			zm::Floor(position.x) >> Chunk::CHUNK_WIDTH_BIT_DEPTH,
+			zm::Floor(position.y) >> Chunk::CHUNK_HEIGHT_BIT_DEPTH,
+			zm::Floor(position.z) >> Chunk::CHUNK_WIDTH_BIT_DEPTH
 		};
 	}
 

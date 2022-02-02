@@ -6,8 +6,6 @@
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/Shader.hpp"
 
-#include "game/Player.hpp"
-
 namespace zore {
 
 	struct ShaderData {
@@ -29,7 +27,6 @@ namespace zore {
 		void OnKeyPress(int key, int mods) override;
 
 	private:
-		Window window;
 		Camera camera;
 
 		RenderEngine* engine;
@@ -37,5 +34,6 @@ namespace zore {
 		Shader* postProcessShader;
 		Shader* blockShader;
 		Shader* spriteShader;
+		Shader* debugLineShader;
 	};
 }

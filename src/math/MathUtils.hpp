@@ -28,8 +28,8 @@ namespace zm {
 	// Performs a linear interpolation between a and b of n
 	inline float Lerp(float a, float b, float n) { return a + n * (b - a); }
 
-	// Performs an inverse linear interpolation of value between a and b
-	inline float InvLerp(float a, float b, float value) { return (value - a) / (b - a); }
+	// Performs an inverse linear interpolation of t between a and b
+	inline float InvLerp(float a, float b, float t) { return (t - a) / (b - a); }
 
 	inline float InterpHermite(float t) { return t * t * (3 - 2 * t); }
 

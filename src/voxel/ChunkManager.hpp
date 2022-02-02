@@ -16,12 +16,14 @@ namespace zore {
 
 	class ChunkManager {
 	public:
-		static void Init(uint renderDistance, const glm::vec3& pos);
+		static void Init(uint renderDistance, const glm::vec3& position);
 		static void Cleanup();
 
-		static void Update(const Camera& camera);
+		static void Update(Camera* camera);
+		static void RemeshChunk(Chunk* chunk, int xNeighbour, int zNeighbour);
 		static Chunk* GetChunk(int x, int z);
-		static glm::ivec3 GetChunkCoord(const glm::vec3& pos);
+		static Chunk* GetChunk(const glm::vec3& position);
+		static glm::ivec3 GetChunkCoord(const glm::vec3& position);
 		static const std::unordered_map<size_t, Chunk*>& GetChunks();
 		static const std::vector<Chunk*>& GetVisibleChunks();
 

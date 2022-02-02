@@ -31,6 +31,6 @@ namespace zore {
 	}
 
 	uint FrameBuffer::GetNumTextureAttachments() {
-		return attachments.size();
+		return static_cast<uint>(attachments.size());
 	}
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "utils/DataTypes.hpp"
 #include <string>
 #include <vector>
 

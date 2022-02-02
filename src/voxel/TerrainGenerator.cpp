@@ -21,15 +21,19 @@ namespace zore {
 		terrain.SetFractalOctaves(3);
 
 		biome.SetNoiseType(fnl::NoiseType::Cellular);
+		biome.SetCellularDistanceFunction(fnl::CellularDistanceFunction::Hybrid);
 		biome.SetCellularReturnType(fnl::CellularReturnType::CellValue);
-		biome.SetCellularDistanceFunction(fnl::CellularDistanceFunction::EuclideanSq);
+		biome.SetCellularJitter(1.f);
+		//biome.SetDomainWarpType(fnl::DomainWarpType::OpenSimplex2);
+		//biome.SetDomainWarpAmp(100);
+		//biome.SetFractalType(fnl::FractalType::DomainWarpIndependent);
 	}
 
 	void TerrainGenerator::Generate(Chunk* chunk) {
 		if (!chunk->blockData)
 			chunk->blockData = new ushort[Chunk::CHUNK_VOLUME];
 
-		short* heightMap = new short[ChunkSizeWithBorder * ChunkSizeWithBorder];
+		short heightMap[ChunkSizeWithBorder * ChunkSizeWithBorder];
 		GenerateHeightmap(heightMap, chunk);
 
 		for (int x = 0; x < Chunk::CHUNK_WIDTH; x++) {
@@ -39,15 +43,21 @@ namespace zore {
 				int h = heightMap[index];
 
 				ushort surface = BLOCK_GRASS;
-				if (zm::Abs(heightMap[index - 1] - heightMap[index + 1]) > 2 || zm::Abs(heightMap[index - ChunkSizeWithBorder] - heightMap[index + ChunkSizeWithBorder]) > 2)
+
+				if (zm::Abs(heightMap[index - 1] - heightMap[index + 1]) > 1 || zm::Abs(heightMap[index - ChunkSizeWithBorder] - heightMap[index + ChunkSizeWithBorder]) > 1)
 					surface = BLOCK_DIRT;
 
 				for (int y = 0; y <= h; y++)
 					chunk->SetBlockLocal(x, y, z, surface);
 				for (int y = h + 1; y < Chunk::CHUNK_HEIGHT; y++)
 					chunk->SetBlockLocal(x, y, z, 0);
-				if (zm::WhiteNoise::Eval1(glm::vec2(x, z)) > 0.8f && surface == BLOCK_GRASS)
-					chunk->SetBlockLocal(x, h + 1, z, SPRITE_PLANT);
+				if (surface == BLOCK_GRASS) {
+					float p = zm::WhiteNoise::Eval1(glm::vec2(x, z));
+					if (p > 0.99)
+						chunk->SetBlockLocal(x, h + 1, z, SPRITE_MUSHROOM);
+					else if (p > 0.85)
+						chunk->SetBlockLocal(x, h + 1, z, SPRITE_PLANT);
+				}
 			}
 		}
 	}
@@ -55,10 +65,14 @@ namespace zore {
 	void TerrainGenerator::GenerateHeightmap(short* heightMap, Chunk* chunk) {
 		for (int x = 0; x < ChunkSizeWithBorder; x++) {
 			for (int z = 0; z < ChunkSizeWithBorder; z++) {
-				float n = terrain.GetNoise(x + chunk->renderPos.x - 1, z + chunk->renderPos.z - 1);
+
 				//int h = zm::Floor(zm::SmoothMax(0.8f, zm::NormalizeNoise(-n) * 3.2f, 0.5f) * 20);
 				//int h = zm::Floor(zm::Max(16.f, zm::NormalizeNoise(-n) * 64));
+
+				float n = terrain.GetNoise(x + chunk->renderPos.x - 1, z + chunk->renderPos.z - 1);
 				int h = zm::Floor(zm::SmoothMax(24.f, zm::NormalizeNoise(n) * 128.f, 15.f));
+				//int b = zm::Floor(zm::NormalizeNoise(biome.GetNoise(x + chunk->renderPos.x, z + chunk->renderPos.z)) * 20) * 2;
+
 				heightMap[x * ChunkSizeWithBorder + z] = h;
 			}
 		}
