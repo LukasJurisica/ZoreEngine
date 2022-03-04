@@ -14,6 +14,9 @@ namespace zore {
 
 	GLRenderEngine::GLRenderEngine() : clearMode(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT), topology(GL_TRIANGLES) {
 		ENSURE(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)), "Failed to initialize GLAD");
+
+		glEnable(GL_BLEND); // TEMPORARY UNTIL I WRITE NEW BLENDING METHOD FOR FLUIDS
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	void GLRenderEngine::SetViewport(unsigned int width, unsigned int height, unsigned int x, unsigned int y) {

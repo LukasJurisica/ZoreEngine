@@ -11,6 +11,7 @@
 #include "game/World.hpp"
 
 #define WINDOW_SIZE 1920, 1080
+#define RENDER_DISTANCE 16u
 
 namespace zore {
 	
@@ -30,8 +31,6 @@ namespace zore {
 		Window::Cleanup();
 	}
 
-#define RENDER_DISTANCE 16u
-
 	Application::Application() : engine(RenderEngine::Get()), camera(75.f, Window::GetAspectRatio(), 0.1f, 1200.f) {
 		//Window::SetBorderless(true);
 		Window::HideCursor(true);
@@ -42,13 +41,16 @@ namespace zore {
 		engine->SetClearMode({ BufferType::COLOUR, BufferType::DEPTH });
 		engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
 
+		// Compile Shaders
 		blockShader = Shader::Create("VoxelBlocks");
+		fluidShader = Shader::Create("VoxelFluids");
 		spriteShader = Shader::Create("VoxelSprites");
 		debugLineShader = Shader::Create("DebugLines");
-		spriteShader->Bind();
-		spriteShader->SetTextureSlot("spriteTextures", 1);
 		postProcessShader = Shader::Create("postprocess");
 
+		// Set initial uniform values for shaders
+		spriteShader->Bind();
+		spriteShader->SetTextureSlot("spriteTextures", 1);
 		postProcessShader->Bind();
 		glm::ivec2 res = Window::GetSize();
 		postProcessShader->SetFloat2("resolution", { 1.f / res.x, 1.f / res.y });
@@ -62,6 +64,7 @@ namespace zore {
 		delete frameBuffer;
 		delete postProcessShader;
 		delete blockShader;
+		delete fluidShader;
 		delete spriteShader;
 		delete engine;
 	}
@@ -122,7 +125,6 @@ namespace zore {
 			shaderDataBuffer->Set(&shaderData, sizeof(shaderData));
 			//shaderDataBuffer->Update(&shaderData, sizeof(shaderData));
 
-
 			// RENDER THE SCENE TO FRAMEBUFFER --------
 			frameBuffer->Bind();
 			//engine->SetWireframe(true);
@@ -143,11 +145,11 @@ namespace zore {
 				engine->DrawLinearInstanced(quadMesh->GetCount(), chunk->GetChunkMesh(ChunkMeshType::SPRITES).Bind());
 			}
 			// Render fluids
-			//fluidShader->Bind();
-			//for (const Chunk* chunk : ChunkManager::GetVisibleChunks()) {
-			//	fluidShader->SetInt3("chunkPos", chunk->GetPosition());
-			//	engine->DrawLinearInstanced(quad->GetCount(), chunk->GetChunkMesh(ChunkMeshType::FLUIDS).Bind());
-			//}
+			fluidShader->Bind();
+			for (const Chunk* chunk : ChunkManager::GetVisibleChunks()) {
+				fluidShader->SetInt3("chunkPos", chunk->GetPosition());
+				engine->DrawLinearInstanced(quadMesh->GetCount(), chunk->GetChunkMesh(ChunkMeshType::FLUIDS).Bind());
+			}
 
 			// Render debug for block that is currently selected
 			engine->SetBackFaceCulling(true);
@@ -163,7 +165,7 @@ namespace zore {
 				engine->DrawIndexed(debugCubeMesh->GetCount());
 			}
 
-			//// Rebind quad layout and mesh
+			// Rebind quad layout and mesh
 			engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
 			UBx1->Bind();
 			quadMesh->Bind();
@@ -187,9 +189,9 @@ namespace zore {
 	void Application::OnWindowResize(int width, int height) {
 		if (width && height) {
 			engine->SetViewport(width, height);
+			camera.SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
 			frameBuffer->SetSize(width, height);
 			frameBuffer->GetTexture(0)->SetTextureSlot(0);
-			camera.SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
 			postProcessShader->Bind();
 			postProcessShader->SetFloat2("resolution", { 1.f / width, 1.f / height });
 		}

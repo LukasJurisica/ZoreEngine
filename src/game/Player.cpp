@@ -23,6 +23,8 @@ namespace zore {
 		float speed = 10.f;
 		glm::vec3 velocity = glm::vec3(0);
 
+		float headHeight = 1.75f;
+
 		if (Keyboard::GetKey(KEY_W))
 			velocity += camera->GetFront();
 		if (Keyboard::GetKey(KEY_S))
@@ -31,8 +33,10 @@ namespace zore {
 			velocity += camera->GetRight();
 		if (Keyboard::GetKey(KEY_A))
 			velocity -= camera->GetRight();
-		if (Keyboard::GetKey(KEY_X) && !flying)
+		if (Keyboard::GetKey(KEY_X) && !flying) {
 			speed *= 0.3f;
+			headHeight -= 0.1f;
+		}
 		else if (Keyboard::GetKey(KEY_L_SHIFT))
 			speed *= 1.5f;
 
@@ -67,7 +71,7 @@ namespace zore {
 			}
 		}
 		position += velocity;
-		camera->SetPosition(position + glm::vec3(0.f, 1.75f - size.y, 0.f));
+		camera->SetPosition(position + glm::vec3(0.f, headHeight - size.y, 0.f));
 		ChunkManager::Update(camera);
 	}
 
@@ -81,12 +85,10 @@ namespace zore {
 
 	void Player::OnMousePress(int button) {
 		if (button == MOUSE_BUTTON_LEFT) {
-			if (World::BreakBlock(camera->GetPosition(), camera->GetForward(), 10))
-				Logger::Log("Block Broken");
+			World::BreakBlock(camera->GetPosition(), camera->GetForward(), 10);
 		}
 		else if (button == MOUSE_BUTTON_RIGHT) {
-			if (World::PlaceBlock(camera->GetPosition(), camera->GetForward(), BLOCK_STONE, 10))
-				Logger::Log("Block Placed");
+			World::PlaceBlock(camera->GetPosition(), camera->GetForward(), BLOCK_STONE, 10);
 		}
 	}
 

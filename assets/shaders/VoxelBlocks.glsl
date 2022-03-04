@@ -39,10 +39,6 @@ void main() {
 #shaderstage fragment
 #version 430 core
 
-const vec3 color[4] = vec3[4]( vec3(0.482, 0.247, 0.0), vec3(0.403, 0.831, 0.023), vec3(0.631, 0.666, 0.639), vec3(0.584, 0.271, 0.208) );
-const float lighting[6] = float[6](0.9f, 0.9f, 0.7f, 1.0f, 0.9f, 0.9f);
-const int blockSubDivisions = 4;
-
 in flat unsigned int blockID;
 in flat unsigned int dir;
 in flat vec4 ao;
@@ -50,6 +46,10 @@ in vec3 position;
 in vec2 uv;
 in float dist;
 out vec4 FragColor;
+
+const vec3 colour[4] = vec3[4]( vec3(0.482, 0.247, 0.0), vec3(0.403, 0.831, 0.023), vec3(0.631, 0.666, 0.639), vec3(0.584, 0.271, 0.208) );
+const float lighting[6] = float[6](0.9f, 0.9f, 0.7f, 1.0f, 0.9f, 0.9f);
+const int blockSubDivisions = 4;
 
 float hash13(in vec3 p3) {
 	p3 = fract(p3 * 0.1031);
@@ -66,12 +66,12 @@ void main() {
 	// If we remove the 1 -, block faces will have noise that wraps around it's faces
 	unsigned int offset = 1 - (dir & 1);
 	unsigned int axis = dir >> 1;
-	pos[axis] = round(pos[axis] - offset);
+	pos[axis] = round(pos[axis]) - offset;
 
 	float noise = hash13(floor(pos)) * 0.1f + 0.9f;
 	float ao_interp = mix(mix(ao[0], ao[2], uv.x), mix(ao[1], ao[3], uv.x), uv.y);
 
 	float mult = mix(ao_interp * noise * lighting[dir], 0.75, clamp(invMix(128, 512, dist), 0.0, 1.0));
 
-	FragColor = vec4(color[blockID] * mult, 1.0);
+	FragColor = vec4(colour[blockID] * mult, 1.0);
 } 

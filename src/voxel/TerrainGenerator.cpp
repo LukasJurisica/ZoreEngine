@@ -49,9 +49,12 @@ namespace zore {
 
 				for (int y = 0; y <= h; y++)
 					chunk->SetBlockLocal(x, y, z, surface);
-				for (int y = h + 1; y < Chunk::CHUNK_HEIGHT; y++)
-					chunk->SetBlockLocal(x, y, z, 0);
-				if (surface == BLOCK_GRASS) {
+				int waterHeight = 40;
+				for (int y = h + 1; y <= waterHeight; y++)
+					chunk->SetBlockLocal(x, y, z, FLUID_WATER);
+				for (int y = zm::Max(waterHeight, h) + 1; y < Chunk::CHUNK_HEIGHT; y++)
+					chunk->SetBlockLocal(x, y, z, BLOCK_AIR);
+				if (surface == BLOCK_GRASS && h > waterHeight) {
 					float p = zm::WhiteNoise::Eval1(glm::vec2(x, z));
 					if (p > 0.99)
 						chunk->SetBlockLocal(x, h + 1, z, SPRITE_MUSHROOM);
@@ -71,7 +74,7 @@ namespace zore {
 
 				float n = terrain.GetNoise(x + chunk->renderPos.x - 1, z + chunk->renderPos.z - 1);
 				int h = zm::Floor(zm::SmoothMax(24.f, zm::NormalizeNoise(n) * 128.f, 15.f));
-				//int b = zm::Floor(zm::NormalizeNoise(biome.GetNoise(x + chunk->renderPos.x, z + chunk->renderPos.z)) * 20) * 2;
+				int b = zm::Floor(zm::NormalizeNoise(biome.GetNoise(x + chunk->renderPos.x, z + chunk->renderPos.z)) * 20) * 2;
 
 				heightMap[x * ChunkSizeWithBorder + z] = h;
 			}

@@ -34,6 +34,7 @@ namespace zore {
 		Shader* postProcessShader;
 		Shader* blockShader;
 		Shader* spriteShader;
+		Shader* fluidShader;
 		Shader* debugLineShader;
 	};
 }

@@ -43,6 +43,9 @@ namespace zore {
 			out.z == 0 ? -1 : (out.z == Chunk::CHUNK_WIDTH - 1 ? 1 : 0)
 		);
 
+		//out += chunk->GetPosition();
+		//Logger::Log(VEC3TOSTR(out));
+
 		return true;
 	}
 
@@ -72,6 +75,7 @@ namespace zore {
 			(out.z + ((step.z + 1) >> 1) - pos.z) * ray.z
 		};
 
+		bool invalidSelection = false;
 		do {
 			axis = (weight.x < weight.y && weight.x < weight.z) ? 0 : (weight.y < weight.z ? 1 : 2);
 			offset[axis]++;
@@ -80,7 +84,9 @@ namespace zore {
 			out[axis] += step[axis];
 			//if (blockPos[minIndex] == out[minIndex]) { "OUT OF BOUNDS" }
 			weight[axis] += delta[axis];
-		} while (chunk->GetBlock(out.x, out.y, out.z) == BLOCK_AIR);
+			ushort block = chunk->GetBlock(out.x, out.y, out.z);
+			invalidSelection = block == BLOCK_AIR || (!(block & BLOCK_BIT) && (block & FLUID_BIT));
+		} while (invalidSelection);
 
 		return chunk;
 	}
