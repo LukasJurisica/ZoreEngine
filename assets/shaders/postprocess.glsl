@@ -20,7 +20,7 @@ void main() {
 #version 430 core
 
 in vec2 uv;
-layout(binding = 0) uniform sampler2D screen;
+layout(binding = 0) uniform sampler2DArray screen;
 uniform vec2 resolution;
 out vec4 FragColor;
 
@@ -33,7 +33,7 @@ float r2l(vec3 rgb) {
 }
 
 void main() {
-    vec4 rgbM = texture(screen, uv);
+    vec4 rgbM = texture(screen, vec3(uv, 0));
 
 
     vec2 ssc = uv * 2 - 1;
@@ -50,12 +50,11 @@ void main() {
     // Returning here skips anti aliasing
     return;
 
-
     float lumaM  = r2l(rgbM.rgb);
-    float lumaNW = r2l(textureOffset(screen, uv, ivec2(-1, 1)).rgb);
-    float lumaNE = r2l(textureOffset(screen, uv, ivec2( 1, 1)).rgb);
-    float lumaSW = r2l(textureOffset(screen, uv, ivec2(-1,-1)).rgb);
-    float lumaSE = r2l(textureOffset(screen, uv, ivec2( 1,-1)).rgb);
+    float lumaNW = r2l(textureOffset(screen, vec3(uv, 0), ivec2(-1, 1)).rgb);
+    float lumaNE = r2l(textureOffset(screen, vec3(uv, 0), ivec2( 1, 1)).rgb);
+    float lumaSW = r2l(textureOffset(screen, vec3(uv, 0), ivec2(-1,-1)).rgb);
+    float lumaSE = r2l(textureOffset(screen, vec3(uv, 0), ivec2( 1,-1)).rgb);
 
     float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
     float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
@@ -66,8 +65,8 @@ void main() {
 
     dir = min(vec2(FXAA_SPAN_MAX), max(vec2(-FXAA_SPAN_MAX), dir * rcpDirMin)) * resolution;
 
-    vec3 rgbA = 0.5 * (texture(screen, uv + dir * (1.0/3.0 - 0.5)).xyz + texture(screen, uv + dir * (2.0/3.0 - 0.5)).xyz);
-    vec3 rgbB = rgbA * 0.5 + 0.25 * (texture(screen, uv + dir * (0.0/3.0 - 0.5)).xyz + texture(screen, uv + dir * (3.0/3.0 - 0.5)).xyz);
+    vec3 rgbA = 0.5 * (texture(screen, vec3(uv + dir * (1.0/3.0 - 0.5), 0)).xyz + texture(screen, vec3(uv + dir * (2.0/3.0 - 0.5), 0)).xyz);
+    vec3 rgbB = rgbA * 0.5 + 0.25 * (texture(screen, vec3(uv + dir * (0.0/3.0 - 0.5), 0)).xyz + texture(screen, vec3(uv + dir * (3.0/3.0 - 0.5), 0)).xyz);
     
     float lumaB = r2l(rgbB);
     if ((lumaB < lumaMin) || (lumaB > lumaMax))

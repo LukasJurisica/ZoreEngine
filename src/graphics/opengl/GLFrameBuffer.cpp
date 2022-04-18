@@ -3,13 +3,15 @@
 #include "debug/Debug.hpp"
 #include <glad/glad.h>
 
+#include <iostream>
+
 namespace zore {
 
 	//========================================================================
 	//	OpenGL Render Buffer Class
 	//========================================================================
 
-	GLRenderBuffer::GLRenderBuffer(unsigned int width, unsigned int height, unsigned int format) : format(format) {
+	GLRenderBuffer::GLRenderBuffer(uint width, uint height, uint format) : format(format) {
 		glCreateRenderbuffers(1, &id);
 		glNamedRenderbufferStorage(id, format, width, height);
 	}
@@ -18,11 +20,11 @@ namespace zore {
 		glDeleteRenderbuffers(1, &id);
 	}
 
-	void GLRenderBuffer::SetSize(unsigned int width, unsigned int height) {
+	void GLRenderBuffer::SetSize(uint width, uint height) {
 		glNamedRenderbufferStorage(id, format, width, height);
 	}
 
-	unsigned int GLRenderBuffer::GetID() const {
+	uint GLRenderBuffer::GetID() const {
 		return id;
 	}
 
@@ -30,29 +32,32 @@ namespace zore {
 	//	OpenGL Frame Buffer Class
 	//========================================================================
 
-	GLFrameBuffer::GLFrameBuffer(unsigned int width, unsigned int height, unsigned int colorAttachmentCount, DepthFormat depthFormat) : rbo(nullptr) {
+	static const unsigned int DepthFormatToGLDepthFormat[] = { GL_DEPTH_COMPONENT32, GL_DEPTH24_STENCIL8 };
+	static const unsigned int DepthFormatToGLAttachmentType[] = { GL_DEPTH_ATTACHMENT, GL_DEPTH_STENCIL_ATTACHMENT };
+
+	GLFrameBuffer::GLFrameBuffer(uint width, uint height, uint colorAttachmentCount, TextureFormat textureFormat, DepthFormat depthFormat) {
 		glCreateFramebuffers(1, &id);
 
 		// Create colour attachments
-		unsigned int activeAttachments[MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS];
-		for (unsigned int i = 0; i < colorAttachmentCount; i++) {
-			GLTexture2D* tex = new GLTexture2D(width, height, TextureFormat::RGBA);
+		uint activeAttachments[MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS];
+		GLTexture2DArray* tex = new GLTexture2DArray(width, height, colorAttachmentCount, nullptr, textureFormat);
+		uint texID = tex->GetID();
+		textureArray = tex;
+		for (uint i = 0; i < colorAttachmentCount; i++) {
 			activeAttachments[i] = GL_COLOR_ATTACHMENT0 + i;
-			glNamedFramebufferTexture(id, activeAttachments[i], tex->GetID(), 0);
-			attachments.push_back(tex);
+			glNamedFramebufferTextureLayer(id, activeAttachments[i], texID, 0, i);
 		}
 		glNamedFramebufferDrawBuffers(id, colorAttachmentCount, activeAttachments);
 
 		// Create Depth/Stencil Buffer (If requested)
-		if (depthFormat == DepthFormat::DEPTH32) {
-			rbo = new GLRenderBuffer(width, height, GL_DEPTH_COMPONENT32);
-			glNamedFramebufferRenderbuffer(id, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo->GetID());
+		if (depthFormat != DepthFormat::NONE) {
+			uint formatIndex = static_cast<uint>(depthFormat);
+			rbo = new GLRenderBuffer(width, height, DepthFormatToGLDepthFormat[formatIndex]);
+			glNamedFramebufferRenderbuffer(id, DepthFormatToGLAttachmentType[formatIndex], GL_RENDERBUFFER, rbo->GetID());
 		}
-		else if (depthFormat == DepthFormat::DEPTH24_STENCIL8) {
-			rbo = new GLRenderBuffer(width, height, GL_DEPTH24_STENCIL8);
-			glNamedFramebufferRenderbuffer(id, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo->GetID());
-		}
-		
+		else
+			rbo = nullptr;
+
 		// Ensure FrameBuffer was created successfully
 		unsigned int retval = glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER);
 		ENSURE(retval == GL_FRAMEBUFFER_COMPLETE, "Error creating FrameBuffer. Error code: " + std::to_string(retval));
@@ -70,13 +75,12 @@ namespace zore {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void GLFrameBuffer::SetSize(unsigned int width, unsigned int height) {
-		for (int i = 0; i < attachments.size(); i++) {
-			delete attachments[i];
-			GLTexture2D* tex = new GLTexture2D(width, height, TextureFormat::RGBA);
-			glNamedFramebufferTexture(id, GL_COLOR_ATTACHMENT0 + i, tex->GetID(), 0);
-			attachments[i] = tex;
-		}
+	void GLFrameBuffer::SetSize(uint width, uint height) {
+		uint layers = textureArray->GetLayerCount();
+		textureArray->SetSize(width, height, layers);
+		uint textureID = reinterpret_cast<GLTexture2DArray*>(textureArray)->GetID();
+		for (uint i = 0; i < layers; i++)
+			glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0 + i, textureID, 0, i);
 		if (rbo)
 			rbo->SetSize(width, height);
 	}

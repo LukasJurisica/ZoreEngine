@@ -85,10 +85,10 @@ namespace zore {
 
 	void Player::OnMousePress(int button) {
 		if (button == MOUSE_BUTTON_LEFT) {
-			World::BreakBlock(camera->GetPosition(), camera->GetForward(), 10);
+			World::SetBlock(BLOCK_AIR, camera->GetPosition(), camera->GetForward(), 10);
 		}
 		else if (button == MOUSE_BUTTON_RIGHT) {
-			World::PlaceBlock(camera->GetPosition(), camera->GetForward(), BLOCK_STONE, 10);
+			World::SetBlock(BLOCK_STONE, camera->GetPosition(), camera->GetForward(), 10);
 		}
 	}
 

@@ -1,5 +1,4 @@
 #pragma once
-#include "utils/DataTypes.hpp"
 #include "graphics/Buffer.hpp"
 #include "voxel/Block.hpp"
 

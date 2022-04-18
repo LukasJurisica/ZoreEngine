@@ -10,7 +10,7 @@ namespace zore {
 	//	Generic Frame Buffer Attachment Specifications
 	//========================================================================
 
-	enum class DepthFormat { NONE, DEPTH32, DEPTH24_STENCIL8 };
+	enum class DepthFormat { DEPTH32, DEPTH24_STENCIL8, NONE };
 
 	//========================================================================
 	//	Generic Frame Buffer Class
@@ -18,16 +18,15 @@ namespace zore {
 
 	class FrameBuffer {
 	public:
-		static FrameBuffer* Create(uint width, uint height, uint colorAttachmentCount = 1, DepthFormat format = DepthFormat::NONE);
+		static FrameBuffer* Create(uint width, uint height, uint colorAttachmentCount = 1, TextureFormat textureFormat = TextureFormat::RGBA, DepthFormat depthFormat = DepthFormat::DEPTH32);
 		virtual ~FrameBuffer();
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void SetSize(uint width, uint height) = 0;
-		Texture2D* GetTexture(uint index) const;
-		uint GetNumTextureAttachments();
+		Texture2DArray* GetTextureArray() const;
 
 	protected:
-		std::vector<Texture2D*> attachments;
+		Texture2DArray* textureArray = nullptr;
 	};
 }

@@ -5,13 +5,14 @@
 
 namespace zore {
 
-	bool World::PlaceBlock(glm::vec3 pos, const glm::vec3& ray, ushort block, int range) {
+	bool World::SetBlock(ushort block, const glm::vec3& pos, const glm::vec3& ray, int range) {
 		glm::ivec3 out;
 		int axis;
 		Chunk* chunk = RaycastBlock(pos, ray, out, axis, range);
 		if (!chunk)
 			return false;
-		out[axis] -= zm::Sign(ray[axis]);
+		if (block != BLOCK_AIR)
+			out[axis] -= zm::Sign(ray[axis]);
 
 		glm::ivec2 chunkOffset = { out.x >> Chunk::CHUNK_WIDTH_BIT_DEPTH, out.z >> Chunk::CHUNK_WIDTH_BIT_DEPTH, };
 		chunk = chunk->GetNeighbour(chunkOffset.x, chunkOffset.y);
@@ -22,40 +23,39 @@ namespace zore {
 			out.x == 0 ? -1 : (out.x == Chunk::CHUNK_WIDTH - 1 ? 1 : 0),
 			out.z == 0 ? -1 : (out.z == Chunk::CHUNK_WIDTH - 1 ? 1 : 0)
 		);
-		
-		return true;
-	}
-
-	bool World::BreakBlock(glm::vec3 pos, const glm::vec3& ray, int range) {
-		glm::ivec3 out;
-		int axis;
-		Chunk* chunk = RaycastBlock(pos, ray, out, axis, range);
-		if (!chunk)
-			return false;
-		
-		glm::ivec2 chunkOffset = { out.x >> Chunk::CHUNK_WIDTH_BIT_DEPTH, out.z >> Chunk::CHUNK_WIDTH_BIT_DEPTH, };
-		chunk = chunk->GetNeighbour(chunkOffset.x, chunkOffset.y);
-		out.x -= chunkOffset.x * Chunk::CHUNK_WIDTH;
-		out.z -= chunkOffset.y * Chunk::CHUNK_WIDTH;
-		chunk->SetBlock(out.x, out.y, out.z, BLOCK_AIR);
-		ChunkManager::RemeshChunk(chunk,
-			out.x == 0 ? -1 : (out.x == Chunk::CHUNK_WIDTH - 1 ? 1 : 0),
-			out.z == 0 ? -1 : (out.z == Chunk::CHUNK_WIDTH - 1 ? 1 : 0)
-		);
-
-		//out += chunk->GetPosition();
-		//Logger::Log(VEC3TOSTR(out));
 
 		return true;
 	}
 
-	bool World::RaycastBlock(glm::vec3 pos, const glm::vec3& ray, glm::ivec3& out, int range) {
+	bool World::RaycastBlock(const glm::vec3& pos, const glm::vec3& ray, glm::ivec3& out, int range) {
 		int axis;
 		Chunk* chunk = RaycastBlock(pos, ray, out, axis, range);
 		if (!chunk)
 			return false;
+
 		out += chunk->GetPosition();
 		return true;
+	}
+
+	uint World::RaycastBlockCountFaces(const glm::vec3& pos, const glm::vec3& ray, glm::ivec3& pout, glm::ivec3& fout, int range) {
+		int axis;
+		Chunk* chunk = RaycastBlock(pos, ray, pout, axis, range);
+		if (!chunk)
+			return 0;
+		
+		uint count = 0;
+
+		for (int i = 0; i < 3; i++) {
+			glm::ivec3 p = pout;
+			pout[i] += chunk->GetPosition()[i];
+			p[i] -= zm::Sign(ray[i]);
+			if (!(chunk->GetBlock(p.x, p.y, p.z) & BLOCK_BIT) && zm::Floor(pos[i]) != pout[i]) { // Only include visible faces
+				fout[count] = (i * 2) + (ray[i] < 0 ? 1 : 0);
+				count += 1;
+			}
+		}
+
+		return count;
 	}
 
 	Chunk* World::RaycastBlock(glm::vec3 pos, glm::vec3 ray, glm::ivec3& out, int& axis, int range) {

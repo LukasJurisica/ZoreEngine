@@ -10,27 +10,21 @@ namespace zore {
 	//========================================================================
 
 	FrameBuffer::~FrameBuffer() {
-		for (Texture2D* tex : attachments)
-			delete tex;
+		delete textureArray;
 	}
 
-	FrameBuffer* FrameBuffer::Create(uint width, uint height, uint colorAttachmentCount, DepthFormat format) {
-		DEBUG_ENSURE(colorAttachmentCount <= MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS, "Failed to create framebuffer - Texture attachment count is larger than the maximum.");
+	FrameBuffer* FrameBuffer::Create(uint width, uint height, uint colorAttachmentCount, TextureFormat textureFormat, DepthFormat depthFormat) {
+		DEBUG_ENSURE(colorAttachmentCount <= MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS, "Failed to create framebuffer - Requested color attachment count is larger than the maximum.");
 
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
-			return new GLFrameBuffer(width, height, colorAttachmentCount, format);
+			return new GLFrameBuffer(width, height, colorAttachmentCount, textureFormat, depthFormat);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
 		return nullptr;
 	}
 
-	Texture2D* FrameBuffer::GetTexture(uint index) const {
-		DEBUG_ENSURE(index < attachments.size(), "Texture index larger than attachment count.");
-		return attachments[index];
-	}
-
-	uint FrameBuffer::GetNumTextureAttachments() {
-		return static_cast<uint>(attachments.size());
+	Texture2DArray* FrameBuffer::GetTextureArray() const {
+		return textureArray;
 	}
 }

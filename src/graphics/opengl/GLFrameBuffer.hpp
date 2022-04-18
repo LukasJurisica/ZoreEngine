@@ -9,15 +9,15 @@ namespace zore {
 
 	class GLRenderBuffer {
 	public:
-		GLRenderBuffer(unsigned int width, unsigned int height, unsigned int format);
+		GLRenderBuffer(uint width, uint height, uint format);
 		~GLRenderBuffer();
 
-		void SetSize(unsigned int width, unsigned int height);
-		unsigned int GetID() const;
+		void SetSize(uint width, uint height);
+		uint GetID() const;
 
 	private:
-		unsigned int id;
-		unsigned int format;
+		uint id;
+		uint format;
 	};
 
 	//========================================================================
@@ -26,15 +26,15 @@ namespace zore {
 
 	class GLFrameBuffer : public FrameBuffer {
 	public:
-		GLFrameBuffer(unsigned int width, unsigned int height, unsigned int colorAttachmentCount, DepthFormat depthFormat);
+		GLFrameBuffer(uint width, uint height, uint colorAttachmentCount, TextureFormat textureFormat, DepthFormat depthFormat);
 		~GLFrameBuffer();
 
 		void Bind() const override;
 		void Unbind() const override;
-		void SetSize(unsigned int width, unsigned int height) override;
+		void SetSize(uint width, uint height) override;
 
 	private:
-		unsigned int id;
+		uint id;
 		GLRenderBuffer* rbo;
 	};
 }

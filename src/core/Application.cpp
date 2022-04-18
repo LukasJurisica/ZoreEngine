@@ -56,8 +56,8 @@ namespace zore {
 		postProcessShader->SetFloat2("resolution", { 1.f / res.x, 1.f / res.y });
 		postProcessShader->SetTextureSlot("screen", 0);
 
-		frameBuffer = FrameBuffer::Create(WINDOW_SIZE, 1, DepthFormat::DEPTH32);
-		frameBuffer->GetTexture(0)->SetTextureSlot(0);
+		frameBuffer = FrameBuffer::Create(WINDOW_SIZE, 1, TextureFormat::RGBA, DepthFormat::DEPTH24_STENCIL8);
+		frameBuffer->GetTextureArray()->SetTextureSlot(0);
 	}
 
 	Application::~Application() {
@@ -100,11 +100,16 @@ namespace zore {
 		Index lineIndices[] = { 0,1, 0,2, 1,3, 2,3, 0,4, 1,5, 2,6, 3,7, 4,5, 4,6, 5,7, 6,7 };
 		Mesh* debugCubeMesh = Mesh::Create(&lineVertices, sizeof(ubyte) * 3, 8, &lineIndices, 24);
 		// Create texture array for sprites;
-		Texture2DArray* spriteTexture = Texture2DArray::Create(16, 16, { "assets/textures/grass.png", "assets/textures/mush1.png" }, TextureFormat::RGBA);
+		Texture2DArray* spriteTexture = Texture2DArray::Create({ "assets/textures/grass.png", "assets/textures/mush1.png" }, TextureFormat::RGBA);
 		spriteTexture->SetTextureSlot(1);
 
 		// Initialize the chunk manager
 		ChunkManager::Init(RENDER_DISTANCE, camera.GetPosition());
+
+		//Bind mesh and vertex layouts for rendering
+		engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
+		UBx1->Bind();
+		quadMesh->Bind();
 
 		Timer timer;
 		float deltaTime, runningTime = 0;
@@ -154,7 +159,6 @@ namespace zore {
 			// Render debug for block that is currently selected
 			engine->SetBackFaceCulling(true);
 			engine->SetDepthTest(false);
-
 			glm::ivec3 pos;
 			if (World::RaycastBlock(camera.GetPosition(), camera.GetForward(), pos, 10)) {
 				engine->SetTopology(MeshTopology::LINE_LIST);
@@ -163,17 +167,15 @@ namespace zore {
 				debugLineShader->Bind();
 				debugLineShader->SetInt3("offset", { pos.x, pos.y, pos.z });
 				engine->DrawIndexed(debugCubeMesh->GetCount());
+				// Rebind quad layout and mesh
+				engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
+				UBx1->Bind();
+				quadMesh->Bind();
 			}
-
-			// Rebind quad layout and mesh
-			engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
-			UBx1->Bind();
-			quadMesh->Bind();
 
 			// RENDER FRAMEBUFFER TEXTURE TO SCREEN --------
 			frameBuffer->Unbind();
 			//engine->SetWireframe(false);
-			
 			postProcessShader->Bind();
 			engine->DrawLinear(quadMesh->GetCount());
 			Window::Update();
@@ -191,7 +193,6 @@ namespace zore {
 			engine->SetViewport(width, height);
 			camera.SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
 			frameBuffer->SetSize(width, height);
-			frameBuffer->GetTexture(0)->SetTextureSlot(0);
 			postProcessShader->Bind();
 			postProcessShader->SetFloat2("resolution", { 1.f / width, 1.f / height });
 		}
