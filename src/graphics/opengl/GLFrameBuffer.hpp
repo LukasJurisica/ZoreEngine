@@ -26,7 +26,7 @@ namespace zore {
 
 	class GLFrameBuffer : public FrameBuffer {
 	public:
-		GLFrameBuffer(uint width, uint height, uint colorAttachmentCount, TextureFormat textureFormat, DepthFormat depthFormat);
+		GLFrameBuffer(uint width, uint height, uint colourAttachmentCount, TextureFormat textureFormat, DepthFormat depthFormat);
 		~GLFrameBuffer();
 
 		void Bind() const override;

@@ -35,19 +35,20 @@ namespace zore {
 	static const unsigned int DepthFormatToGLDepthFormat[] = { GL_DEPTH_COMPONENT32, GL_DEPTH24_STENCIL8 };
 	static const unsigned int DepthFormatToGLAttachmentType[] = { GL_DEPTH_ATTACHMENT, GL_DEPTH_STENCIL_ATTACHMENT };
 
-	GLFrameBuffer::GLFrameBuffer(uint width, uint height, uint colorAttachmentCount, TextureFormat textureFormat, DepthFormat depthFormat) {
+	GLFrameBuffer::GLFrameBuffer(uint width, uint height, uint colourAttachmentCount, TextureFormat textureFormat, DepthFormat depthFormat) {
 		glCreateFramebuffers(1, &id);
+		textureArrayLayerCount = colourAttachmentCount;
 
 		// Create colour attachments
 		uint activeAttachments[MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS];
-		GLTexture2DArray* tex = new GLTexture2DArray(width, height, colorAttachmentCount, nullptr, textureFormat);
+		GLTexture2DArray* tex = new GLTexture2DArray(width, height, colourAttachmentCount, nullptr, textureFormat);
 		uint texID = tex->GetID();
 		textureArray = tex;
-		for (uint i = 0; i < colorAttachmentCount; i++) {
+		for (uint i = 0; i < colourAttachmentCount; i++) {
 			activeAttachments[i] = GL_COLOR_ATTACHMENT0 + i;
 			glNamedFramebufferTextureLayer(id, activeAttachments[i], texID, 0, i);
 		}
-		glNamedFramebufferDrawBuffers(id, colorAttachmentCount, activeAttachments);
+		glNamedFramebufferDrawBuffers(id, colourAttachmentCount, activeAttachments);
 
 		// Create Depth/Stencil Buffer (If requested)
 		if (depthFormat != DepthFormat::NONE) {
@@ -76,10 +77,10 @@ namespace zore {
 	}
 
 	void GLFrameBuffer::SetSize(uint width, uint height) {
-		uint layers = textureArray->GetLayerCount();
-		textureArray->SetSize(width, height, layers);
+		textureArray->SetSize(width, height, textureArrayLayerCount);
+		textureArray->Bind();
 		uint textureID = reinterpret_cast<GLTexture2DArray*>(textureArray)->GetID();
-		for (uint i = 0; i < layers; i++)
+		for (uint i = 0; i < textureArrayLayerCount; i++)
 			glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0 + i, textureID, 0, i);
 		if (rbo)
 			rbo->SetSize(width, height);

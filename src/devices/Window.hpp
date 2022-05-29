@@ -19,6 +19,8 @@ namespace zore {
 		static void SetTitle(const char* title);
 		static void SetFullscreen(bool value);
 		static void ToggleFullscreen();
+		static void SetPosition(int x, int y);
+		static void Centre();
 		static void SetBorderless(bool value);
 		static void SetSize(int width, int height);
 		static void HideCursor(bool value);

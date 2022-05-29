@@ -27,10 +27,10 @@ namespace zore {
 		return nullptr;
 	}
 
-	void Texture2D::Init(uint width, uint height) {
-		DEBUG_ENSURE(width * height, "Cannot create Texture with a dimension of 0.");
-		this->width = width;
-		this->height = height;
+	void Texture2D::Init(uint w, uint h) {
+		DEBUG_ENSURE(w * h, "Cannot create Texture Array with a dimension of 0.");
+		width = w;
+		height = w;
 	}
 
 	//========================================================================
@@ -55,14 +55,10 @@ namespace zore {
 		return nullptr;
 	}
 
-	void Texture2DArray::Init(uint width, uint height, uint layers) {	
-		DEBUG_ENSURE(layers * width * height, "Cannot create Texture Array with a dimension of 0.");
-		this->width = width;
-		this->height = height;
-		this->layers = layers;
-	}
-
-	uint Texture2DArray::GetLayerCount() {
-		return layers;
+	void Texture2DArray::Init(uint w, uint h, uint l) {
+		DEBUG_ENSURE(w * h * l, "Cannot create Texture Array with a dimension of 0.");
+		width = w;
+		height = w;
+		layers = l;
 	}
 }

@@ -28,5 +28,6 @@ namespace zore {
 
 	protected:
 		Texture2DArray* textureArray = nullptr;
+		uint textureArrayLayerCount = 1;
 	};
 }

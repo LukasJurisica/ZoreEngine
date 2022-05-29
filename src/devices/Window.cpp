@@ -53,13 +53,7 @@ namespace zore {
 		glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 		// Centre the window
-		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-		if (monitor) {
-			const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
-			position.x = (videoMode->width - size.x) / 2;
-			position.y = (videoMode->height - size.y) / 2;
-		}
-		glfwSetWindowPos(windowHandle, position.x, position.y);
+		Centre();
 
 		double xpos, ypos;
 		glfwGetCursorPos(windowHandle, &xpos, &ypos);
@@ -99,11 +93,27 @@ namespace zore {
 	void Window::SetFullscreen(bool value) {
 		GLFWmonitor* monitor = value ? glfwGetPrimaryMonitor() : nullptr;
 		glfwSetWindowMonitor(windowHandle, monitor, position.x, position.y, size.x, size.y, GLFW_DONT_CARE);
+		Centre();
 		fullscreen = value;
 	}
 
 	void Window::ToggleFullscreen() {
 		SetFullscreen(!fullscreen);
+	}
+
+	void Window::SetPosition(int x, int y) {
+		position = { x, y };
+		glfwSetWindowPos(windowHandle, position.x, position.y);
+	}
+
+	void Window::Centre() {
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+		if (monitor) {
+			const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
+			position.x = (videoMode->width - size.x) / 2;
+			position.y = (videoMode->height - size.y) / 2;
+			glfwSetWindowPos(windowHandle, position.x, position.y);
+		}
 	}
 
 	void Window::SetBorderless(bool value) {

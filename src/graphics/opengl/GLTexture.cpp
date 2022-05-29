@@ -20,15 +20,6 @@ namespace zore {
 		glDeleteTextures(1, &id);
 	}
 
-	void GLTexture::SetTextureParameters() {
-		glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		//glTextureParameteri(id, GL_TEXTURE_BASE_LEVEL, 0);
-		//glTextureParameteri(id, GL_TEXTURE_MAX_LEVEL, 0);
-	}
-
 	unsigned int GLTexture::GetID() {
 		return id;
 	}
@@ -39,13 +30,12 @@ namespace zore {
 
 	GLTexture2D::GLTexture2D(const std::string& filename, TextureFormat textureFormat) : GLTexture(GL_TEXTURE_2D, textureFormat) {
 		int w, h, c;
-		ubyte* data = stbi_load(filename.c_str(), &w, &h, &c, 4);
+		ubyte* data = stbi_load(filename.c_str(), &w, &h, &c, static_cast<uint>(textureFormat) + 1);
 		ENSURE(data, "Could not load texture: " + filename);
 		Init(w, h);
 		glTextureStorage2D(id, 1, format, width, height);
 		glTextureSubImage2D(id, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		stbi_image_free(data);
-		SetTextureParameters();
 	}
 
 	GLTexture2D::GLTexture2D(unsigned int width, unsigned int height, TextureFormat textureFormat, void* data) : GLTexture(GL_TEXTURE_2D, textureFormat) {
@@ -53,10 +43,14 @@ namespace zore {
 		glTextureStorage2D(id, 1, format, width, height);
 		if (data)
 			SetTextureData(data);
-		SetTextureParameters();
 	}
 
 	void GLTexture2D::Bind() const {
+		glBindTextureUnit(unit, id);
+	}
+
+	void GLTexture2D::Bind(unsigned int slot) {
+		unit = slot;
 		glBindTextureUnit(unit, id);
 	}
 
@@ -69,12 +63,6 @@ namespace zore {
 		glDeleteTextures(1, &id);
 		glCreateTextures(GL_TEXTURE_2D, 1, &id);
 		glTextureStorage2D(id, 1, format, width, height);
-		SetTextureParameters();
-	}
-
-	void GLTexture2D::SetTextureSlot(unsigned int slot) {
-		unit = slot;
-		glBindTextureUnit(unit, id);
 	}
 
 	void GLTexture2D::SetTextureData(void* data) {
@@ -89,7 +77,7 @@ namespace zore {
 	GLTexture2DArray::GLTexture2DArray(const std::vector<std::string>& filenames, TextureFormat textureFormat) : GLTexture(GL_TEXTURE_2D_ARRAY, textureFormat) {
 		int w, h, c;
 		for (int i = 0; i < filenames.size(); i++) {
-			ubyte* data = stbi_load(filenames[i].c_str(), &w, &h, &c, 4);
+			ubyte* data = stbi_load(filenames[i].c_str(), &w, &h, &c, static_cast<uint>(textureFormat) + 1);
 			ENSURE(data, "Could not load texture: " + filenames[i]);
 			if (i == 0) {
 				Init(w, h, static_cast<uint>(filenames.size()));
@@ -99,7 +87,6 @@ namespace zore {
 			glTextureSubImage3D(id, 0, 0, 0, i, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
 			stbi_image_free(data);
 		}
-		SetTextureParameters();
 	}
 
 	GLTexture2DArray::GLTexture2DArray(uint width, uint height, uint layers, void* data, TextureFormat textureFormat) : GLTexture(GL_TEXTURE_2D_ARRAY, textureFormat) {
@@ -107,10 +94,14 @@ namespace zore {
 		glTextureStorage3D(id, 1, format, width, height, layers);
 		if (data)
 			SetTextureData(0, layers, data);
-		SetTextureParameters();
 	}
 
 	void GLTexture2DArray::Bind() const {
+		glBindTextureUnit(unit, id);
+	}
+
+	void GLTexture2DArray::Bind(unsigned int slot) {
+		unit = slot;
 		glBindTextureUnit(unit, id);
 	}
 
@@ -123,12 +114,6 @@ namespace zore {
 		glDeleteTextures(1, &id);
 		glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &id);
 		glTextureStorage3D(id, 1, format, width, height, layers);
-		SetTextureParameters();
-	}
-
-	void GLTexture2DArray::SetTextureSlot(unsigned int slot) {
-		unit = slot;
-		glBindTextureUnit(unit, id);
 	}
 
 	void GLTexture2DArray::SetTextureData(uint first, uint count, void* data) {

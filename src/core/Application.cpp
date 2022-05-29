@@ -1,12 +1,10 @@
 #include "core/Application.hpp"
 #include "graphics/VertexLayout.hpp"
 #include "utils/FileManager.hpp"
-#include "utils/DataTypes.hpp"
 #include "utils/Timer.hpp"
-#include "voxel/ChunkManager.hpp"
 #include "debug/Debug.hpp"
-#include "math/MathUtils.hpp"
 
+#include "voxel/ChunkManager.hpp"
 #include "game/Player.hpp"
 #include "game/World.hpp"
 
@@ -37,8 +35,8 @@ namespace zore {
 		//Window::SetFullscreen(true);
 
 		engine->SetVSync(false);
-		engine->SetClearColour(0.5f, 0.8f, 0.92f);
-		engine->SetClearMode({ BufferType::COLOUR, BufferType::DEPTH });
+		//engine->SetClearColour(0.5f, 0.8f, 0.92f);
+		engine->SetClearMode({ BufferType::DEPTH });
 		engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
 
 		// Compile Shaders
@@ -46,7 +44,8 @@ namespace zore {
 		fluidShader = Shader::Create("VoxelFluids");
 		spriteShader = Shader::Create("VoxelSprites");
 		debugLineShader = Shader::Create("DebugLines");
-		postProcessShader = Shader::Create("postprocess");
+		postProcessShader = Shader::Create("PostProcess");
+		skyShader = Shader::Create("Sky");
 
 		// Set initial uniform values for shaders
 		spriteShader->Bind();
@@ -57,10 +56,19 @@ namespace zore {
 		postProcessShader->SetTextureSlot("screen", 0);
 
 		frameBuffer = FrameBuffer::Create(WINDOW_SIZE, 1, TextureFormat::RGBA, DepthFormat::DEPTH24_STENCIL8);
-		frameBuffer->GetTextureArray()->SetTextureSlot(0);
+		frameBuffer->GetTextureArray()->Bind(0);
+
+		// Create Texture samplers and bind them to their respective texture units
+		linearSampler = Sampler::Create(SampleMode::LINEAR);
+		linearSampler->Bind(0);
+
+		nearestSampler = Sampler::Create(SampleMode::NEAREST);
+		nearestSampler->Bind(1);
 	}
 
 	Application::~Application() {
+		delete linearSampler;
+		delete nearestSampler;
 		delete frameBuffer;
 		delete postProcessShader;
 		delete blockShader;
@@ -72,7 +80,7 @@ namespace zore {
 	void Application::Run() {
 		// Create the Player and Camera uniform buffer
 		Player player(&camera, { 32, 128, 32 });
-		ShaderData shaderData = { camera.GetProjection(), camera.GetPosition(), 0.f };
+		ShaderData shaderData = { camera.GetProjection(), camera.GetView(), camera.GetProjection(), camera.GetPosition(), 0.f };
 		UniformBuffer* shaderDataBuffer = UniformBuffer::Create(&shaderData, sizeof(shaderData), BufferMode::DYNAMIC, 0);
 		shaderDataBuffer->Bind();
 
@@ -101,7 +109,7 @@ namespace zore {
 		Mesh* debugCubeMesh = Mesh::Create(&lineVertices, sizeof(ubyte) * 3, 8, &lineIndices, 24);
 		// Create texture array for sprites;
 		Texture2DArray* spriteTexture = Texture2DArray::Create({ "assets/textures/grass.png", "assets/textures/mush1.png" }, TextureFormat::RGBA);
-		spriteTexture->SetTextureSlot(1);
+		spriteTexture->Bind(1);
 
 		// Initialize the chunk manager
 		ChunkManager::Init(RENDER_DISTANCE, camera.GetPosition());
@@ -126,12 +134,13 @@ namespace zore {
 				timer.Reset();
 			}
 			player.Update(deltaTime);
-			shaderData = { camera.GetProjection() * camera.GetView(), camera.GetPosition(), runningTime };
+			shaderData = { camera.GetProjection() * camera.GetView(), camera.GetView(), camera.GetProjection(), camera.GetPosition(), runningTime };
 			shaderDataBuffer->Set(&shaderData, sizeof(shaderData));
 			//shaderDataBuffer->Update(&shaderData, sizeof(shaderData));
 
 			// RENDER THE SCENE TO FRAMEBUFFER --------
 			frameBuffer->Bind();
+
 			//engine->SetWireframe(true);
 			engine->SetDepthTest(true);
 			engine->Clear();
@@ -156,6 +165,10 @@ namespace zore {
 				engine->DrawLinearInstanced(quadMesh->GetCount(), chunk->GetChunkMesh(ChunkMeshType::FLUIDS).Bind());
 			}
 
+			// Render Sky
+			skyShader->Bind();
+			engine->DrawLinear(quadMesh->GetCount());
+
 			// Render debug for block that is currently selected
 			engine->SetBackFaceCulling(true);
 			engine->SetDepthTest(false);
@@ -178,6 +191,7 @@ namespace zore {
 			//engine->SetWireframe(false);
 			postProcessShader->Bind();
 			engine->DrawLinear(quadMesh->GetCount());
+			// Could place debug mesh render here to avoid FXAA artifact on block outline
 			Window::Update();
 		}
 		
@@ -202,6 +216,9 @@ namespace zore {
 		switch (key) {
 		case KEY_ESCAPE:
 			Window::ToggleCursor();
+			break;
+		case KEY_F11:
+			Window::ToggleFullscreen();
 			break;
 		}
 	}

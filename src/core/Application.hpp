@@ -4,12 +4,15 @@
 #include "devices/Keyboard.hpp"
 #include "graphics/RenderEngine.hpp"
 #include "graphics/FrameBuffer.hpp"
+#include "graphics/Sampler.hpp"
 #include "graphics/Shader.hpp"
 
 namespace zore {
 
 	struct ShaderData {
 		glm::mat4 vp_mat;
+		glm::mat4 v_mat;
+		glm::mat4 p_mat;
 		glm::vec3 cameraPos;
 		float time;
 	};
@@ -36,5 +39,8 @@ namespace zore {
 		Shader* spriteShader;
 		Shader* fluidShader;
 		Shader* debugLineShader;
+		Shader* skyShader;
+		Sampler* linearSampler;
+		Sampler* nearestSampler;
 	};
 }

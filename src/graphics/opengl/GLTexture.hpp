@@ -11,7 +11,6 @@ namespace zore {
 	public:
 		GLTexture(unsigned int target, TextureFormat textureFormat);
 		virtual ~GLTexture();
-		void SetTextureParameters();
 		unsigned int GetID();
 
 	protected:
@@ -31,9 +30,9 @@ namespace zore {
 		~GLTexture2D() = default;
 		
 		void Bind() const override;
+		void Bind(unsigned int slot) override;
 		void Unbind() const override;
 		void SetSize(uint width, uint height) override;
-		void SetTextureSlot(unsigned int slot) override;
 		void SetTextureData(void* data) override;
 	};
 
@@ -48,9 +47,9 @@ namespace zore {
 		~GLTexture2DArray() = default;
 
 		void Bind() const override;
+		void Bind(unsigned int slot) override;
 		void Unbind() const override;
 		void SetSize(uint width, uint height, uint layers) override;
-		void SetTextureSlot(unsigned int slot) override;
 		void SetTextureData(uint first, uint count, void* data) override;
 	};
 }

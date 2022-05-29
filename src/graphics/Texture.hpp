@@ -13,11 +13,6 @@ namespace zore {
 		R, RG, RGB, RGBA
 	};
 
-	class TextureSampler {
-	public:
-
-	};
-
 	//========================================================================
 	//	Platform Agnostic 2D Texture Class
 	//========================================================================
@@ -29,9 +24,9 @@ namespace zore {
 		virtual ~Texture2D() = default;
 
 		virtual void Bind() const = 0;
+		virtual void Bind(unsigned int slot) = 0;
 		virtual void Unbind() const = 0;
 		virtual void SetSize(uint width, uint height) = 0;
-		virtual void SetTextureSlot(unsigned int slot) = 0;
 		virtual void SetTextureData(void* data) = 0;
 
 	protected:
@@ -50,11 +45,10 @@ namespace zore {
 		virtual ~Texture2DArray() = default;
 
 		virtual void Bind() const = 0;
+		virtual void Bind(unsigned int slot) = 0;
 		virtual void Unbind() const = 0;
 		virtual void SetSize(uint width, uint height, uint layers) = 0;
-		virtual void SetTextureSlot(unsigned int slot) = 0;
 		virtual void SetTextureData(uint first, uint count, void* data) = 0;
-		uint GetLayerCount();
 
 	protected:
 		void Init(uint width, uint height, uint layers);
