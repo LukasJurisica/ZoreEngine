@@ -14,7 +14,9 @@ namespace zore {
 		glCreateSamplers(1, &id);
 		glSamplerParameteri(id, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		glSamplerParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);	
+		glSamplerParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glSamplerParameteri(id, GL_TEXTURE_MIN_LOD, 0);
+		glSamplerParameteri(id, GL_TEXTURE_MAX_LOD, 0);
 		glSamplerParameteri(id, GL_TEXTURE_MAG_FILTER, SamplerModeToGLMode[static_cast<int>(mode)]); // Close up Voxel
 		//glSamplerParameteri(id, GL_TEXTURE_MIN_FILTER, SamplerModeToGLMode[static_cast<int>(mode)]); // Far away voxel
 	}

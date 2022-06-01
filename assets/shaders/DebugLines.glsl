@@ -6,7 +6,8 @@ uniform ivec3 offset;
 layout(location = 0) in ivec3 pos;
 
 void main() {
-	gl_Position = vp_mat * vec4(pos + offset, 1.f);
+	vec3 p = (pos - 0.5) * 1.0015 + 0.5;
+	gl_Position = vp_mat * vec4(p + offset, 1.f);
 }
 
 

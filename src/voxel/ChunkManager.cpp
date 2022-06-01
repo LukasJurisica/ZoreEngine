@@ -121,7 +121,7 @@ namespace zore {
 
 	void ChunkManager::RemeshChunk(Chunk* chunk, int xNeighbour, int zNeighbour) {
 		std::lock_guard<std::mutex> lk(jobMutex);
-		int jobCount = jobs.size();
+		int jobCount = static_cast<int>(jobs.size());
 
 		for (int x = 0; x <= zm::Abs(xNeighbour); x++) {
 			for (int z = 0; z <= zm::Abs(zNeighbour); z++) {

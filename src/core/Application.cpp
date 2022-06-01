@@ -171,7 +171,6 @@ namespace zore {
 
 			// Render debug for block that is currently selected
 			engine->SetBackFaceCulling(true);
-			engine->SetDepthTest(false);
 			glm::ivec3 pos;
 			if (World::RaycastBlock(camera.GetPosition(), camera.GetForward(), pos, 10)) {
 				engine->SetTopology(MeshTopology::LINE_LIST);
@@ -185,6 +184,7 @@ namespace zore {
 				UBx1->Bind();
 				quadMesh->Bind();
 			}
+			engine->SetDepthTest(false);
 
 			// RENDER FRAMEBUFFER TEXTURE TO SCREEN --------
 			frameBuffer->Unbind();

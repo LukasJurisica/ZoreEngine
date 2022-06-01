@@ -72,7 +72,7 @@ namespace zore {
 				//int h = zm::Floor(zm::SmoothMax(0.8f, zm::NormalizeNoise(-n) * 3.2f, 0.5f) * 20);
 				//int h = zm::Floor(zm::Max(16.f, zm::NormalizeNoise(-n) * 64));
 
-				float n = terrain.GetNoise(x + chunk->renderPos.x - 1, z + chunk->renderPos.z - 1);
+				float n = terrain.GetNoise(x + chunk->renderPos.x - 1.f, z + chunk->renderPos.z - 1.f);
 				int h = zm::Floor(zm::SmoothMax(24.f, zm::NormalizeNoise(n) * 128.f, 15.f));
 				int b = zm::Floor(zm::NormalizeNoise(biome.GetNoise(x + chunk->renderPos.x, z + chunk->renderPos.z)) * 20) * 2;
 
