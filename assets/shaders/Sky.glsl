@@ -14,7 +14,7 @@ void main() {
 	gl_Position = vec4(position[vertexID], 1.0, 1.0);
 	pos = transpose(mat3(V)) * (inverse(P) * gl_Position).xyz;
 	time = t;
-    sunAngle = time / 4;
+    sunAngle = (time + 20) / 20;
     sunVec = vec3(sin(sunAngle), -cos(sunAngle), 0.0);
 }
 
@@ -58,8 +58,8 @@ vec3 up_vec  = vec3(0.0, 1.0, 0.0);
 vec3 skyColSqrt = vec3(SKY_R, SKY_G, SKY_B) * SKY_I / 255.0;
 vec3 skyCol = skyColSqrt * skyColSqrt;
 vec3 fogCol = skyColSqrt * skyColSqrt;
-float sunVisibility  = clamp((dot( sunVec, up_vec) + 0.1) * 2.0, 0.0, 1.0);
-float moonVisibility = clamp((dot(-sunVec, up_vec) + 0.1	) * 10.0, 0.0, 1.0);
+float sunVisibility  = clamp((dot( sunVec, up_vec) + 0.2), 0.0, 1.0);
+float moonVisibility = clamp((dot(-sunVec, up_vec) + 0.2), 0.0, 1.0);
 float rainStrength = 0.0;
 
 float mySunVisibility = clamp(dot(sunVec, up_vec), 0.0, 1.0);
@@ -104,7 +104,7 @@ vec3 GetSky() {
 	float nightExposure = exp2(-3.5 + SKY_EXPOSURE_N);
     float nightGradient = exp(-max(VoU, 0.0) / SKY_DENSITY_N);
     vec3 nightSky = lightNight * lightNight * nightGradient * nightExposure;
-    sky = mix(nightSky, sky, sunVisibility);
+    sky = mix(nightSky, sky, smoothstep(0, 1, sunVisibility));
 
     return sky;
 }
