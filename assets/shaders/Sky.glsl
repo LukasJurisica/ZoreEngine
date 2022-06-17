@@ -98,7 +98,7 @@ vec3 GetSky() {
     vec3 lightSky = pow(lightSun, vec3(4.0 - sunVisibility)) * baseGradient;
     lightSky = lightSky / (1.0 + lightSky * rainStrength);
     sky = mix( sqrt(sky * (1.0 - lightMix)), sqrt(lightSky), lightMix );
-    sky *= sky;
+    //sky *= sky;
 
 	// Night
 	float nightExposure = exp2(-3.5 + SKY_EXPOSURE_N);

@@ -55,13 +55,13 @@ namespace zore {
 		postProcessShader->SetFloat2("resolution", { 1.f / res.x, 1.f / res.y });
 		postProcessShader->SetTextureSlot("screen", 0);
 
+		// Create framebuffer
 		frameBuffer = FrameBuffer::Create(WINDOW_SIZE, 1, TextureFormat::RGBA, DepthFormat::DEPTH24_STENCIL8);
 		frameBuffer->GetTextureArray()->Bind(0);
 
 		// Create Texture samplers and bind them to their respective texture units
 		linearSampler = Sampler::Create(SampleMode::LINEAR);
 		linearSampler->Bind(0);
-
 		nearestSampler = Sampler::Create(SampleMode::NEAREST);
 		nearestSampler->Bind(1);
 	}
@@ -102,11 +102,6 @@ namespace zore {
 		VertexLayout* UBx1 = VertexLayout::Create("UBx1", blockShader, { {"vertexID", VertexDataType::UBYTE, 1} }, { {"face", VertexDataType::UINT, 2} }, 1u);
 		ubyte vertices[] = { 0, 1, 2, 3 };
 		Mesh* quadMesh = Mesh::Create(&vertices, sizeof(vertices[0]), sizeof(vertices) / sizeof(vertices[0]));
-		// Create mesh data for debug of currently selected voxel
-		VertexLayout* UBx3 = VertexLayout::Create("UBx3", debugLineShader, { {"pos", VertexDataType::UBYTE, 3} });
-		ubyte lineVertices[] = { 0,0,0, 1,0,0, 0,0,1, 1,0,1, 0,1,0, 1,1,0, 0,1,1, 1,1,1, };
-		Index lineIndices[] = { 0,1, 0,2, 1,3, 2,3, 0,4, 1,5, 2,6, 3,7, 4,5, 4,6, 5,7, 6,7 };
-		Mesh* debugCubeMesh = Mesh::Create(&lineVertices, sizeof(ubyte) * 3, 8, &lineIndices, 24);
 		// Create texture array for sprites;
 		Texture2DArray* spriteTexture = Texture2DArray::Create({ "assets/textures/grass.png", "assets/textures/mush1.png" }, TextureFormat::RGBA);
 		spriteTexture->Bind(1);
@@ -170,20 +165,13 @@ namespace zore {
 			engine->DrawLinear(quadMesh->GetCount());
 
 			// Render debug for block that is currently selected
-			engine->SetBackFaceCulling(true);
 			glm::ivec3 pos;
 			if (World::RaycastBlock(camera.GetPosition(), camera.GetForward(), pos, 10)) {
-				engine->SetTopology(MeshTopology::LINE_LIST);
-				UBx3->Bind();
-				debugCubeMesh->Bind();
 				debugLineShader->Bind();
-				debugLineShader->SetInt3("offset", { pos.x, pos.y, pos.z });
-				engine->DrawIndexed(debugCubeMesh->GetCount());
-				// Rebind quad layout and mesh
-				engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
-				UBx1->Bind();
-				quadMesh->Bind();
+				debugLineShader->SetInt3("pos", pos);
+				engine->DrawLinearInstanced(quadMesh->GetCount(), 6);
 			}
+			engine->SetBackFaceCulling(true);
 			engine->SetDepthTest(false);
 
 			// RENDER FRAMEBUFFER TEXTURE TO SCREEN --------
@@ -197,7 +185,6 @@ namespace zore {
 		
 		delete quadMesh;
 		delete UBx1;
-		delete UBx3;
 		delete shaderDataBuffer;
 		delete offsetDataBuffer;
 	}

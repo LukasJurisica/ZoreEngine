@@ -23,7 +23,7 @@ void main() {
 	blockID = (face.y >> 16) & 0xFFFF;
 	ao = vec4( ao_weights[(face.y >> 14) & 0x3], ao_weights[(face.y >> 12) & 0x3], ao_weights[(face.y >> 10) & 0x3], ao_weights[(face.y >> 8 ) & 0x3] );
 	dir = face.y & 0x7;
-	uv = vec2(floor(vertexID >> 1), vertexID & 1);
+	uv = vec2(vertexID >> 1, vertexID & 1);
 	position = offsets[(dir * 4) + vertexID].xyz + vec3(x, y, z) + chunkPos;
 
 	dist = distance(position, cameraPos);
