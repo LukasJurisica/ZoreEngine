@@ -14,7 +14,7 @@ namespace zore {
 		GL_BOOL, GL_BYTE, GL_UNSIGNED_BYTE, GL_INT, GL_UNSIGNED_INT, GL_FLOAT
 	};
 
-	GLVertexLayout::GLVertexLayout(const std::string& name, Shader* shader, const std::vector<VertexElement>& vertexElements, const std::vector<VertexElement>& instanceElements, unsigned int interval) : VertexLayout(name) {
+	GLVertexLayout::GLVertexLayout(Shader* shader, const std::vector<VertexElement>& vertexElements, const std::vector<VertexElement>& instanceElements, unsigned int interval) {
 		// Create the Vertex Array Object
 		glCreateVertexArrays(1, &id);
 		glBindVertexArray(id);
@@ -40,7 +40,7 @@ namespace zore {
 			// Verify that the element exists in the shader
 			int loc = glGetAttribLocation(shaderID, e.name.c_str());
 			if (loc == -1) {
-				Logger::Warn("Invalid Buffer Element name \"" + e.name + "\" in layout: " + name);
+				Logger::Warn("Invalid vertex layout buffer element name \"" + e.name + "\".");
 				continue;
 			}
 

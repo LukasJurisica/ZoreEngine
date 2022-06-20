@@ -81,4 +81,36 @@ namespace zore {
 		if (indexCount > 0 && modelCount > 0)
 			glDrawElementsInstanced(topology, indexCount, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)), modelCount);
 	}
+
+	//========================================================================
+	//	OpenGL Multidraw Command Buffer Class
+	//========================================================================
+
+	GLMultidrawCommandBuffer::GLMultidrawCommandBuffer(MultidrawCommand* data, unsigned int count) {
+		glCreateBuffers(1, &id);
+		glNamedBufferData(id, sizeof(MultidrawCommand) * count, data, GL_STATIC_DRAW);
+	}
+
+	GLMultidrawCommandBuffer::~GLMultidrawCommandBuffer() {
+		glDeleteBuffers(1, &id);
+	}
+
+	void GLMultidrawCommandBuffer::Set(MultidrawCommand* data, unsigned int count) {
+		glNamedBufferData(id, sizeof(MultidrawCommand) * count, data, GL_STATIC_DRAW);
+	}
+
+	void GLMultidrawCommandBuffer::Update(MultidrawCommand* data, unsigned int count, unsigned int offset) {
+		void* ptr = glMapNamedBufferRange(id, sizeof(MultidrawCommand) * offset, sizeof(MultidrawCommand) * count, GL_MAP_WRITE_BIT);
+		memcpy(ptr, data, sizeof(MultidrawCommand) * count);
+		glUnmapNamedBuffer(id);
+	}
+
+	void GLMultidrawCommandBuffer::Bind() const {
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, id);
+	}
+
+	void GLMultidrawCommandBuffer::Unbind() const {
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+	}
+
 }

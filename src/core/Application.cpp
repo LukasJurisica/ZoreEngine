@@ -80,7 +80,7 @@ namespace zore {
 	void Application::Run() {
 		// Create the Player and Camera uniform buffer
 		Player player(&camera, { 32, 128, 32 });
-		ShaderData shaderData = { camera.GetProjection(), camera.GetView(), camera.GetProjection(), camera.GetPosition(), 0.f };
+		ShaderData shaderData = { camera.GetProjection(), camera.GetProjection(), camera.GetPosition(), 0.f };
 		UniformBuffer* shaderDataBuffer = UniformBuffer::Create(&shaderData, sizeof(shaderData), BufferMode::DYNAMIC, 0);
 		shaderDataBuffer->Bind();
 
@@ -99,7 +99,7 @@ namespace zore {
 		offsetDataBuffer->Bind();
 
 		// Create the mesh used for screenspace rendering and voxel faces
-		VertexLayout* UBx1 = VertexLayout::Create("UBx1", blockShader, { {"vertexID", VertexDataType::UBYTE, 1} }, { {"face", VertexDataType::UINT, 2} }, 1u);
+		VertexLayout* UBx1 = VertexLayout::Create(blockShader, { {"vertexID", VertexDataType::UBYTE, 1} }, { {"face", VertexDataType::UINT, 2} }, 1u);
 		ubyte vertices[] = { 0, 1, 2, 3 };
 		Mesh* quadMesh = Mesh::Create(&vertices, sizeof(vertices[0]), sizeof(vertices) / sizeof(vertices[0]));
 		// Create texture array for sprites;
@@ -129,7 +129,9 @@ namespace zore {
 				timer.Reset();
 			}
 			player.Update(deltaTime);
-			shaderData = { camera.GetProjection() * camera.GetView(), camera.GetView(), camera.GetProjection(), camera.GetPosition(), runningTime };
+
+			glm::mat4 inv_vp_mat = glm::transpose(camera.GetView()) * glm::inverse(camera.GetProjection());
+			shaderData = { camera.GetProjection() * camera.GetView(), inv_vp_mat, camera.GetPosition(), runningTime };
 			shaderDataBuffer->Set(&shaderData, sizeof(shaderData));
 			//shaderDataBuffer->Update(&shaderData, sizeof(shaderData));
 

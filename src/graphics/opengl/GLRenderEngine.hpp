@@ -31,4 +31,22 @@ namespace zore {
 		unsigned int clearMode;
 		unsigned int topology;
 	};
+
+	//========================================================================
+	//	OpenGL Multidraw Command Buffer Class
+	//========================================================================
+
+	class GLMultidrawCommandBuffer : public MultidrawCommandBuffer {
+	public:
+		GLMultidrawCommandBuffer(MultidrawCommand* data, unsigned int count);
+		~GLMultidrawCommandBuffer();
+
+		void Set(MultidrawCommand* data, unsigned int count) override;
+		void Update(MultidrawCommand* data, unsigned int count, unsigned int offset) override;
+		void Bind() const override;
+		void Unbind() const override;
+
+	private:
+		unsigned int id;
+	};
 }

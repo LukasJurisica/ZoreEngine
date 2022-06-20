@@ -11,8 +11,7 @@ namespace zore {
 
 	struct ShaderData {
 		glm::mat4 vp_mat;
-		glm::mat4 v_mat;
-		glm::mat4 p_mat;
+		glm::mat4 ivp_mat;
 		glm::vec3 cameraPos;
 		float time;
 	};

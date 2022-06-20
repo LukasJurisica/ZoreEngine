@@ -3,7 +3,7 @@
 
 layout(location = 0) in int vertexID;
 layout(location = 1) in uvec2 face;
-layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 v_mat; mat4 p_mat; vec3 cameraPos; float time; };
+layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; };
 layout (std140, binding = 1) uniform modelData { ivec4 offsets[32]; };
 uniform ivec3 chunkPos;
 out flat unsigned int blockID;

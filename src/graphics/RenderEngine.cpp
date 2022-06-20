@@ -54,4 +54,29 @@ namespace zore {
 		else
 			DrawLinearInstanced(mesh->GetCount(), count, offset);
 	}
+
+	//========================================================================
+	//	Platform Agnostic Multidraw Command Buffer Class
+	//========================================================================
+
+	MultidrawCommand::MultidrawCommand(unsigned int vertexCount, unsigned int instanceCount, unsigned int vertexOffset, unsigned int instanceOffset) :
+		vertexCount(vertexCount), instanceCount(instanceCount), vertexOffset(vertexOffset), instanceOffset(instanceOffset) {}
+
+	MultidrawCommandBuffer* MultidrawCommandBuffer::Create(MultidrawCommand* data, unsigned int count, bool calculateInstanceOffsets) {
+		if (calculateInstanceOffsets)
+			CalculateInstanceOffsets(data, count, 0);
+		switch (RenderEngine::GetAPI()) {
+		case API::OPENGL:
+			return new GLMultidrawCommandBuffer(data, count);
+		}
+		throw ZORE_EXCEPTION("Invalid RenderAPI");
+	}
+
+	void MultidrawCommandBuffer::CalculateInstanceOffsets(MultidrawCommand* data, unsigned int count, unsigned int baseOffset) {
+		unsigned int offset = baseOffset;
+		for (unsigned int i = 0; i < count; i++) {
+			data[i].instanceOffset = offset;
+			offset += data[i].instanceCount;
+		}
+	}
 }

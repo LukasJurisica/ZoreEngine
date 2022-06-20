@@ -21,18 +21,13 @@ namespace zore {
 
 	class VertexLayout {
 	public:
-		static VertexLayout* Create(const std::string& name, Shader* shader, const std::vector<VertexElement>& elements);
-		static VertexLayout* Create(const std::string& name, Shader* shader, const std::vector<VertexElement>& vertexElements, const std::vector<VertexElement>& instanceElements, unsigned int interval = 1u);
-		static VertexLayout* Get(const std::string& name);
-		virtual ~VertexLayout();
+		static VertexLayout* Create(Shader* shader, const std::vector<VertexElement>& vertexElements, const std::vector<VertexElement>& instanceElements = {}, unsigned int interval = 1u);
+		virtual ~VertexLayout() = default;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
 	protected:
-		VertexLayout(const std::string& name);
-
-		std::string name;
 		static const unsigned int VertexDataTypeSize[6];
 	};
 }

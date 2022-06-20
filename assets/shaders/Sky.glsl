@@ -2,7 +2,7 @@
 #version 430 core
 
 layout(location = 0) in int vertexID;
-layout(std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 V; mat4 P; vec3 cp; float t; };
+layout(std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cp; float t; };
 out vec3 pos;
 out float time;
 out float sunAngle;
@@ -12,7 +12,7 @@ const vec2 position[4] = vec2[4](vec2(-1, 1), vec2(-1, -1), vec2(1, 1), vec2(1, 
 
 void main() {
 	gl_Position = vec4(position[vertexID], 1.0, 1.0);
-	pos = transpose(mat3(V)) * (inverse(P) * gl_Position).xyz;
+	pos = (ivp_mat * gl_Position).xyz;
 	time = t;
     sunAngle = (time + 20) / 20;
     sunVec = vec3(sin(sunAngle), -cos(sunAngle), 0.0);

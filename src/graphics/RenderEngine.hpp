@@ -42,4 +42,28 @@ namespace zore {
 		//void end();
 		//void submit(const std::shared_ptr<VertexArray>& vertexArray, const std::shared_ptr<Shader>& shader);
 	};
+
+	//========================================================================
+	//	Platform Agnostic Multidraw Command Buffer Class
+	//========================================================================
+
+	struct MultidrawCommand {
+		MultidrawCommand(unsigned int vertexCount, unsigned int instanceCount = 1, unsigned int vertexOffset = 0, unsigned int instanceOffset = 0);
+		unsigned int vertexCount;
+		unsigned int instanceCount;
+		unsigned int vertexOffset;
+		unsigned int instanceOffset;
+	};
+
+	class MultidrawCommandBuffer {
+	public:
+		static MultidrawCommandBuffer* Create(MultidrawCommand* data, unsigned int count, bool calculateInstanceOffsets = false);
+		virtual ~MultidrawCommandBuffer() = default;
+		static void CalculateInstanceOffsets(MultidrawCommand* data, unsigned int count, unsigned int baseOffset = 0u);
+
+		virtual void Set(MultidrawCommand* data, unsigned int count) = 0;
+		virtual void Update(MultidrawCommand* data, unsigned int count, unsigned int offset = 0u) = 0;
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
+	};
 }
