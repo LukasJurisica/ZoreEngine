@@ -8,6 +8,8 @@
 #include "game/Player.hpp"
 #include "game/World.hpp"
 
+#include <iostream>
+
 #define WINDOW_SIZE 1920, 1080
 #define RENDER_DISTANCE 16u
 
@@ -33,6 +35,8 @@ namespace zore {
 		//Window::SetBorderless(true);
 		Window::HideCursor(true);
 		//Window::SetFullscreen(true);
+		glm::ivec2 res = Window::GetSize();
+		inverseWindowResolution = { 1.f / res.x, 1.f / res.y };
 
 		engine->SetVSync(false);
 		//engine->SetClearColour(0.5f, 0.8f, 0.92f);
@@ -43,17 +47,16 @@ namespace zore {
 		blockShader = Shader::Create("VoxelBlocks");
 		fluidShader = Shader::Create("VoxelFluids");
 		spriteShader = Shader::Create("VoxelSprites");
-		debugLineShader = Shader::Create("DebugLines");
-		postProcessShader = Shader::Create("PostProcess");
 		skyShader = Shader::Create("Sky");
-
-		// Set initial uniform values for shaders
-		spriteShader->Bind();
-		spriteShader->SetTextureSlot("spriteTextures", 1);
+		debugLineShader = Shader::Create("DebugLines");
+		textShader = Shader::Create("Text");
+		postProcessShader = Shader::Create("PostProcess");
+		
+		// Set texture slots for shaders
 		postProcessShader->Bind();
-		glm::ivec2 res = Window::GetSize();
-		postProcessShader->SetFloat2("resolution", { 1.f / res.x, 1.f / res.y });
 		postProcessShader->SetTextureSlot("screen", 0);
+		spriteShader->Bind();
+		spriteShader->SetTextureSlot("sprites", 1);
 
 		// Create framebuffer
 		frameBuffer = FrameBuffer::Create(WINDOW_SIZE, 1, TextureFormat::RGBA, DepthFormat::DEPTH24_STENCIL8);
@@ -62,6 +65,7 @@ namespace zore {
 		// Create Texture samplers and bind them to their respective texture units
 		linearSampler = Sampler::Create(SampleMode::LINEAR);
 		linearSampler->Bind(0);
+		linearSampler->Bind(2);
 		nearestSampler = Sampler::Create(SampleMode::NEAREST);
 		nearestSampler->Bind(1);
 	}
@@ -70,17 +74,21 @@ namespace zore {
 		delete linearSampler;
 		delete nearestSampler;
 		delete frameBuffer;
-		delete postProcessShader;
+
 		delete blockShader;
 		delete fluidShader;
 		delete spriteShader;
+		delete skyShader;
+		delete debugLineShader;
+		delete postProcessShader;
+
 		delete engine;
 	}
 
 	void Application::Run() {
 		// Create the Player and Camera uniform buffer
 		Player player(&camera, { 32, 128, 32 });
-		ShaderData shaderData = { camera.GetProjection(), camera.GetProjection(), camera.GetPosition(), 0.f };
+		ShaderData shaderData = {};
 		UniformBuffer* shaderDataBuffer = UniformBuffer::Create(&shaderData, sizeof(shaderData), BufferMode::DYNAMIC, 0);
 		shaderDataBuffer->Bind();
 
@@ -103,7 +111,7 @@ namespace zore {
 		ubyte vertices[] = { 0, 1, 2, 3 };
 		Mesh* quadMesh = Mesh::Create(&vertices, sizeof(vertices[0]), sizeof(vertices) / sizeof(vertices[0]));
 		// Create texture array for sprites;
-		Texture2DArray* spriteTexture = Texture2DArray::Create({ "assets/textures/grass.png", "assets/textures/mush1.png" }, TextureFormat::RGBA);
+		Texture2DArray* spriteTexture = Texture2DArray::Create({ "grass.png", "mush1.png" }, "assets/textures/", TextureFormat::RGBA);
 		spriteTexture->Bind(1);
 
 		// Initialize the chunk manager
@@ -113,6 +121,15 @@ namespace zore {
 		engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
 		UBx1->Bind();
 		quadMesh->Bind();
+
+		// Create Text stuff (Temp)
+		textData temp = textData(100, 100, 10, 2, 0);
+		std::vector<textData> textInstanceData = { temp };
+		InstanceArrayBuffer* tiab = InstanceArrayBuffer::Create(textInstanceData.data(), sizeof(textData) * textInstanceData.size(), sizeof(textData));
+		// Create texture array for text;
+		std::vector<std::string> textFilenames = { "65.png", "66.png" };
+		Texture2DArray* textTexture = Texture2DArray::Create(textFilenames, "assets/fonts/consola/", TextureFormat::RGBA);
+		textTexture->Bind(2);
 
 		Timer timer;
 		float deltaTime, runningTime = 0;
@@ -131,7 +148,7 @@ namespace zore {
 			player.Update(deltaTime);
 
 			glm::mat4 inv_vp_mat = glm::transpose(camera.GetView()) * glm::inverse(camera.GetProjection());
-			shaderData = { camera.GetProjection() * camera.GetView(), inv_vp_mat, camera.GetPosition(), runningTime };
+			shaderData = { camera.GetProjection() * camera.GetView(), inv_vp_mat, camera.GetPosition(), runningTime, inverseWindowResolution };
 			shaderDataBuffer->Set(&shaderData, sizeof(shaderData));
 			//shaderDataBuffer->Update(&shaderData, sizeof(shaderData));
 
@@ -181,7 +198,12 @@ namespace zore {
 			//engine->SetWireframe(false);
 			postProcessShader->Bind();
 			engine->DrawLinear(quadMesh->GetCount());
-			// Could place debug mesh render here to avoid FXAA artifact on block outline
+
+			// RENDER User Interface --------
+			textShader->Bind();
+			tiab->Bind();
+			engine->DrawLinear(quadMesh->GetCount());
+
 			Window::Update();
 		}
 		
@@ -189,6 +211,10 @@ namespace zore {
 		delete UBx1;
 		delete shaderDataBuffer;
 		delete offsetDataBuffer;
+
+		delete tiab;
+		delete textTexture;
+		delete spriteTexture;
 	}
 
 	void Application::OnWindowResize(int width, int height) {
@@ -196,8 +222,7 @@ namespace zore {
 			engine->SetViewport(width, height);
 			camera.SetAspectRatio(static_cast<float>(width) / static_cast<float>(height));
 			frameBuffer->SetSize(width, height);
-			postProcessShader->Bind();
-			postProcessShader->SetFloat2("resolution", { 1.f / width, 1.f / height });
+			inverseWindowResolution = { 1.f / width, 1.f / height };
 		}
 	}
 

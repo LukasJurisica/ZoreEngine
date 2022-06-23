@@ -40,7 +40,7 @@ namespace zore {
 	
 	class Texture2DArray {
 	public:
-		static Texture2DArray* Create(const std::vector<std::string>& filenames, TextureFormat textureFormat = TextureFormat::RGBA);
+		static Texture2DArray* Create(const std::vector<std::string>& filenames, const std::string& root = "assets/", TextureFormat textureFormat = TextureFormat::RGBA);
 		static Texture2DArray* Create(uint width, uint height, uint layers, void* data = nullptr, TextureFormat textureFormat = TextureFormat::RGBA);
 		virtual ~Texture2DArray() = default;
 

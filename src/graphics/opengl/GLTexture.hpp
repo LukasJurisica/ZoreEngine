@@ -42,7 +42,7 @@ namespace zore {
 
 	class GLTexture2DArray : public Texture2DArray, public GLTexture {
 	public:
-		GLTexture2DArray(const std::vector<std::string>& filenames, TextureFormat textureFormat);
+		GLTexture2DArray(const std::vector<std::string>& filenames, const std::string& root, TextureFormat textureFormat);
 		GLTexture2DArray(uint width, uint height, uint layers, void* data, TextureFormat textureFormat);
 		~GLTexture2DArray() = default;
 

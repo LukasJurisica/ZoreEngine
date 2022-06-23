@@ -30,17 +30,17 @@ namespace zore {
 	void Texture2D::Init(uint w, uint h) {
 		DEBUG_ENSURE(w * h, "Cannot create Texture Array with a dimension of 0.");
 		width = w;
-		height = w;
+		height = h;
 	}
 
 	//========================================================================
 	//	Platform Agnostic 2D Array Texture Class
 	//========================================================================
 
-	Texture2DArray* Texture2DArray::Create(const std::vector<std::string>& filenames, TextureFormat textureFormat) {
+	Texture2DArray* Texture2DArray::Create(const std::vector<std::string>& filenames, const std::string& root, TextureFormat textureFormat) {
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
-			return new GLTexture2DArray(filenames, textureFormat);
+			return new GLTexture2DArray(filenames, root, textureFormat);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
 		return nullptr;
@@ -58,7 +58,7 @@ namespace zore {
 	void Texture2DArray::Init(uint w, uint h, uint l) {
 		DEBUG_ENSURE(w * h * l, "Cannot create Texture Array with a dimension of 0.");
 		width = w;
-		height = w;
+		height = h;
 		layers = l;
 	}
 }

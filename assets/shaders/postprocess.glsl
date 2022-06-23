@@ -2,13 +2,16 @@
 #version 430 core
 
 layout(location = 0) in int vertexID;
+layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; vec2 res; };
 out vec2 uv;
+flat out vec2 resolution;
 
-const vec2 offsets[4] = vec2[4]( vec2(-1.0, 1.0), vec2(-1.0,-1.0), vec2( 1.0, 1.0), vec2( 1.0,-1.0) );
+const vec2 offsets[4] = vec2[4]( vec2(-1, 1), vec2(-1, -1), vec2(1, 1), vec2(1, -1) );
 
 void main() {
 	vec2 position = offsets[vertexID];
 	uv = (position + 1.0) * 0.5;
+	resolution = res;
 	gl_Position = vec4(position, 0.0, 1.0);
 }
 
@@ -20,8 +23,8 @@ void main() {
 #version 430 core
 
 in vec2 uv;
+flat in vec2 resolution;
 layout(binding = 0) uniform sampler2DArray screen;
-uniform vec2 resolution;
 out vec4 fragColor;
 
 #define ENABLE_FXAA

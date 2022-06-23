@@ -74,16 +74,18 @@ namespace zore {
 	//	OpenGL 2D Texture Array Class
 	//========================================================================
 	
-	GLTexture2DArray::GLTexture2DArray(const std::vector<std::string>& filenames, TextureFormat textureFormat) : GLTexture(GL_TEXTURE_2D_ARRAY, textureFormat) {
+	GLTexture2DArray::GLTexture2DArray(const std::vector<std::string>& filenames, const std::string& root, TextureFormat textureFormat) : GLTexture(GL_TEXTURE_2D_ARRAY, textureFormat) {
 		int w, h, c;
 		for (int i = 0; i < filenames.size(); i++) {
-			ubyte* data = stbi_load(filenames[i].c_str(), &w, &h, &c, static_cast<uint>(textureFormat) + 1);
-			ENSURE(data, "Could not load texture: " + filenames[i]);
+			std::string path = root + filenames[i];
+			ubyte* data = stbi_load(path.c_str(), &w, &h, &c, static_cast<uint>(textureFormat) + 1);
+			ENSURE(data, "Could not load texture: " + path);
 			if (i == 0) {
 				Init(w, h, static_cast<uint>(filenames.size()));
 				glTextureStorage3D(id, 1, format, width, height, layers);
 			}
-			ENSURE(w == width && h == height, "The following texture cannot be added to the texture array as it has different dimensions: " + filenames[i]);
+
+			ENSURE(w == width && h == height, "The following texture cannot be added to the texture array as it has different dimensions: " + path);
 			glTextureSubImage3D(id, 0, 0, 0, i, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
 			stbi_image_free(data);
 		}

@@ -1,7 +1,7 @@
 #shaderstage vertex
 #version 430 core
 
-layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; };
+layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; vec2 res; };
 layout (std140, binding = 1) uniform modelData { ivec4 offsets[32]; };
 uniform ivec3 pos;
 

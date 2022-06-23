@@ -14,6 +14,16 @@ namespace zore {
 		glm::mat4 ivp_mat;
 		glm::vec3 cameraPos;
 		float time;
+		glm::vec2 resolution;
+	};
+
+	struct textData {
+		textData(ushort x, ushort y, ubyte width, ubyte scale, ushort offset) {
+			a = (x << 16) + y;
+			b = (width << 24) + (scale << 16) + offset;
+		}
+		uint a;
+		uint b;
 	};
 
 	class Application : WindowListener, KeyListener {
@@ -30,16 +40,20 @@ namespace zore {
 
 	private:
 		Camera camera;
-
 		RenderEngine* engine;
 		FrameBuffer* frameBuffer;
-		Shader* postProcessShader;
+
 		Shader* blockShader;
 		Shader* spriteShader;
 		Shader* fluidShader;
-		Shader* debugLineShader;
 		Shader* skyShader;
+		Shader* debugLineShader;
+		Shader* textShader;
+		Shader* postProcessShader;
+		
 		Sampler* linearSampler;
 		Sampler* nearestSampler;
+
+		glm::vec2 inverseWindowResolution;
 	};
 }

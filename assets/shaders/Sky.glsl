@@ -2,11 +2,11 @@
 #version 430 core
 
 layout(location = 0) in int vertexID;
-layout(std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cp; float t; };
+layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float t; vec2 res; };
 out vec3 pos;
-out float time;
-out float sunAngle;
-out vec3 sunVec;
+flat out float time;
+flat out float sunAngle;
+flat out vec3 sunVec;
 
 const vec2 position[4] = vec2[4](vec2(-1, 1), vec2(-1, -1), vec2(1, 1), vec2(1, -1));
 
@@ -24,9 +24,9 @@ void main() {
 #shaderstage fragment
 #version 430 core
 in vec3 pos;
-in float time;
-in vec3 sunVec;
-in float sunAngle;
+flat in float time;
+flat in vec3 sunVec;
+flat in float sunAngle;
 out vec4 color;
 
 #define SKY_DENSITY_D 0.35

@@ -2,7 +2,7 @@
 #version 430 core
 
 layout(location = 0) in int vertexID;
-layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; };
+layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; vec2 res; };
 uniform vec4 model;
 
 const vec2 position[4] = vec2[4](vec2(-1, 1), vec2(-1,-1), vec2( 1, 1), vec2( 1,-1));
