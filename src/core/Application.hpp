@@ -18,12 +18,9 @@ namespace zore {
 	};
 
 	struct textData {
-		textData(ushort x, ushort y, ubyte width, ubyte scale, ushort offset) {
-			a = (x << 16) + y;
-			b = (width << 24) + (scale << 16) + offset;
-		}
-		uint a;
-		uint b;
+		textData(ushort x, ushort y, ubyte charCount, ubyte scale, ushort charOffset) :
+			a((x << 16) + y), b((charCount << 24) + (scale << 16) + charOffset) {}
+		uint a, b;
 	};
 
 	class Application : WindowListener, KeyListener {

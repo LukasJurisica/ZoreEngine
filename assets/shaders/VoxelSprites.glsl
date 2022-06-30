@@ -16,7 +16,7 @@ void main() {
 
 	spriteID = (face.y >> 16) & 0xFFFF;
 	unsigned int dir = face.y & 0x7;
-	uv = vec2(floor(vertexID >> 1), vertexID & 1);
+	uv = vec2(vertexID >> 1, vertexID & 1);
 	vec3 position = offsets[(dir * 4) + vertexID].xyz + vec3(x, y, z) + chunkPos;
 
 	gl_Position = vp_mat * vec4(position, 1.f);

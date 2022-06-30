@@ -65,12 +65,13 @@ namespace zore {
 
 	class GLShaderStorageBuffer : public ShaderStorageBuffer {
 	public:
-		GLShaderStorageBuffer(const void* data, unsigned int size, unsigned int index);
+		GLShaderStorageBuffer(const void* data, unsigned int size);
 		~GLShaderStorageBuffer();
 
 		void Set(const void* data, unsigned int size) override;
 		void Update(const void* data, unsigned int size, unsigned int offset) override;
 		void Bind() const override;
+		void Bind(unsigned int index) override;
 		void Unbind() const override;
 
 	private:
@@ -84,12 +85,13 @@ namespace zore {
 
 	class GLUniformBuffer : public UniformBuffer {
 	public:
-		GLUniformBuffer(const void* data, unsigned int size, unsigned int mode, unsigned int index);
+		GLUniformBuffer(const void* data, unsigned int size, unsigned int mode);
 		~GLUniformBuffer();
 
 		void Set(const void* data, unsigned int size) override;
 		void Update(const void* data, unsigned int size, unsigned int offset) override;
 		void Bind() const override;
+		void Bind(unsigned int index) override;
 		void Unbind() const override;
 
 	private:

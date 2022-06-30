@@ -1,6 +1,4 @@
 #include "utils/FileManager.hpp"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
 #include "debug/Debug.hpp"
 #include "path_config.h"
 #include <filesystem>

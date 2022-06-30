@@ -109,7 +109,7 @@ namespace zore {
 	//	OpenGL Shader Storage Buffer Class
 	//========================================================================
 
-	GLShaderStorageBuffer::GLShaderStorageBuffer(const void* data, unsigned int size, unsigned int index) : index(index) {
+	GLShaderStorageBuffer::GLShaderStorageBuffer(const void* data, unsigned int size) : index(0) {
 		glCreateBuffers(1, &id);
 		glNamedBufferData(id, size, data, GL_STATIC_DRAW);
 	}
@@ -127,7 +127,12 @@ namespace zore {
 		memcpy(ptr, data, size);
 		glUnmapNamedBuffer(id);
 	}
-
+	
+	void GLShaderStorageBuffer::Bind(unsigned int index) {
+		this->index = index;
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, id);
+	}
+	
 	void GLShaderStorageBuffer::Bind() const {
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, id);
 	}
@@ -140,7 +145,7 @@ namespace zore {
 	//	OpenGL Uniform Buffer Class
 	//========================================================================
 
-	GLUniformBuffer::GLUniformBuffer(const void* data, unsigned int size, unsigned int mode, unsigned int index) : index(index), usage(BufferModeToGLBufferUsage[mode]) {
+	GLUniformBuffer::GLUniformBuffer(const void* data, unsigned int size, unsigned int mode) : index(0), usage(BufferModeToGLBufferUsage[mode]) {
 		glCreateBuffers(1, &id);
 		glNamedBufferData(id, size, data, usage);
 	}
@@ -157,6 +162,11 @@ namespace zore {
 		void* ptr = glMapNamedBufferRange(id, offset, size, GL_MAP_WRITE_BIT);
 		memcpy(ptr, data, size);
 		glUnmapNamedBuffer(id);
+	}
+
+	void GLUniformBuffer::Bind(unsigned int index) {
+		this->index = index;
+		glBindBufferBase(GL_UNIFORM_BUFFER, index, id);
 	}
 
 	void GLUniformBuffer::Bind() const {

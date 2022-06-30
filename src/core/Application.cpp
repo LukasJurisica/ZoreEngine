@@ -8,6 +8,7 @@
 #include "game/Player.hpp"
 #include "game/World.hpp"
 
+#include "ui/Text.hpp"
 #include <iostream>
 
 #define WINDOW_SIZE 1920, 1080
@@ -57,6 +58,9 @@ namespace zore {
 		postProcessShader->SetTextureSlot("screen", 0);
 		spriteShader->Bind();
 		spriteShader->SetTextureSlot("sprites", 1);
+		textShader->Bind();
+		textShader->SetTextureSlot("glyphs", 2);
+		Font::SetTextureSlot(2);
 
 		// Create framebuffer
 		frameBuffer = FrameBuffer::Create(WINDOW_SIZE, 1, TextureFormat::RGBA, DepthFormat::DEPTH24_STENCIL8);
@@ -86,11 +90,10 @@ namespace zore {
 	}
 
 	void Application::Run() {
-		// Create the Player and Camera uniform buffer
-		Player player(&camera, { 32, 128, 32 });
+		// Create the Shader uniform buffer
 		ShaderData shaderData = {};
-		UniformBuffer* shaderDataBuffer = UniformBuffer::Create(&shaderData, sizeof(shaderData), BufferMode::DYNAMIC, 0);
-		shaderDataBuffer->Bind();
+		UniformBuffer* shaderDataBuffer = UniformBuffer::Create(nullptr, sizeof(shaderData), BufferMode::DYNAMIC);
+		shaderDataBuffer->Bind(0);
 
 		// Create uniform buffer with offsets for voxel vertex positions
 		glm::ivec4 offsetData[] = {
@@ -100,36 +103,34 @@ namespace zore {
 			{ 0, 1, 0, 0}, { 0, 1, 1, 0}, { 1, 1, 0, 0}, { 1, 1, 1, 0}, // +y UP
 			{ 1, 1, 0, 0}, { 1, 0, 0, 0}, { 0, 1, 0, 0}, { 0, 0, 0, 0}, // -z NORTH
 			{ 0, 1, 1, 0}, { 0, 0, 1, 0}, { 1, 1, 1, 0}, { 1, 0, 1, 0}, // +z SOUTH
-			{ 0, 1, 0, 0}, { 0, 0, 0, 0}, { 1, 1, 1, 0}, { 1, 0, 1, 0}, // Sprite A
-			{ 0, 1, 1, 0}, { 0, 0, 1, 0}, { 1, 1, 0, 0}, { 1, 0, 0, 0}, // Sprite B
+			{ 0, 0, 0, 0}, { 0, 1, 0, 0}, { 1, 0, 1, 0}, { 1, 1, 1, 0}, // Sprite A
+			{ 0, 0, 1, 0}, { 0, 1, 1, 0}, { 1, 0, 0, 0}, { 1, 1, 0, 0}, // Sprite B
 		};
-		UniformBuffer* offsetDataBuffer = UniformBuffer::Create(&offsetData, sizeof(offsetData), BufferMode::STATIC, 1);
-		offsetDataBuffer->Bind();
+		UniformBuffer* offsetDataBuffer = UniformBuffer::Create(&offsetData, sizeof(offsetData), BufferMode::STATIC);
+		offsetDataBuffer->Bind(1);
+
+		// Create Textboxes
+		Font f("consola");
+		Textbox t(300, 100, "Sample Text");
+		Textbox b(300, 300, "Poggers");
+		Textbox::Flush();
+		t.SetText("Mom get the camera!");
+		Textbox::Flush();
 
 		// Create the mesh used for screenspace rendering and voxel faces
 		VertexLayout* UBx1 = VertexLayout::Create(blockShader, { {"vertexID", VertexDataType::UBYTE, 1} }, { {"face", VertexDataType::UINT, 2} }, 1u);
+		UBx1->Bind();
 		ubyte vertices[] = { 0, 1, 2, 3 };
 		Mesh* quadMesh = Mesh::Create(&vertices, sizeof(vertices[0]), sizeof(vertices) / sizeof(vertices[0]));
+		quadMesh->Bind();
+
 		// Create texture array for sprites;
 		Texture2DArray* spriteTexture = Texture2DArray::Create({ "grass.png", "mush1.png" }, "assets/textures/", TextureFormat::RGBA);
 		spriteTexture->Bind(1);
 
-		// Initialize the chunk manager
+		// Initialize the player and chunk manager
+		Player player(&camera, { 32, 128, 32 });
 		ChunkManager::Init(RENDER_DISTANCE, camera.GetPosition());
-
-		//Bind mesh and vertex layouts for rendering
-		engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
-		UBx1->Bind();
-		quadMesh->Bind();
-
-		// Create Text stuff (Temp)
-		textData temp = textData(100, 100, 10, 2, 0);
-		std::vector<textData> textInstanceData = { temp };
-		InstanceArrayBuffer* tiab = InstanceArrayBuffer::Create(textInstanceData.data(), sizeof(textData) * textInstanceData.size(), sizeof(textData));
-		// Create texture array for text;
-		std::vector<std::string> textFilenames = { "65.png", "66.png" };
-		Texture2DArray* textTexture = Texture2DArray::Create(textFilenames, "assets/fonts/consola/", TextureFormat::RGBA);
-		textTexture->Bind(2);
 
 		Timer timer;
 		float deltaTime, runningTime = 0;
@@ -154,7 +155,6 @@ namespace zore {
 
 			// RENDER THE SCENE TO FRAMEBUFFER --------
 			frameBuffer->Bind();
-
 			//engine->SetWireframe(true);
 			engine->SetDepthTest(true);
 			engine->Clear();
@@ -201,8 +201,7 @@ namespace zore {
 
 			// RENDER User Interface --------
 			textShader->Bind();
-			tiab->Bind();
-			engine->DrawLinear(quadMesh->GetCount());
+			engine->DrawLinearInstanced(quadMesh->GetCount(), Textbox::Bind());
 
 			Window::Update();
 		}
@@ -212,8 +211,6 @@ namespace zore {
 		delete shaderDataBuffer;
 		delete offsetDataBuffer;
 
-		delete tiab;
-		delete textTexture;
 		delete spriteTexture;
 	}
 

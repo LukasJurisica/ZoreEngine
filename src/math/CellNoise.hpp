@@ -1,14 +1,13 @@
 #pragma once
 #include "math/WhiteNoise.hpp"
 #include "math/MathUtils.hpp"
+#include "debug/Debug.hpp"
 
 #include <glm/vec3.hpp>
 #include <math.h>
 #include <vector>
 #include <array>
 #include <algorithm>
-
-#include "debug/Logger.hpp"
 
 namespace zm {
 
@@ -27,7 +26,28 @@ namespace zm {
 	class CellNoise {
 	public:
 
-		static void Eval(glm::vec2 p, float centralBias, std::array<CellData, 9>& data, int seed = 0) {
+		static void Eval(const glm::vec2& p, float centralBias, glm::vec3& out, int seed = 0) {
+			DEBUG_ENSURE(centralBias < 0.25, "Central bias for cellular noise must be atleast 0.25 to ensure seed is found within quad cell search.");
+			glm::vec2 i = glm::round(p); // Integer Position
+			glm::vec2 f = p - i - (centralBias * 0.5f); // Fractional Position
+
+			out.x = 8.0;
+			for (int x = -1; x < 1; x++) {
+				for (int y = -1; y < 1; y++) {
+					glm::vec2 l = glm::vec2(x, y);
+					glm::vec2 v = zm::WhiteNoise::Eval2(i + l) * (1.f - centralBias);
+					glm::vec2 r = l + v - f;
+					float d = glm::dot(r, r);
+
+					if (d < out.x)
+						out = glm::vec3(d, i + l);
+				}
+			}
+
+			out.x = sqrt(out.x);
+		}
+
+		static void EvalOld(glm::vec2 p, float centralBias, std::array<CellData, 9>& data, int seed = 0) {
 			// Setup Local Variables
 			float offset = centralBias * 0.5f;
 			float mult = 1.f - centralBias;

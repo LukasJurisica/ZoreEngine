@@ -1,6 +1,8 @@
 #include "graphics/RenderEngine.hpp"
 #include "graphics/opengl/GLRenderEngine.hpp"
 //#include "graphics/vulkan/VKRenderEngine.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
 #include "debug/Debug.hpp"
 
 namespace zore {
@@ -19,6 +21,7 @@ namespace zore {
 		switch (activeAPI) {
 		case API::OPENGL:
 			engine = new GLRenderEngine();
+			stbi_set_flip_vertically_on_load(true);
 			break;
 		default:
 			throw ZORE_EXCEPTION("The Render Engine cannot be intialized before the Render API is set with RenderEngine::SetApi.");

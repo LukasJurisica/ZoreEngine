@@ -6,11 +6,9 @@ layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec
 out vec2 uv;
 flat out vec2 resolution;
 
-const vec2 offsets[4] = vec2[4]( vec2(-1, 1), vec2(-1, -1), vec2(1, 1), vec2(1, -1) );
-
 void main() {
-	vec2 position = offsets[vertexID];
-	uv = (position + 1.0) * 0.5;
+	uv = vec2(vertexID >> 1, 1 - (vertexID & 1));
+	vec2 position = uv * 2 - 1;
 	resolution = res;
 	gl_Position = vec4(position, 0.0, 1.0);
 }
@@ -225,6 +223,7 @@ void main() {
 
 	#ifdef ENABLE_FXAA
 		fragColor = vec4(Fxaa(), 1.0);
+		//fragColor = vec4(uv.x, 0.0, uv.y, 1.0);
 	#else
 		fragColor = vec4(texture(screen, vec3(uv, 0)).rgb, 1.0);
 	#endif

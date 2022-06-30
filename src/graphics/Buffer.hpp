@@ -57,12 +57,13 @@ namespace zore {
 
 	class ShaderStorageBuffer {
 	public:
-		static ShaderStorageBuffer* Create(const void* data, unsigned int size, unsigned int index = 0u);
+		static ShaderStorageBuffer* Create(const void* data, unsigned int size);
 		virtual ~ShaderStorageBuffer() = default;
 
 		virtual void Set(const void* data, unsigned int size) = 0;
 		virtual void Update(const void* data, unsigned int size, unsigned int offset = 0u) = 0;
 		virtual void Bind() const = 0;
+		virtual void Bind(unsigned int index) = 0;
 		virtual void Unbind() const = 0;
 	};
 
@@ -72,12 +73,13 @@ namespace zore {
 
 	class UniformBuffer {
 	public:
-		static UniformBuffer* Create(const void* data, unsigned int size, BufferMode mode, unsigned int index = 0u);
+		static UniformBuffer* Create(const void* data, unsigned int size, BufferMode mode);
 		virtual ~UniformBuffer() = default;
 
 		virtual void Set(const void* data, unsigned int size) = 0;
 		virtual void Update(const void* data, unsigned int size, unsigned int offset = 0u) = 0;
 		virtual void Bind() const = 0;
+		virtual void Bind(unsigned int index) = 0;
 		virtual void Unbind() const = 0;
 	};
 }

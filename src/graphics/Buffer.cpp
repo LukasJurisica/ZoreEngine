@@ -45,10 +45,10 @@ namespace zore {
 	//	Platform Agnostic Shader Storage Buffer Class
 	//========================================================================
 
-	ShaderStorageBuffer* ShaderStorageBuffer::Create(const void* data, unsigned int size, unsigned int index) {
+	ShaderStorageBuffer* ShaderStorageBuffer::Create(const void* data, unsigned int size) {
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
-			return new GLShaderStorageBuffer(data, size, index);
+			return new GLShaderStorageBuffer(data, size);
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
 	}
@@ -57,10 +57,10 @@ namespace zore {
 	//	Platform Agnostic Uniform Buffer Class
 	//========================================================================
 
-	UniformBuffer* UniformBuffer::Create(const void* data, unsigned int size, BufferMode mode, unsigned int index) {
+	UniformBuffer* UniformBuffer::Create(const void* data, unsigned int size, BufferMode mode) {
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
-			return new GLUniformBuffer(data, size, static_cast<unsigned int>(mode), index);
+			return new GLUniformBuffer(data, size, static_cast<unsigned int>(mode));
 		}
 		throw ZORE_EXCEPTION("Invalid RenderAPI");
 	}
