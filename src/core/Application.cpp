@@ -11,8 +11,8 @@
 #include "ui/Text.hpp"
 #include <iostream>
 
-#define WINDOW_SIZE 1920, 1080
-#define RENDER_DISTANCE 16u
+#define WINDOW_SIZE 1600, 900
+#define RENDER_DISTANCE 8u
 
 namespace zore {
 	
@@ -110,12 +110,12 @@ namespace zore {
 		offsetDataBuffer->Bind(1);
 
 		// Create Textboxes
-		Font f("consola");
-		Textbox t(300, 100, "Sample Text");
-		Textbox b(300, 300, "Poggers");
-		Textbox::Flush();
-		t.SetText("Mom get the camera!");
-		Textbox::Flush();
+		//Font f("consola");
+		//Textbox t(300, 100, "Sample Text");
+		//Textbox b(300, 300, "Poggers");
+		//Textbox::Flush();
+		//t.SetText("Mom get the camera!");
+		//Textbox::Flush();
 
 		// Create the mesh used for screenspace rendering and voxel faces
 		VertexLayout* UBx1 = VertexLayout::Create(blockShader, { {"vertexID", VertexDataType::UBYTE, 1} }, { {"face", VertexDataType::UINT, 2} }, 1u);
@@ -200,8 +200,8 @@ namespace zore {
 			engine->DrawLinear(quadMesh->GetCount());
 
 			// RENDER User Interface --------
-			textShader->Bind();
-			engine->DrawLinearInstanced(quadMesh->GetCount(), Textbox::Bind());
+			//textShader->Bind();
+			//engine->DrawLinearInstanced(quadMesh->GetCount(), Textbox::Bind());
 
 			Window::Update();
 		}

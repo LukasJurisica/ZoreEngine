@@ -1,6 +1,6 @@
 #pragma once
 #include "fnl/fastnoise.hpp"
-//#include "fnl/fastnoiselite.h"
+#include "math/CellNoise.hpp"
 #include "voxel/Chunk.hpp"
 
 namespace zore {
@@ -15,10 +15,11 @@ namespace zore {
 		~TerrainGenerator() = default;
 
 		void Generate(Chunk* chunk);
-		void GenerateHeightmap(short* heightMap, Chunk* chunk);
+		void GenerateBHMap(ubyte* biomeMap, ushort* heightMap, Chunk* chunk);
 
 	private:
 		fnl::FastNoiseLite terrain;
-		fnl::FastNoiseLite biome;
+		//fnl::FastNoiseLite biome;
+		zm::CellNoise biome;
 	};
 }

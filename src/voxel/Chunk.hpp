@@ -54,17 +54,18 @@ namespace zore {
 		static constexpr int CHUNK_WIDTH = 64; // Chunk width and height must be powers of 2
 		static constexpr int CHUNK_HALF_WIDTH = CHUNK_WIDTH / 2;
 		static constexpr int CHUNK_HEIGHT = 256;
-		static constexpr int CHUNK_SLICE = CHUNK_WIDTH * CHUNK_HEIGHT;
-		static constexpr int CHUNK_VOLUME = CHUNK_SLICE * CHUNK_WIDTH;
+		static constexpr int CHUNK_HSLICE = CHUNK_WIDTH * CHUNK_WIDTH;
+		static constexpr int CHUNK_VSLICE = CHUNK_WIDTH * CHUNK_HEIGHT;
+		static constexpr int CHUNK_VOLUME = CHUNK_VSLICE * CHUNK_WIDTH;
 		static constexpr int CHUNK_WIDTH_BIT_DEPTH = 6; // This needs to be updated manually to reflect chunk width
 		static constexpr int CHUNK_HEIGHT_BIT_DEPTH = 8; // This needs to be updated manually to reflect chunk height
 		enum class State { INITIATED, GENERATING, GENERATED, MESHING, MESHED };
 
 	private:
 		// Special Access for gauranteed local operations (slightly faster than non local/relative counterparts). It is safer to use the public version 
-		inline void SetBlockLocal(int x, int y, int z, ushort value) { blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y] = value; }
-		inline ushort GetBlockLocal(int x, int y, int z) { return blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y]; }
-		inline bool GetOpaqueLocal(int x, int y, int z) { return blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y]; }
+		inline void SetBlockLocal(int x, int y, int z, ushort value) { blockData[(x * CHUNK_VSLICE) + (z * CHUNK_HEIGHT) + y] = value; }
+		inline ushort GetBlockLocal(int x, int y, int z) { return blockData[(x * CHUNK_VSLICE) + (z * CHUNK_HEIGHT) + y]; }
+		inline bool GetOpaqueLocal(int x, int y, int z) { return blockData[(x * CHUNK_VSLICE) + (z * CHUNK_HEIGHT) + y]; }
 
 		// Functions for Meshing
 		inline bool GetOpaque(int x, int y, int z);

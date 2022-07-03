@@ -102,10 +102,10 @@ namespace zore {
 		if (dx || dz) {
 			Chunk* neighbour = neighbours[(dx * 3) + dz + 4];
 			if (neighbour)
-				neighbour->blockData[((x - dx * CHUNK_WIDTH) * CHUNK_SLICE) + ((z - dz * CHUNK_WIDTH) * CHUNK_HEIGHT) + y] = value;
+				neighbour->blockData[((x - dx * CHUNK_WIDTH) * CHUNK_VSLICE) + ((z - dz * CHUNK_WIDTH) * CHUNK_HEIGHT) + y] = value;
 		}
 		else
-			blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y] = value;
+			blockData[(x * CHUNK_VSLICE) + (z * CHUNK_HEIGHT) + y] = value;
 	}
 
 	ushort Chunk::GetBlock(int x, int y, int z) {
@@ -122,10 +122,10 @@ namespace zore {
 
 		if (dx || dz) {
 			if (neighbours[(dx * 3) + dz + 4])
-				return neighbours[(dx * 3) + dz + 4]->blockData[((x - dx * CHUNK_WIDTH) * CHUNK_SLICE) + ((z - dz * CHUNK_WIDTH) * CHUNK_HEIGHT) + y];
+				return neighbours[(dx * 3) + dz + 4]->blockData[((x - dx * CHUNK_WIDTH) * CHUNK_VSLICE) + ((z - dz * CHUNK_WIDTH) * CHUNK_HEIGHT) + y];
 			return BLOCK_AIR;
 		}
-		return blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y];
+		return blockData[(x * CHUNK_VSLICE) + (z * CHUNK_HEIGHT) + y];
 	}
 
 	const glm::ivec3& Chunk::GetPosition() const {
@@ -170,9 +170,9 @@ namespace zore {
 
 		ushort block;
 		if (dx || dz)
-			block = neighbours[(dx * 3) + dz + 4]->blockData[((x - dx * CHUNK_WIDTH) * CHUNK_SLICE) + ((z - dz * CHUNK_WIDTH) * CHUNK_HEIGHT) + y];
+			block = neighbours[(dx * 3) + dz + 4]->blockData[((x - dx * CHUNK_WIDTH) * CHUNK_VSLICE) + ((z - dz * CHUNK_WIDTH) * CHUNK_HEIGHT) + y];
 		else
-			block = blockData[(x * CHUNK_SLICE) + (z * CHUNK_HEIGHT) + y];
+			block = blockData[(x * CHUNK_VSLICE) + (z * CHUNK_HEIGHT) + y];
 		return (block & OPAQUE_MASK) == OPAQUE_MASK;
 	}
 
