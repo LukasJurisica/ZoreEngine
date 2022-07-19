@@ -11,8 +11,8 @@
 #include "ui/Text.hpp"
 #include <iostream>
 
-#define WINDOW_SIZE 1600, 900
-#define RENDER_DISTANCE 8u
+#define WINDOW_SIZE 1920, 1080
+#define RENDER_DISTANCE 16u
 
 namespace zore {
 	
@@ -63,7 +63,7 @@ namespace zore {
 		Font::SetTextureSlot(2);
 
 		// Create framebuffer
-		frameBuffer = FrameBuffer::Create(WINDOW_SIZE, 1, TextureFormat::RGBA, DepthFormat::DEPTH24_STENCIL8);
+		frameBuffer = FrameBuffer::Create(WINDOW_SIZE, 1, TextureFormat::RGBA, DepthFormat::DEPTH32);
 		frameBuffer->GetTextureArray()->Bind(0);
 
 		// Create Texture samplers and bind them to their respective texture units

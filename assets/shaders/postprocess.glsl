@@ -25,7 +25,6 @@ flat in vec2 resolution;
 layout(binding = 0) uniform sampler2DArray screen;
 out vec4 fragColor;
 
-#define ENABLE_FXAA
 #define EDGE_THRESHOLD_MIN 0.0312
 #define EDGE_THRESHOLD_MAX 0.125
 #define ITERATIONS 12
@@ -218,6 +217,8 @@ vec3 Fxaa() {
 	// Read the color at the new UV coordinates, and use it.
 	return textureLod(screen, vec3(finalUv, 0), 0.0).rgb;
 }
+
+//#define ENABLE_FXAA
 
 void main() {
 

@@ -17,11 +17,11 @@ namespace zore {
 	TerrainGenerator::TerrainGenerator() : terrain(123), biome(0.005f, 321) {
 		terrain.SetNoiseType(fnl::NoiseType::OpenSimplex2S);
 		terrain.SetFrequency(0.003f);
+		terrain.SetFractalOctaves(3);
 		terrain.SetFractalType(fnl::FractalType::Ridged);
 		//terrain.SetFractalLacunarity(2.f);
-		terrain.SetFractalOctaves(3);
-
-		biome.SetCentralBias(0.3f);
+		
+		biome.SetCentralBias(0.5f);
 
 		//biome.SetNoiseType(fnl::NoiseType::Cellular);
 		//biome.SetCellularDistanceFunction(fnl::CellularDistanceFunction::Hybrid);
@@ -85,15 +85,15 @@ namespace zore {
 				//int h = zm::Floor(zm::SmoothMax(0.8f, zm::NormalizeNoise(-n) * 3.2f, 0.5f) * 20);
 				//int h = zm::Floor(zm::Max(16.f, zm::NormalizeNoise(-n) * 64));
 
-				//float n = terrain.GetNoise(x + chunk->renderPos.x - 1.f, z + chunk->renderPos.z - 1.f);
-				//int h = zm::Floor(zm::SmoothMax(24.f, zm::NormalizeNoise(n) * 128.f, 15.f));
+				float n = terrain.GetNoise(x + chunk->renderPos.x - 1.f, z + chunk->renderPos.z - 1.f);
+				int h = zm::Floor(zm::SmoothMax(24.f, zm::NormalizeNoise(n) * 128.f, 15.f));
 				//int b = zm::Floor(zm::NormalizeNoise(biome.GetNoise(x + chunk->renderPos.x, z + chunk->renderPos.z)) * 20) * 2;
 
 				zm::CellData res;
 				biome.GetNoise(x + chunk->renderPos.x - 1, z + chunk->renderPos.z - 1, res);
 				biomeMap[x * ChunkSizeWithBorder + z] = zm::Floor(zm::WhiteNoise::Eval1(res.cell) * 16);
 
-				ushort h = biomeMap[x * ChunkSizeWithBorder + z] * 3 + 40;
+				//ushort h = biomeMap[x * ChunkSizeWithBorder + z] * 3 + 40;
 				heightMap[x * ChunkSizeWithBorder + z] = h;
 			}
 		}
