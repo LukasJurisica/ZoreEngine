@@ -16,7 +16,7 @@ namespace zm {
 		~CellNoise() = default;
 
 		static void Eval(const glm::vec2& p, float centralBias, CellData& out, int seed = 0);
-		void GetNoise(int x, int y, CellData& out);
+		void GetNoise(float x, float y, CellData& out);
 		//void GetFractal(int x, int y, glm::vec2& out);
 
 		void SetSeed(int value) { seed = value; };

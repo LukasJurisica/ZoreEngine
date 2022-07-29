@@ -53,13 +53,20 @@ float hash13(in vec3 p3) {
     return fract((p3.x + p3.y) * p3.z);
 }
 
+vec2 hash23(vec3 p3) {
+	p3 = fract(p3 * vec3(0.1031, 0.1030, 0.0973));
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.xx + p3.yz) * p3.zy);
+}
+
 void main() {
 	vec3 pos = position * blockSubDivisions;
 	// If we remove the 1 -, block faces will have noise that wraps around it's faces
 	unsigned int offset = 1 - (dir & 1);
 	unsigned int axis = dir >> 1;
 	pos[axis] = round(pos[axis] - offset);
-	float noise = hash13(floor(pos)) * 0.1f + 0.9f;
+	vec2 noise = hash23(floor(pos)) * 0.1f + 0.9f;
 
-	FragColor = colour[fluidID] * noise;
+	vec4 c = colour[fluidID];
+	FragColor = vec4(c.rgb * noise.x, c.a * (noise.y - 0.1));
 } 

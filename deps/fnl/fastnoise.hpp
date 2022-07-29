@@ -40,6 +40,7 @@ namespace fnl {
 	class FastNoiseLite {
 	public:
 		FastNoiseLite(int seed = 1337);
+		//FastNoiseLite(NoiseType noiseType, float frequency = 0.01f, FractalType fractalType = FractalType::FBm, int octaves = 3, float lacunarity = 2.0f, float persistence = 0.5f, int seed = 1337);
 		~FastNoiseLite() = default;
 
 		void SetSeed(int seed);

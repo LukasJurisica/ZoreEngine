@@ -26,11 +26,9 @@ namespace zm {
 					out = { d, v, i + l };
 			}
 		}
-
-		out.dist = sqrt(out.dist);
 	}
 
-	void CellNoise::GetNoise(int x, int y, CellData& out) {
+	void CellNoise::GetNoise(float x, float y, CellData& out) {
 		glm::vec2 p = glm::vec2(x, y) * frequency;
 		glm::vec2 i = glm::round(p); // Integer Position
 		glm::vec2 f = p - i - (centralBias * 0.5f); // Fractional Position
@@ -47,8 +45,6 @@ namespace zm {
 					out = { d, v, i + l };
 			}
 		}
-
-		out.dist = sqrt(out.dist);
 	}
 
 	void CellNoise::SetCentralBias(float value) {

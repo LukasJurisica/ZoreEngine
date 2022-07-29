@@ -26,6 +26,33 @@ namespace fnl {
 		mDomainWarpAmp = 1.0f;
 	}
 
+	//FastNoiseLite::FastNoiseLite(NoiseType noiseType, float frequency, FractalType fractalType, int octaves, float lacunarity, float persistence, int seed) {
+	//	mSeed = seed;
+	//	mFrequency = frequency;
+	//	mNoiseType = noiseType;
+
+	//	mFractalType = fractalType;
+	//	mOctaves = octaves;
+	//	mLacunarity = lacunarity;
+	//	mPersistence = persistence;
+	//	
+	//	UpdateTransformType3D();
+
+	//	mWeightedStrength = 0.0f;
+	//	mPingPongStrength = 2.0f;
+	//	UpdateFractalBounding();
+
+	//	mCellularDistanceFunction = CellularDistanceFunction::EuclideanSq;
+	//	mCellularReturnType = CellularReturnType::Distance;
+	//	mCellularJitterModifier = 1.0f;
+
+	//	mRotationType3D = RotationType3D::None;
+	//	mTransformType3D = TransformType3D::DefaultOpenSimplex2;
+	//	mDomainWarpType = DomainWarpType::OpenSimplex2;
+	//	mWarpTransformType3D = TransformType3D::DefaultOpenSimplex2;
+	//	mDomainWarpAmp = 1.0f;
+	//}
+
 	//------------------------------------------------------------------------
 	//	General Noise Setters
 	//------------------------------------------------------------------------
@@ -294,8 +321,8 @@ namespace fnl {
 		int x0 = zm::Floor(x);
 		int y0 = zm::Floor(y);
 
-		float xs = zm::InterpHermite((float)(x - x0));
-		float ys = zm::InterpHermite((float)(y - y0));
+		float xs = zm::InterpHermite(x - x0);
+		float ys = zm::InterpHermite(y - y0);
 
 		x0 *= PrimeX;
 		y0 *= PrimeY;
@@ -313,9 +340,9 @@ namespace fnl {
 		int y0 = zm::Floor(y);
 		int z0 = zm::Floor(z);
 
-		float xs = zm::InterpHermite((float)(x - x0));
-		float ys = zm::InterpHermite((float)(y - y0));
-		float zs = zm::InterpHermite((float)(z - z0));
+		float xs = zm::InterpHermite(x - x0);
+		float ys = zm::InterpHermite(y - y0);
+		float zs = zm::InterpHermite(z - z0);
 
 		x0 *= PrimeX;
 		y0 *= PrimeY;
@@ -339,8 +366,8 @@ namespace fnl {
 		int x1 = zm::Floor(x);
 		int y1 = zm::Floor(y);
 
-		float xs = (float)(x - x1);
-		float ys = (float)(y - y1);
+		float xs = x - x1;
+		float ys = y - y1;
 
 		x1 *= PrimeX;
 		y1 *= PrimeY;
@@ -348,8 +375,8 @@ namespace fnl {
 		int y0 = y1 - PrimeY;
 		int x2 = x1 + PrimeX;
 		int y2 = y1 + PrimeY;
-		int x3 = x1 + (int)((long)PrimeX << 1);
-		int y3 = y1 + (int)((long)PrimeY << 1);
+		int x3 = x1 + (PrimeX << 1);
+		int y3 = y1 + (PrimeY << 1);
 
 		return zm::CubicLerp(
 			zm::CubicLerp(ValCoord(seed, x0, y0), ValCoord(seed, x1, y0), ValCoord(seed, x2, y0), ValCoord(seed, x3, y0), xs),
@@ -364,9 +391,9 @@ namespace fnl {
 		int y1 = zm::Floor(y);
 		int z1 = zm::Floor(z);
 
-		float xs = (float)(x - x1);
-		float ys = (float)(y - y1);
-		float zs = (float)(z - z1);
+		float xs = x - x1;
+		float ys = y - y1;
+		float zs = z - z1;
 
 		x1 *= PrimeX;
 		y1 *= PrimeY;
@@ -378,9 +405,9 @@ namespace fnl {
 		int x2 = x1 + PrimeX;
 		int y2 = y1 + PrimeY;
 		int z2 = z1 + PrimeZ;
-		int x3 = x1 + (int)((long)PrimeX << 1);
-		int y3 = y1 + (int)((long)PrimeY << 1);
-		int z3 = z1 + (int)((long)PrimeZ << 1);
+		int x3 = x1 + (PrimeX << 1);
+		int y3 = y1 + (PrimeY << 1);
+		int z3 = z1 + (PrimeZ << 1);
 
 
 		return zm::CubicLerp(
@@ -418,12 +445,12 @@ namespace fnl {
 	float FastNoiseLite::SingleSimplex(int seed, float x, float y) {
 		int i = zm::Floor(x);
 		int j = zm::Floor(y);
-		float xi = (float)(x - i);
-		float yi = (float)(y - j);
+		float xi = x - i;
+		float yi = y - j;
 
 		float t = (xi + yi) * C3;
-		float x0 = (float)(xi - t);
-		float y0 = (float)(yi - t);
+		float x0 = xi - t;
+		float y0 = yi - t;
 
 		i *= PrimeX;
 		j *= PrimeY;
@@ -445,8 +472,7 @@ namespace fnl {
 			n2 = (c * c) * (c * c) * GradCoord(seed, i + PrimeX, j + PrimeY, x2, y2);
 		}
 
-		if (y0 > x0)
-		{
+		if (y0 > x0) {
 			float x1 = x0 + C3;
 			float y1 = y0 + C3 - 1;
 			float b = 0.5f - x1 * x1 - y1 * y1;
@@ -472,13 +498,13 @@ namespace fnl {
 		int i = zm::Round(x);
 		int j = zm::Round(y);
 		int k = zm::Round(z);
-		float x0 = (float)(x - i);
-		float y0 = (float)(y - j);
-		float z0 = (float)(z - k);
+		float x0 = x - i;
+		float y0 = y - j;
+		float z0 = z - k;
 
-		int xNSign = (int)(-1.0f - x0) | 1;
-		int yNSign = (int)(-1.0f - y0) | 1;
-		int zNSign = (int)(-1.0f - z0) | 1;
+		int xNSign = static_cast<int>(-1.0f - x0) | 1;
+		int yNSign = static_cast<int>(-1.0f - y0) | 1;
+		int zNSign = static_cast<int>(-1.0f - z0) | 1;
 
 		float ax0 = xNSign * -x0;
 		float ay0 = yNSign * -y0;
@@ -551,8 +577,8 @@ namespace fnl {
 	float FastNoiseLite::SingleOpenSimplex2S(int seed, float x, float y) {
 		int i = zm::Floor(x);
 		int j = zm::Floor(y);
-		float xi = (float)(x - i);
-		float yi = (float)(y - j);
+		float xi = x - i;
+		float yi = y - j;
 
 		i *= PrimeX;
 		j *= PrimeY;
@@ -643,18 +669,18 @@ namespace fnl {
 		int i = zm::Floor(x);
 		int j = zm::Floor(y);
 		int k = zm::Floor(z);
-		float xi = (float)(x - i);
-		float yi = (float)(y - j);
-		float zi = (float)(z - k);
+		float xi = x - i;
+		float yi = y - j;
+		float zi = z - k;
 
 		i *= PrimeX;
 		j *= PrimeY;
 		k *= PrimeZ;
 		int seed2 = seed + 1293373;
 
-		int xNMask = (int)(-0.5f - xi);
-		int yNMask = (int)(-0.5f - yi);
-		int zNMask = (int)(-0.5f - zi);
+		int xNMask = static_cast<int>(-0.5f - xi);
+		int yNMask = static_cast<int>(-0.5f - yi);
+		int zNMask = static_cast<int>(-0.5f - zi);
 
 		float x0 = xi + xNMask;
 		float y0 = yi + yNMask;
