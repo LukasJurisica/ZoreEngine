@@ -260,8 +260,8 @@ namespace fnl {
 		int x0 = zm::Floor(x);
 		int y0 = zm::Floor(y);
 
-		float xd0 = (float)(x - x0);
-		float yd0 = (float)(y - y0);
+		float xd0 = x - x0;
+		float yd0 = y - y0;
 		float xd1 = xd0 - 1;
 		float yd1 = yd0 - 1;
 
@@ -284,9 +284,9 @@ namespace fnl {
 		int y0 = zm::Floor(y);
 		int z0 = zm::Floor(z);
 
-		float xd0 = (float)(x - x0);
-		float yd0 = (float)(y - y0);
-		float zd0 = (float)(z - z0);
+		float xd0 = x - x0;
+		float yd0 = y - y0;
+		float zd0 = z - z0;
 		float xd1 = xd0 - 1;
 		float yd1 = yd0 - 1;
 		float zd1 = zd0 - 1;
@@ -1637,15 +1637,15 @@ namespace fnl {
 	//------------------------------------------------------------------------
 
 	void FastNoiseLite::UpdateFractalBounding() {
-		//mFractalBounding = (1 - mPersistence) / (1 - pow(mPersistence, mOctaves));
-		float gain = zm::Abs(mPersistence);
-		float amp = gain;
-		float ampFractal = 1.0f;
-		for (int i = 1; i < mOctaves; i++) {
-			ampFractal += amp;
-			amp *= gain;
-		}
-		mFractalBounding = 1 / ampFractal;
+		mFractalBounding = (1 - mPersistence) / (1 - pow(mPersistence, mOctaves));
+		//float gain = zm::Abs(mPersistence);
+		//float amp = gain;
+		//float ampFractal = 1.0f;
+		//for (int i = 1; i < mOctaves; i++) {
+		//	ampFractal += amp;
+		//	amp *= gain;
+		//}
+		//mFractalBounding = 1 / ampFractal;
 	}
 
 	void FastNoiseLite::UpdateTransformType3D() {

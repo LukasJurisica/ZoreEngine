@@ -17,12 +17,6 @@ namespace zore {
 		glm::vec2 resolution;
 	};
 
-	struct textData {
-		textData(ushort x, ushort y, ubyte charCount, ubyte scale, ushort charOffset) :
-			a((x << 16) + y), b((charCount << 24) + (scale << 16) + charOffset) {}
-		uint a, b;
-	};
-
 	class Application : WindowListener, KeyListener {
 	public:
 		Application();

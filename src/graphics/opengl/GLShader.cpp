@@ -33,7 +33,7 @@ namespace zore {
 
 		std::vector<unsigned int> shaderStages;
 		std::string source;
-		FileManager::ReadContent(source, "assets/shaders/" + name, IS_DEBUG);
+		FileManager::ReadContent(source, "assets/shaders/" + name, true, false);
 
 		size_t index = 0;
 		do {

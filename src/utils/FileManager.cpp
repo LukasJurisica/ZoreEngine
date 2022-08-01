@@ -17,32 +17,41 @@ namespace zore {
 #endif
 	}
 
-	void FileManager::ReadContent(std::string& result, const std::string& filename, bool includeEmptyLines) {
+	void FileManager::ReadContent(std::string& result, const std::string& filename, bool mustExist, bool includeEmptyLines) {
 		// Open file
 		std::ifstream f(filename);
-		ENSURE(f.is_open(), "Error opening file: " + filename);
-
-		// Read file
-		std::string line;
-		while (std::getline(f, line))
-			if (line != "" || includeEmptyLines)
-				result += line + "\n";
+		if (f.is_open()) {
+			// Read file
+			std::string line;
+			while (std::getline(f, line))
+				if (line != "" || includeEmptyLines)
+					result += line + "\n";
+		}
+		else if (mustExist)
+			throw ZORE_EXCEPTION("Error opening file: " + filename);
 	}
 
-	void FileManager::ReadLines(std::vector<std::string>& result, const std::string& filename, bool includeEmptyLines) {
+	void FileManager::ReadLines(std::vector<std::string>& result, const std::string& filename, bool mustExist, bool includeEmptyLines) {
 		// Open file
 		std::ifstream f(filename);
-		ENSURE(f.is_open(), "Error opening file: " + filename);
-
-		// Read file
-		std::string line;
-		while (std::getline(f, line))
-			if (line != "" || includeEmptyLines)
-				result.push_back(line);
+		if (f.is_open()) {
+			// Read file
+			std::string line;
+			while (std::getline(f, line))
+				if (line != "" || includeEmptyLines)
+					result.emplace_back(line);
+		}
+		else if (mustExist)
+			throw ZORE_EXCEPTION("Error opening file: " + filename);
 	}
 
 	void FileManager::ReadChunks(std::vector<std::string>& result, const std::string& filename, const std::string& delimiter, bool includeEmptyLines) {
 
+	}
+
+	void FileManager::WriteContent(const std::string& data, const std::string& filename, bool overwrite) {
+		std::ofstream f(filename);
+		f << data;
 	}
 
 	std::string FileManager::GetPath(const std::string& filename) {

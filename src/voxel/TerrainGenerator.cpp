@@ -16,20 +16,17 @@ namespace zore {
 	// Terrain Generator Class
 	//========================================================================
 
-	TerrainGenerator::TerrainGenerator() : terrain(SEED), ocean(SEED), biomeOffset(SEED), biome(0.01f, SEED) {
+	TerrainGenerator::TerrainGenerator() : terrain(SEED), ocean(SEED), biomeOffset(SEED), biome(0.01f, 0.f, SEED) {
 		terrain.SetNoiseType(fnl::NoiseType::OpenSimplex2S);
 		terrain.SetFrequency(0.003f);
 		terrain.SetFractalOctaves(3);
 		terrain.SetFractalType(fnl::FractalType::Ridged);
-		//terrain.SetFractalLacunarity(2.f);
 		
 		ocean.SetNoiseType(fnl::NoiseType::Value);
 		ocean.SetFrequency(0.2f);
-		ocean.SetFractalOctaves(1);
-		ocean.SetFractalType(fnl::FractalType::None);
+		ocean.SetFractalOctaves(2);
+		ocean.SetFractalType(fnl::FractalType::FBm);
 
-		biome.SetCentralBias(0.0f);
-		
 		biomeOffset.SetDomainWarpType(fnl::DomainWarpType::BasicGrid);
 		biomeOffset.SetDomainWarpAmp(50);
 		biomeOffset.SetFractalType(fnl::FractalType::DomainWarpProgressive);
@@ -110,7 +107,7 @@ namespace zore {
 				zo = subBiomeResult.cell.y + subBiomeResult.offset.y;
 				float n = zm::NormalizeNoise(ocean.GetNoise(xo, zo));
 
-				ubyte b = n > 0.5f ? 0 : zm::Floor(zm::WhiteNoise::Eval1(subBiomeResult.cell) * 16) + 1;
+				ubyte b = n > 0.5f ? 0 : zm::Floor(zm::WhiteNoise::Eval1(subBiomeResult.cell) * 32) + 1;
 				biomeMap[x * ChunkSizeWithBorder + z] = b;
 			}
 		}

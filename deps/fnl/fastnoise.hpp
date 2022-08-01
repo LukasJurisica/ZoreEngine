@@ -112,16 +112,16 @@ namespace fnl {
 		void UpdateTransformType3D();
 		void UpdateWarpTransformType3D();
 
-		static int Hash(int seed, int xPrimed, int yPrimed);
-		static int Hash(int seed, int xPrimed, int yPrimed, int zPrimed);
-		static float ValCoord(int seed, int xPrimed, int yPrimed);
-		static float ValCoord(int seed, int xPrimed, int yPrimed, int zPrimed);
-		float GradCoord(int seed, int xPrimed, int yPrimed, float xd, float yd);
-		float GradCoord(int seed, int xPrimed, int yPrimed, int zPrimed, float xd, float yd, float zd);
-		void GradCoordOut(int seed, int xPrimed, int yPrimed, float& xo, float& yo);
-		void GradCoordOut(int seed, int xPrimed, int yPrimed, int zPrimed, float& xo, float& yo, float& zo);
-		void GradCoordDual(int seed, int xPrimed, int yPrimed, float xd, float yd, float& xo, float& yo);
-		void GradCoordDual(int seed, int xPrimed, int yPrimed, int zPrimed, float xd, float yd, float zd, float& xo, float& yo, float& zo);
+		static inline int Hash(int seed, int xPrimed, int yPrimed);
+		static inline int Hash(int seed, int xPrimed, int yPrimed, int zPrimed);
+		static inline float ValCoord(int seed, int xPrimed, int yPrimed);
+		static inline float ValCoord(int seed, int xPrimed, int yPrimed, int zPrimed);
+		static inline float GradCoord(int seed, int xPrimed, int yPrimed, float xd, float yd);
+		static inline float GradCoord(int seed, int xPrimed, int yPrimed, int zPrimed, float xd, float yd, float zd);
+		static inline void GradCoordOut(int seed, int xPrimed, int yPrimed, float& xo, float& yo);
+		static inline void GradCoordOut(int seed, int xPrimed, int yPrimed, int zPrimed, float& xo, float& yo, float& zo);
+		static inline void GradCoordDual(int seed, int xPrimed, int yPrimed, float xd, float yd, float& xo, float& yo);
+		static inline void GradCoordDual(int seed, int xPrimed, int yPrimed, int zPrimed, float xd, float yd, float zd, float& xo, float& yo, float& zo);
 
 	private:
 		int mSeed;

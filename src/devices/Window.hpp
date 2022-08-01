@@ -17,20 +17,20 @@ namespace zore {
 		static void Update();
 		static bool ShouldClose();
 		static void SetTitle(const char* title);
+		static void SetBorderless(bool value);
 		static void SetFullscreen(bool value);
 		static void ToggleFullscreen();
-		static void SetPosition(int x, int y);
-		static void Centre();
-		static void SetBorderless(bool value);
-		static void SetSize(int width, int height);
 		static void HideCursor(bool value);
 		static void ToggleCursor();
+		static void SetSize(int width, int height);
+		static void SetPosition(int x, int y);
+		static void Centre();
 
 		static float GetAspectRatio();
 		static const glm::ivec2& GetSize();
+		static const glm::ivec2 GetNativeResolution();
 
 	private:
-		
 		static void ErrorCallback(int error, const char* description);
 		static void ResizeCallback(GLFWwindow* windowHandle, int width, int height);
 		static void MoveCallback(GLFWwindow* windowHandle, int xpos, int ypos);

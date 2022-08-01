@@ -1,5 +1,6 @@
 #include "core/Application.hpp"
 #include "graphics/VertexLayout.hpp"
+#include "utils/ConfigManager.hpp"
 #include "utils/FileManager.hpp"
 #include "utils/Timer.hpp"
 #include "debug/Debug.hpp"
@@ -11,20 +12,20 @@
 #include "ui/Text.hpp"
 #include <iostream>
 
-#define WINDOW_SIZE 1920, 1080
-#define RENDER_DISTANCE 16u
-
 namespace zore {
+
+	ConfigGroup options("options");
 	
 	void Application::Init() {
 		FileManager::Init();
 		// load config from file
+		options.Load();
 		RenderEngine::SetAPI(API::OPENGL);
-		Window::Init(WINDOW_SIZE);
+		Window::Init(options.Get("width", 0), options.Get("height", 0));
 		RenderEngine::Init();
-
 		Application app;
 		app.Run();
+		options.Save();
 	}
 
 	void Application::Cleanup() {
@@ -33,14 +34,13 @@ namespace zore {
 	}
 
 	Application::Application() : engine(RenderEngine::Get()), camera(75.f, Window::GetAspectRatio(), 0.1f, 1200.f) {
-		//Window::SetBorderless(true);
+		Window::SetBorderless(options.Get("borderless", false));
+		Window::SetFullscreen(options.Get("fullscreen", false));
 		Window::HideCursor(true);
-		//Window::SetFullscreen(true);
 		glm::ivec2 res = Window::GetSize();
 		inverseWindowResolution = { 1.f / res.x, 1.f / res.y };
 
 		engine->SetVSync(false);
-		//engine->SetClearColour(0.5f, 0.8f, 0.92f);
 		engine->SetClearMode({ BufferType::DEPTH });
 		engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
 
@@ -63,7 +63,7 @@ namespace zore {
 		Font::SetTextureSlot(2);
 
 		// Create framebuffer
-		frameBuffer = FrameBuffer::Create(WINDOW_SIZE, 1, TextureFormat::RGBA, DepthFormat::DEPTH32);
+		frameBuffer = FrameBuffer::Create(res.x, res.y, 1, TextureFormat::RGBA, DepthFormat::DEPTH32);
 		frameBuffer->GetTextureArray()->Bind(0);
 
 		// Create Texture samplers and bind them to their respective texture units
@@ -130,7 +130,7 @@ namespace zore {
 
 		// Initialize the player and chunk manager
 		Player player(&camera, { 32, 128, 32 });
-		ChunkManager::Init(RENDER_DISTANCE, camera.GetPosition());
+		ChunkManager::Init(options.Get("RenderDistance", 8), camera.GetPosition());
 
 		Timer timer;
 		float deltaTime, runningTime = 0;

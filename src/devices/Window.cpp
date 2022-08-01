@@ -40,20 +40,22 @@ namespace zore {
 		//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		Logger::Info("Window Initialization Complete");
 
-
 		// Create GLFW window
+		if (width * height == 0) {
+			glm::ivec2 screenRes = Window::GetNativeResolution();
+			width = screenRes.x * 0.75f;
+			height = screenRes.y * 0.75f;
+		}
 		size = { width, height };
 		windowHandle = glfwCreateWindow(size.x, size.y, "Zore Engine Window", nullptr, nullptr);
 		ENSURE(windowHandle, "Failed to create GLFW window");
 		glfwMakeContextCurrent(windowHandle);
+		Centre();
 
 		// Enable Various features
 		if (glfwRawMouseMotionSupported())
 			glfwSetInputMode(windowHandle, GLFW_RAW_MOUSE_MOTION, true);
 		glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
-		// Centre the window
-		Centre();
 
 		double xpos, ypos;
 		glfwGetCursorPos(windowHandle, &xpos, &ypos);
@@ -90,6 +92,10 @@ namespace zore {
 		glfwSetWindowTitle(windowHandle, title);
 	}
 
+	void Window::SetBorderless(bool value) {
+		glfwSetWindowAttrib(windowHandle, GLFW_DECORATED, !value);
+	}
+
 	void Window::SetFullscreen(bool value) {
 		GLFWmonitor* monitor = value ? glfwGetPrimaryMonitor() : nullptr;
 		glfwSetWindowMonitor(windowHandle, monitor, position.x, position.y, size.x, size.y, GLFW_DONT_CARE);
@@ -99,6 +105,26 @@ namespace zore {
 
 	void Window::ToggleFullscreen() {
 		SetFullscreen(!fullscreen);
+	}
+
+	void Window::HideCursor(bool value) {
+		cursorHidden = value;
+		glfwSetInputMode(windowHandle, GLFW_CURSOR, value ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+
+		if (!value) {
+			glfwSetCursorPos(windowHandle, size.x / 2, size.y / 2);
+			Mouse::ClearState(static_cast<float>(size.x / 2), static_cast<float>(size.y / 2));
+		}
+	}
+
+	void Window::ToggleCursor() {
+		HideCursor(!cursorHidden);
+	}
+
+	void Window::SetSize(int width, int height) {
+		size = { width, height };
+		glfwSetWindowSize(windowHandle, width, height);
+		ResizeCallback(windowHandle, width, height);
 	}
 
 	void Window::SetPosition(int x, int y) {
@@ -116,36 +142,22 @@ namespace zore {
 		}
 	}
 
-	void Window::SetBorderless(bool value) {
-		glfwSetWindowAttrib(windowHandle, GLFW_DECORATED, !value);
-	}
-
-	void Window::SetSize(int width, int height) {
-		size = { width, height };
-		glfwSetWindowSize(windowHandle, width, height);
-		ResizeCallback(windowHandle, width, height);
-	}
-
-	void Window::HideCursor(bool value) {
-		cursorHidden = value;
-		glfwSetInputMode(windowHandle, GLFW_CURSOR, value ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-
-		if (!value) {
-			glfwSetCursorPos(windowHandle, size.x / 2, size.y / 2);
-			Mouse::ClearState(static_cast<float>(size.x / 2), static_cast<float>(size.y / 2));
-		}
-	}
-
-	void Window::ToggleCursor() {
-		HideCursor(!cursorHidden);
-	}
-
 	float Window::GetAspectRatio() {
 		return (static_cast<float>(size.x) / static_cast<float>(size.y));
 	}
 
 	const glm::ivec2& Window::GetSize() {
 		return size;
+	}
+
+	const glm::ivec2 Window::GetNativeResolution() {
+		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+		glm::vec2 resolution = { 0, 0 };
+		if (monitor) {
+			const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
+			resolution = { videoMode->width, videoMode->height };
+		}
+		return resolution;
 	}
 
 	//------------------------------------------------------------------------

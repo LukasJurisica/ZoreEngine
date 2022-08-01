@@ -7,7 +7,7 @@ namespace zore {
 		size_t start = 0, end;
 		do {
 			end = str.find_first_of(delimiter, start);
-			result.push_back(str.substr(start, end - start));
+			result.emplace_back(str.substr(start, end - start));
 			start = str.find_first_not_of(delimiter, end);
 		} while (end != std::string::npos);
 	}
@@ -16,7 +16,7 @@ namespace zore {
 		size_t searchStart = 0, stringStart = 0, end;
 		do {
 			end = str.find(delimiter, searchStart);
-			result.push_back(str.substr(stringStart, end - stringStart));
+			result.emplace_back(str.substr(stringStart, end - stringStart));
 			searchStart = end + delimiter.length();
 			stringStart = inclusive ? end : searchStart;
 		} while (end != std::string::npos); 
