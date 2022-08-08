@@ -33,7 +33,6 @@ namespace zore {
 	}
 
 	int ConfigGroup::Get(const std::string& key, int defaultValue) {
-		Logger::Log(key);
 		auto iter = entries.find(key);
 		if (iter == entries.end()) {
 			entries.insert({ key, defaultValue });

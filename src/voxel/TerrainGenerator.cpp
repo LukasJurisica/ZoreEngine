@@ -16,7 +16,10 @@ namespace zore {
 	// Terrain Generator Class
 	//========================================================================
 
-	TerrainGenerator::TerrainGenerator() : terrain(SEED), ocean(SEED), biomeOffset(SEED), biome(0.01f, 0.f, SEED) {
+	TerrainGenerator::TerrainGenerator() :
+		terrain(SEED), ocean(SEED), biomeOffset(SEED),
+		biome(0.2f, 0.f, SEED), subBiome(0.01f, 0.f, SEED) {
+
 		terrain.SetNoiseType(fnl::NoiseType::OpenSimplex2S);
 		terrain.SetFrequency(0.003f);
 		terrain.SetFractalOctaves(3);
@@ -70,7 +73,7 @@ namespace zore {
 
 				// Place plants
 				if (surface == BLOCK_GRASS && h > waterHeight) {
-					float p = zm::WhiteNoise::Eval1(glm::vec2(x, z));
+					float p = zm::WhiteNoise::Eval1(glm::vec2(x + chunk->renderPos.x, z + chunk->renderPos.y));
 					if (p > 0.99)
 						chunk->SetBlockLocal(x, h + 1, z, SPRITE_MUSHROOM);
 					else if (p > 0.85)
@@ -91,23 +94,21 @@ namespace zore {
 				// Domain Warp
 				float xo = x + chunk->renderPos.x - 1;
 				float zo = z + chunk->renderPos.z - 1;
-				biomeOffset.DomainWarp(xo, zo);
+				//biomeOffset.DomainWarp(xo, zo);
 				
 				// Sub Biome Determination
 				zm::CellData subBiomeResult;
-				biome.GetNoise(xo, zo, subBiomeResult);
-
-				// Parent Determination
-				SubBiomeCache subBiomeCache;
-				for (const SubBiomeCache& b : temp) {
-
-				}
-
+				subBiome.GetNoise(xo, zo, subBiomeResult);
 				xo = subBiomeResult.cell.x + subBiomeResult.offset.x;
 				zo = subBiomeResult.cell.y + subBiomeResult.offset.y;
-				float n = zm::NormalizeNoise(ocean.GetNoise(xo, zo));
 
-				ubyte b = n > 0.5f ? 0 : zm::Floor(zm::WhiteNoise::Eval1(subBiomeResult.cell) * 32) + 1;
+				zm::CellData biomeResult;
+				biome.GetNoise(xo, zo, biomeResult);
+				xo = biomeResult.cell.x + biomeResult.offset.x;
+				zo = biomeResult.cell.y + biomeResult.offset.y;
+
+				float n = zm::NormalizeNoise(ocean.GetNoise(xo, zo));
+				ubyte b = n > 0.5f ? 0 : zm::Floor(zm::WhiteNoise::Eval1(biomeResult.cell) * 32) + 1;
 				biomeMap[x * ChunkSizeWithBorder + z] = b;
 			}
 		}

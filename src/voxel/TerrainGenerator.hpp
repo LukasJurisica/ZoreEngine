@@ -29,5 +29,6 @@ namespace zore {
 		fnl::FastNoiseLite ocean;
 		fnl::FastNoiseLite biomeOffset;
 		zm::CellNoise biome;
+		zm::CellNoise subBiome;
 	};
 }
