@@ -94,7 +94,7 @@ namespace zore {
 				// Domain Warp
 				float xo = x + chunk->renderPos.x - 1;
 				float zo = z + chunk->renderPos.z - 1;
-				//biomeOffset.DomainWarp(xo, zo);
+				biomeOffset.DomainWarp(xo, zo);
 				
 				// Sub Biome Determination
 				zm::CellData subBiomeResult;

@@ -41,8 +41,12 @@ namespace zm {
 	}
 
 	inline float PingPong(float t) {
-		t -= (int)(t * 0.5f) * 2;
+		t -= static_cast<int>(t * 0.5f) >> 1;
 		return t < 1 ? t : 2 - t;
+	}
+
+	inline float InterpExp(float t, float a) {
+		return 1 - pow(sqrt(1.f - pow(t, a * 0.5f)), a);
 	}
 
 	// Used to transform a value from the range [-1, 1] to [0, 1]

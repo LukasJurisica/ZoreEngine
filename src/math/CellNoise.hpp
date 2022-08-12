@@ -25,6 +25,9 @@ namespace zm {
 	private:
 		int seed;
 		float frequency;
-		float centralBias;
+		float mult;
+		float offset;
+		float low;
+		float high;
 	};
 }
