@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include "math/MathUtils.hpp"
 
 namespace fnl {
 

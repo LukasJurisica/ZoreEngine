@@ -12,6 +12,8 @@
 #include "ui/Text.hpp"
 #include <iostream>
 
+#include "math/WhiteNoise.hpp"
+
 namespace zore {
 
 	ConfigGroup options("options");
@@ -116,6 +118,8 @@ namespace zore {
 		//Textbox::Flush();
 		//t.SetText("Mom get the camera!");
 		//Textbox::Flush();
+
+		std::cout << zm::WhiteNoise::CombineDimensions(0, 1) << std::endl;
 
 		// Create the mesh used for screenspace rendering and voxel faces
 		VertexLayout* UBx1 = VertexLayout::Create(blockShader, { {"vertexID", VertexDataType::UBYTE, 1} }, { {"face", VertexDataType::UINT, 2} }, 1u);

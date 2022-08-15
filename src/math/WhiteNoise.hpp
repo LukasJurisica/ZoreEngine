@@ -3,8 +3,21 @@
 #include "glm/glm.hpp"
 
 namespace zm {
-	
+
 	class WhiteNoise {
+	private:
+		static constexpr int PrimeX = 501125321;
+		static constexpr int PrimeY = 1136930381;
+		static constexpr int PrimeZ = 1720413743;
+
+		static uint inline Hash(int x, int y, int seed) {
+			return (x ^ y ^ seed) * 0x27d4eb2d;
+		}
+
+		static uint inline Hash(int x, int y, int z, int seed) {
+			return (x ^ y ^ z ^ seed) * 0x27d4eb2d;
+		}
+
 	public:
 
 		//========================================================================

@@ -197,8 +197,8 @@ namespace zore {
 			Chunk* chunk = iter->second;
 			
 			if (chunk->numNeighbours < 9 && !CoordInRenderRange(chunk->chunkPos.x, chunk->chunkPos.y)) {
-				for (std::vector<Job>::iterator iter = jobs.begin(); iter != jobs.end();)
-					(iter->chunk == chunk) ? iter = jobs.erase(iter) : ++iter;
+				for (std::vector<Job>::iterator job = jobs.begin(); job != jobs.end();)
+					(job->chunk == chunk) ? job = jobs.erase(job) : ++job;
 
 				// All neighbours are ok with unload
 				if (UnloadNeighbours(chunk)) {

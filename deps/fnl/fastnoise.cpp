@@ -1,4 +1,5 @@
 #include "fnl/fastnoise.hpp"
+#include "math/MathUtils.hpp"
 
 namespace fnl {
 
