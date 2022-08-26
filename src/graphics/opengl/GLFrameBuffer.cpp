@@ -51,13 +51,17 @@ namespace zore {
 		glNamedFramebufferDrawBuffers(id, colourAttachmentCount, activeAttachments);
 
 		// Create Depth/Stencil Buffer (If requested)
-		if (depthFormat != DepthFormat::NONE) {
-			uint formatIndex = static_cast<uint>(depthFormat);
-			rbo = new GLRenderBuffer(width, height, DepthFormatToGLDepthFormat[formatIndex]);
-			glNamedFramebufferRenderbuffer(id, DepthFormatToGLAttachmentType[formatIndex], GL_RENDERBUFFER, rbo->GetID());
+		depthBuffer = nullptr;
+		depthFormatIndex = static_cast<uint>(depthFormat);
+		if (depthFormatIndex < 2) { // DEPTH32_BUFFER or DEPTH24_STENCIL8_BUFFER
+			depthBuffer = new GLRenderBuffer(width, height, DepthFormatToGLDepthFormat[depthFormatIndex]);
+			glNamedFramebufferRenderbuffer(id, DepthFormatToGLAttachmentType[depthFormatIndex], GL_RENDERBUFFER, depthBuffer->GetID());
 		}
-		else
-			rbo = nullptr;
+		else if (depthFormatIndex < 4) { // DEPTH32_TEXTURE or DEPTH24_STENCIL8_TEXTURE
+			GLTexture2D* tex = new GLTexture2D(width, height, DepthFormatToGLDepthFormat[depthFormatIndex - 2], GL_DEPTH_COMPONENT);
+			depthTexture = tex;
+			glNamedFramebufferTexture(id, DepthFormatToGLAttachmentType[depthFormatIndex - 2], tex->GetID(), 0);
+		}
 
 		// Ensure FrameBuffer was created successfully
 		unsigned int retval = glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER);
@@ -82,7 +86,12 @@ namespace zore {
 		uint textureID = reinterpret_cast<GLTexture2DArray*>(textureArray)->GetID();
 		for (uint i = 0; i < textureArrayLayerCount; i++)
 			glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0 + i, textureID, 0, i);
-		if (rbo)
-			rbo->SetSize(width, height);
+		if (depthBuffer)
+			depthBuffer->SetSize(width, height);
+		else if (depthTexture) {
+			depthTexture->SetSize(width, height);
+			GLTexture2D* tex = reinterpret_cast<GLTexture2D*>(depthTexture);
+			glNamedFramebufferTexture(id, DepthFormatToGLAttachmentType[depthFormatIndex - 2], tex->GetID(), 0);
+		}
 	}
 }

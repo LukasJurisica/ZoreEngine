@@ -31,9 +31,14 @@ namespace zm {
 	// Performs an inverse linear interpolation of t between a and b
 	inline float InvLerp(float a, float b, float t) { return (t - a) / (b - a); }
 
+	// Performs a Smoothstep Intrpolation of t between 0 and 1
 	inline float InterpHermite(float t) { return t * t * (3 - 2 * t); }
 
+	// Performs a Smoothstep Intrpolation of t between 0 and 1
 	inline float InterpQuintic(float t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+
+	// Performs a Ramped exponetiated Intrpolation of t between 0 and 1, with a strength of a
+	inline float InterpExp(float t, float a) { return 1 - pow(sqrt(1.f - pow(t, a * 0.5f)), a); }
 
 	inline float CubicLerp(float a, float b, float c, float d, float t) {
 		float p = (d - c) - (a - b);
@@ -43,10 +48,6 @@ namespace zm {
 	inline float PingPong(float t) {
 		t -= static_cast<int>(t * 0.5f) >> 1;
 		return t < 1 ? t : 2 - t;
-	}
-
-	inline float InterpExp(float t, float a) {
-		return 1 - pow(sqrt(1.f - pow(t, a * 0.5f)), a);
 	}
 
 	// Used to transform a value from the range [-1, 1] to [0, 1]
@@ -98,24 +99,28 @@ namespace zm {
 		return value;
 	}
 
+	// Returns the distance between points (x1, y1) and (x2, y2)
 	template <typename type>
 	inline float Dist(type x1, type y1, type x2, type y2) {
 		x2 -= x1; y2 -= y1;
 		return std::sqrt((x2 * x2) + (y2 * y2));
 	}
 
+	// Returns the distance between points (x1, y1, z1) and (x2, y2, z2)
 	template <typename type>
-	inline float Dist(type sx, type sy, type sz, type dx, type dy, type dz) {
-		dx -= sx; dy -= sy; dz -= sz;
-		return std::sqrt((dx * dx) + (dy * dy) + (dz * dz));
+	inline float Dist(type x1, type y1, type z1, type x2, type y2, type z2) {
+		x2 -= x1; y2 -= y1; z2 -= z1;
+		return std::sqrt((x2 * x2) + (y2 * y2) + (z2 * z2));
 	}
 
+	// Returns the squared distance between points (x1, y1) and (x2, y2)
 	template <typename type>
 	inline type SqrDist(type x1, type y1, type x2, type y2) {
 		x2 -= x1; y2 -= y1;
 		return (x2 * x2) + (y2 * y2);
 	}
 
+	// Returns the squared distance between points (x1, y1, z1) and (x2, y2, z2)
 	template <typename type>
 	inline type SqrDist(type x1, type y1, type z1, type x2, type y2, type z2) {
 		x2 -= x1; y2 -= y1; z2 -= z1;

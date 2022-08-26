@@ -1,22 +1,137 @@
 #pragma once
 #include "math/MathUtils.hpp"
+#include "utils/DataTypes.hpp"
 #include "glm/glm.hpp"
 
 namespace zm {
 
 	class WhiteNoise {
+	public:
+
+		//========================================================================
+		//  Floating Point Output
+		//========================================================================
+
+		static inline float GetNoise(int x, int seed) {
+			return GetINoise(x, seed) * MAXUINT_RECIP;
+		}
+
+		static inline float GetNoise(int x, int y, int seed) {
+			return GetINoise(x, y, seed) * MAXUINT_RECIP;
+		}
+
+		static inline float GetNoise(int x, int y, int z, int seed) {
+			return GetINoise(x, y, z, seed) * MAXUINT_RECIP;
+		}
+
+		static inline void GetMultiNoise(int x, int seed, float* out, int count) {
+			int base = (x * PrimeX);
+			for (int i = 0; i < count; i++) {
+				seed += PrimeW;
+				out[i] = Shuffle(Hash(base, seed)) * MAXUINT_RECIP;
+			}
+		}
+
+		static inline void GetMultiNoise(int x, int y, int seed, float* out, int count) {
+			int base = (x * PrimeX) ^ (y * PrimeY);
+			for (int i = 0; i < count; i++) {
+				seed += PrimeW;
+				out[i] = Shuffle(Hash(base, seed)) * MAXUINT_RECIP;
+			}
+		}
+
+		static inline void GetMultiNoise(int x, int y, int z, int seed, float* out, int count) {
+			int base = (x * PrimeX) ^ (y * PrimeY) ^ (z * PrimeZ);
+			for (int i = 0; i < count; i++) {
+				seed += PrimeW;
+				out[i] = Shuffle(Hash(base, seed)) * MAXUINT_RECIP;
+			}
+		}
+
+		//========================================================================
+		//  Integer Output
+		//========================================================================
+
+		static inline uint GetINoise(int x, int seed) {
+			return Shuffle(Hash(x * PrimeX, seed));
+		}
+
+		static inline uint GetINoise(int x, int y, int seed) {
+			return Shuffle(Hash(x * PrimeX, y * PrimeY, seed));
+		}
+
+		static inline uint GetINoise(int x, int y, int z, int seed) {
+			return Shuffle(Hash(x * PrimeX, y * PrimeY, z * PrimeZ, seed));
+		}
+
+		static inline void GetMultiINoise(int x, int seed, uint* out, int count) {
+			int base = (x * PrimeX);
+			for (int i = 0; i < count; i++) {
+				seed += PrimeW;
+				out[i] = Shuffle(Hash(base, seed));
+			}
+		}
+
+		static inline void GetMultiINoise(int x, int y, int seed, uint* out, int count) {
+			int base = (x * PrimeX) ^ (y * PrimeY);
+			for (int i = 0; i < count; i++) {
+				seed += PrimeW;
+				out[i] = Shuffle(Hash(base, seed));
+			}
+		}
+
+		static inline void GetMultiINoise(int x, int y, int z, int seed, uint* out, int count) {
+			int base = (x * PrimeX) ^ (y * PrimeY) ^ (z * PrimeZ);
+			for (int i = 0; i < count; i++) {
+				seed += PrimeW;
+				out[i] = Shuffle(Hash(base, seed));
+			}
+		}
+
+		//========================================================================
+		//  Utility Functions
+		//========================================================================
+
+		static inline void PrimeSquareLattice(int& x1, int& y1, int& x2, int& y2) {
+			x1 *= PrimeX;
+			y1 *= PrimeY;
+			x2 = x1 + PrimeX;
+			y2 = y1 + PrimeY;
+		}
+
+		static inline void PrimeCubeLattice(int& x1, int& y1, int& z1, int& x2, int& y2, int& z2) {
+			x1 *= PrimeX;
+			y1 *= PrimeY;
+			z1 *= PrimeZ;
+			x2 = x1 + PrimeX;
+			y2 = y1 + PrimeY;
+			z2 = y1 + PrimeZ;
+		}
+
+		static inline uint Hash(int xPrimed, int seed) {
+			return (xPrimed ^ seed) * 668265261;
+		}
+
+		static inline uint Hash(int xPrimed, int yPrimed, int seed) {
+			return (xPrimed ^ yPrimed ^ seed) * 668265261;
+		}
+
+		static inline uint Hash(int xPrimed, int yPrimed, int zPrimed, int seed) {
+			return (xPrimed ^ yPrimed ^ zPrimed ^ seed) * 668265261;
+		}
+
+		static inline uint Shuffle(uint hash) {
+			hash *= hash;
+			return hash ^ (hash << 19);
+		}
+
 	private:
-		static constexpr int PrimeX = 501125321;
+		static constexpr int PrimeX =  501125321;
 		static constexpr int PrimeY = 1136930381;
 		static constexpr int PrimeZ = 1720413743;
-
-		static uint inline Hash(int x, int y, int seed) {
-			return (x ^ y ^ seed) * 0x27d4eb2d;
-		}
-
-		static uint inline Hash(int x, int y, int z, int seed) {
-			return (x ^ y ^ z ^ seed) * 0x27d4eb2d;
-		}
+		static constexpr int PrimeW = -699602503;
+		static constexpr float MAXINT_RECIP  = 1.f / 2147483648.f;
+		static constexpr float MAXUINT_RECIP = 1.f / 4294967296.f;
 
 	public:
 

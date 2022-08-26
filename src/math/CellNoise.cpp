@@ -38,7 +38,9 @@ namespace zm {
 		for (int x = -1; x < 1; x++) {
 			for (int y = -1; y < 1; y++) {
 				glm::vec2 l = glm::vec2(x, y);
-				glm::vec2 v = glm::clamp(zm::WhiteNoise::Eval2(i + l) * mult, low, high);
+				glm::vec2 v;
+				zm::WhiteNoise::GetMultiNoise(i.x + x, i.y + y, seed, &v.x, 2);
+				v = glm::clamp(v * mult, low, high);
 				glm::vec2 r = l + v - f;
 				float d = glm::dot(r, r);
 

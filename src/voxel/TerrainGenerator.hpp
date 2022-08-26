@@ -9,7 +9,7 @@ namespace zore {
 	// Terrain Generator Class
 	//========================================================================
 
-	struct SubBiomeCache {
+	struct BiomeCache {
 		int cellX, cellY;
 		ubyte biome;
 		bool oceanAdj;
@@ -29,6 +29,6 @@ namespace zore {
 		fnl::FastNoiseLite ocean;
 		fnl::FastNoiseLite biomeOffset;
 		zm::CellNoise biome;
-		zm::CellNoise subBiome;
+		zm::CellNoise region;
 	};
 }

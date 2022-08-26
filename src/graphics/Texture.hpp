@@ -13,6 +13,8 @@ namespace zore {
 		R, RG, RGB, RGBA
 	};
 
+	static constexpr int TextureFormatCount = 4;
+
 	//========================================================================
 	//	Platform Agnostic 2D Texture Class
 	//========================================================================

@@ -35,6 +35,7 @@ namespace zore {
 
 	private:
 		uint id;
-		GLRenderBuffer* rbo;
+		GLRenderBuffer* depthBuffer;
+		uint depthFormatIndex;
 	};
 }

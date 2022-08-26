@@ -27,4 +27,9 @@ namespace zore {
 	Texture2DArray* FrameBuffer::GetTextureArray() const {
 		return textureArray;
 	}
+
+	Texture2D* FrameBuffer::GetDepthTexture() const {
+		DEBUG_ENSURE(depthTexture, "Cannot access Framebuffer Depth Texture: This implementation is using a write-only Render Buffer.");
+		return depthTexture;
+	}
 }

@@ -30,7 +30,7 @@ void main() {
 
 in flat unsigned int spriteID;
 in vec2 uv;
-layout(binding = 1) uniform sampler2DArray sprites;
+layout(binding = 2) uniform sampler2DArray sprites;
 out vec4 FragColor;
 
 const vec3 color[8] = vec3[8]( vec3(0.3, 0.3, 0.3), vec3(0, 0, 1), vec3(0.403, 0.831, 0.023), vec3(0, 1, 1), vec3(1, 0, 0), vec3(1, 0, 1), vec3(1, 1, 0), vec3(0.631, 0.666, 0.639) );

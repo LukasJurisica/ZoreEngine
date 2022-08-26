@@ -5,19 +5,26 @@
 
 namespace zore {
 
-	void Logger::Log(const std::string& s) {
+	template<typename T>
+	void Logger::Log(T value) {
 		DEBUG_ONLY(
 			Console::SetTextColor(Console::Colour::Cyan);
-			std::cout << s << std::endl;
+			std::cout << value << std::endl;
 		)
 	}
 
-	void Logger::Log(float v) {
-		DEBUG_ONLY(
-			Console::SetTextColor(Console::Colour::Cyan);
-			std::cout << v << std::endl;
-		)
-	}
+	template void Logger::Log(std::string);
+	template void Logger::Log(bool);
+	template void Logger::Log(char);
+	template void Logger::Log(unsigned char);
+	template void Logger::Log(short);
+	template void Logger::Log(unsigned short);
+	template void Logger::Log(int);
+	template void Logger::Log(unsigned int);
+	template void Logger::Log(long long);
+	template void Logger::Log(unsigned long long);
+	template void Logger::Log(float);
+	template void Logger::Log(double);
 
 	void Logger::Info(const std::string& s) {
 		DEBUG_ONLY(

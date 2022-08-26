@@ -23,6 +23,7 @@ void main() {
 in vec2 uv;
 flat in vec2 resolution;
 layout(binding = 0) uniform sampler2DArray screen;
+layout(binding = 1) uniform sampler2D depth;
 out vec4 fragColor;
 
 #define EDGE_THRESHOLD_MIN 0.0312
@@ -220,13 +221,21 @@ vec3 Fxaa() {
 
 //#define ENABLE_FXAA
 
+float LinearizeDepth() {
+	float zNear = 0.1;    // TODO: Replace by the zNear of your perspective projection
+	float zFar  = 1200.0; // TODO: Replace by the zFar  of your perspective projection
+	float d = texture2D(depth, uv).x;
+	return (2.0 * zNear) / (zFar + zNear - d * (zFar - zNear));
+}
+
 void main() {
 
 	#ifdef ENABLE_FXAA
 		fragColor = vec4(Fxaa(), 1.0);
-		//fragColor = vec4(uv.x, 0.0, uv.y, 1.0);
 	#else
 		fragColor = vec4(texture(screen, vec3(uv, 0)).rgb, 1.0);
+		//float d = LinearizeDepth();
+		//fragColor = vec4(d, d, d, 1.0); // Depth
 	#endif
 
 	//fragColor = vec4(mix(rgbM.rgb, vec3(0.8), rgbM.a), 1.f); // FOG

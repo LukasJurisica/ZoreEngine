@@ -1,5 +1,5 @@
 #include "game/Player.hpp"
-#include "game/World.hpp"
+#include "voxel/World.hpp"
 #include "voxel/ChunkManager.hpp"
 #include "math/MathUtils.hpp"
 #include "debug/Debug.hpp"

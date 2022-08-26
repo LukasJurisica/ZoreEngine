@@ -1,4 +1,4 @@
-#include "game/World.hpp"
+#include "voxel/World.hpp"
 #include "voxel/ChunkManager.hpp"
 #include "math/MathUtils.hpp"
 #include "debug/Debug.hpp"
@@ -45,9 +45,10 @@ namespace zore {
 		
 		uint count = 0;
 
+		glm::ivec3 chunkPos = chunk->GetPosition();
 		for (int i = 0; i < 3; i++) {
 			glm::ivec3 p = pout;
-			pout[i] += chunk->GetPosition()[i];
+			pout[i] += chunkPos[i];
 			p[i] -= zm::Sign(ray[i]);
 			if (!(chunk->GetBlock(p.x, p.y, p.z) & BLOCK_BIT) && zm::Floor(pos[i]) != pout[i]) { // Only include visible faces
 				fout[count] = (i * 2) + (ray[i] < 0 ? 1 : 0);

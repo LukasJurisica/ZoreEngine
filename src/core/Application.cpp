@@ -6,13 +6,12 @@
 #include "debug/Debug.hpp"
 
 #include "voxel/ChunkManager.hpp"
+#include "voxel/World.hpp"
 #include "game/Player.hpp"
-#include "game/World.hpp"
 
 #include "ui/Text.hpp"
-#include <iostream>
-
 #include "math/WhiteNoise.hpp"
+
 
 namespace zore {
 
@@ -25,6 +24,26 @@ namespace zore {
 		RenderEngine::SetAPI(API::OPENGL);
 		Window::Init(options.Get("width", 0), options.Get("height", 0));
 		RenderEngine::Init();
+
+		// Test WhiteNoise Speed
+		//int count = 100000000;
+		//Timer t;
+		//int x, y;
+		//for (int i = 0; i < count * count; i++) {
+		//	for (int y = 0; y < count; y++) {
+		//		int s = zm::WhiteNoise::GetNoise(x, y, 9128754);
+		//		float t = s * zm::MAXINT_RECIP;
+		//	}
+		//}
+		//Logger::Log(t.DeltaTime(true));
+
+		//for (int x = 0; x < count; x++) {
+		//	for (int y = 0; x < count; x++) {
+		//		float x = zm::WhiteNoise::Eval1(glm::vec2(x, y));
+		//	}
+		//}
+		//Logger::Log(t.DeltaTime(true));
+
 		Application app;
 		app.Run();
 		options.Save();
@@ -58,22 +77,25 @@ namespace zore {
 		// Set texture slots for shaders
 		postProcessShader->Bind();
 		postProcessShader->SetTextureSlot("screen", 0);
+		postProcessShader->SetTextureSlot("depth", 1);
 		spriteShader->Bind();
-		spriteShader->SetTextureSlot("sprites", 1);
+		spriteShader->SetTextureSlot("sprites", 3);
 		textShader->Bind();
 		textShader->SetTextureSlot("glyphs", 2);
 		Font::SetTextureSlot(2);
 
 		// Create framebuffer
-		frameBuffer = FrameBuffer::Create(res.x, res.y, 1, TextureFormat::RGBA, DepthFormat::DEPTH32);
+		frameBuffer = FrameBuffer::Create(res.x, res.y, 1, TextureFormat::RGBA, DepthFormat::DEPTH32_TEXTURE);
 		frameBuffer->GetTextureArray()->Bind(0);
+		frameBuffer->GetDepthTexture()->Bind(1);
 
 		// Create Texture samplers and bind them to their respective texture units
 		linearSampler = Sampler::Create(SampleMode::LINEAR);
 		linearSampler->Bind(0);
+		linearSampler->Bind(1);
 		linearSampler->Bind(2);
 		nearestSampler = Sampler::Create(SampleMode::NEAREST);
-		nearestSampler->Bind(1);
+		nearestSampler->Bind(3);
 	}
 
 	Application::~Application() {
@@ -119,8 +141,6 @@ namespace zore {
 		//t.SetText("Mom get the camera!");
 		//Textbox::Flush();
 
-		std::cout << zm::WhiteNoise::CombineDimensions(0, 1) << std::endl;
-
 		// Create the mesh used for screenspace rendering and voxel faces
 		VertexLayout* UBx1 = VertexLayout::Create(blockShader, { {"vertexID", VertexDataType::UBYTE, 1} }, { {"face", VertexDataType::UINT, 2} }, 1u);
 		UBx1->Bind();
@@ -130,7 +150,7 @@ namespace zore {
 
 		// Create texture array for sprites;
 		Texture2DArray* spriteTexture = Texture2DArray::Create({ "grass.png", "mush1.png" }, "assets/textures/", TextureFormat::RGBA);
-		spriteTexture->Bind(1);
+		spriteTexture->Bind(3);
 
 		// Initialize the player and chunk manager
 		Player player(&camera, { 32, 128, 32 });

@@ -43,8 +43,8 @@ namespace zore {
 		// Create GLFW window
 		if (width * height == 0) {
 			glm::ivec2 screenRes = Window::GetNativeResolution();
-			width = screenRes.x * 0.75f;
-			height = screenRes.y * 0.75f;
+			width = static_cast<int>(screenRes.x * 0.75f);
+			height = static_cast<int>(screenRes.y * 0.75f);
 		}
 		size = { width, height };
 		windowHandle = glfwCreateWindow(size.x, size.y, "Zore Engine Window", nullptr, nullptr);

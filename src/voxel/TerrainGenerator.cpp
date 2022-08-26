@@ -1,14 +1,12 @@
 #include "voxel/TerrainGenerator.hpp"
 #include "math/WhiteNoise.hpp"
 #include "math/CellNoise.hpp"
-#include "math/MathUtils.hpp"
 #include "debug/Debug.hpp"
-
-#include <platform/win32/win32_Core.hpp>
 
 namespace zore {
 
 	static constexpr int ChunkSizeWithBorder = Chunk::CHUNK_WIDTH + 2;
+	static constexpr int OceanLevel = 40;
 
 #define SEED 123
 
@@ -18,7 +16,7 @@ namespace zore {
 
 	TerrainGenerator::TerrainGenerator() :
 		terrain(SEED), ocean(SEED), biomeOffset(SEED),
-		biome(0.2f, 0.f, SEED), subBiome(0.01f, 0.f, SEED) {
+		biome(0.01f, 0.f, SEED), region(0.2f, 0.f, SEED) {
 
 		terrain.SetNoiseType(fnl::NoiseType::OpenSimplex2S);
 		terrain.SetFrequency(0.003f);
@@ -54,7 +52,7 @@ namespace zore {
 				// Determine Surface Block
 				//ushort surface = biomeMap[index] == 0 ? BLOCK_GRASS : BLOCK_CLAY;
 				ushort surface = BLOCK_GRASS;
-				if (zm::Abs(heightMap[index - 1] - heightMap[index + 1]) > 1 || zm::Abs(heightMap[index - ChunkSizeWithBorder] - heightMap[index + ChunkSizeWithBorder]) > 1)
+				if (zm::Abs(heightMap[index - 1] - heightMap[index + 1]) > 2 || zm::Abs(heightMap[index - ChunkSizeWithBorder] - heightMap[index + ChunkSizeWithBorder]) > 2)
 					surface = BLOCK_DIRT;
 
 				// Build up core
@@ -65,14 +63,13 @@ namespace zore {
 				chunk->SetBlockLocal(x, h, z, surface);
 
 				// Place water and air above world
-				int waterHeight = 40;
-				for (int y = h + 1; y <= waterHeight; y++)
+				for (int y = h + 1; y <= OceanLevel; y++)
 					chunk->SetBlockLocal(x, y, z, FLUID_WATER);
-				for (int y = zm::Max(waterHeight, h) + 1; y < Chunk::CHUNK_HEIGHT; y++)
+				for (int y = zm::Max(OceanLevel, h) + 1; y < Chunk::CHUNK_HEIGHT; y++)
 					chunk->SetBlockLocal(x, y, z, BLOCK_AIR);
 
 				// Place plants
-				if (surface == BLOCK_GRASS && h > waterHeight) {
+				if (surface == BLOCK_GRASS && h >= OceanLevel) {
 					float p = zm::WhiteNoise::Eval1(glm::vec2(x + chunk->renderPos.x, z + chunk->renderPos.y));
 					if (p > 0.99)
 						chunk->SetBlockLocal(x, h + 1, z, SPRITE_MUSHROOM);
@@ -85,27 +82,28 @@ namespace zore {
 
 	void TerrainGenerator::GenerateBiomeMap(ubyte* biomeMap, Chunk* chunk) {
 
-		std::vector<SubBiomeCache> temp;
-		SubBiomeCache prev;
+		std::vector<BiomeCache> temp;
+		BiomeCache prev;
 
 		for (int x = 0; x < ChunkSizeWithBorder; x++) {
 			for (int z = 0; z < ChunkSizeWithBorder; z++) {
 				
 				// Domain Warp
-				float xo = x + chunk->renderPos.x - 1;
-				float zo = z + chunk->renderPos.z - 1;
+				float xo = x + chunk->renderPos.x - 1.f;
+				float zo = z + chunk->renderPos.z - 1.f;
 				biomeOffset.DomainWarp(xo, zo);
 				
-				// Sub Biome Determination
-				zm::CellData subBiomeResult;
-				subBiome.GetNoise(xo, zo, subBiomeResult);
-				xo = subBiomeResult.cell.x + subBiomeResult.offset.x;
-				zo = subBiomeResult.cell.y + subBiomeResult.offset.y;
-
+				// Biome Determination
 				zm::CellData biomeResult;
 				biome.GetNoise(xo, zo, biomeResult);
 				xo = biomeResult.cell.x + biomeResult.offset.x;
 				zo = biomeResult.cell.y + biomeResult.offset.y;
+
+				// Region Determination
+				//zm::CellData regionResult;
+				//region.GetNoise(xo, zo, regionResult);
+				//xo = regionResult.cell.x + regionResult.offset.x;
+				//zo = regionResult.cell.y + regionResult.offset.y;
 
 				float n = zm::NormalizeNoise(ocean.GetNoise(xo, zo));
 				ubyte b = n > 0.5f ? 0 : zm::Floor(zm::WhiteNoise::Eval1(biomeResult.cell) * 32) + 1;
@@ -118,14 +116,15 @@ namespace zore {
 		for (int x = 0; x < ChunkSizeWithBorder; x++) {
 			for (int z = 0; z < ChunkSizeWithBorder; z++) {
 
-				//float n = ocean.GetNoise(x + chunk->renderPos.x - 1.f, z + chunk->renderPos.z - 1.f);
 				float n = terrain.GetNoise(x + chunk->renderPos.x - 1.f, z + chunk->renderPos.z - 1.f);
-				//ushort h = zm::Floor(zm::SmoothMax(0.8f, zm::NormalizeNoise(-n) * 3.2f, 0.5f) * 20);
-				//ushort h = zm::Floor(zm::Max(16.f, zm::NormalizeNoise(-n) * 64));
-				//ushort h = zm::Floor(zm::SmoothMax(24.f, zm::NormalizeNoise(n) * 128.f, 15.f));
-
 				ubyte b = biomeMap[x * ChunkSizeWithBorder + z];
-				ushort h = b == 0 ? 20 : b * 2 + 40;
+
+				ushort h = zm::Floor(zm::SmoothMax(static_cast<float>(OceanLevel), zm::NormalizeNoise(n) * 128.f, 15.f));
+				//ushort h = b == 0 ? 20 : b * 2 + 40;
+
+				if (b == 0)
+					h = 20;
+
 				heightMap[x * ChunkSizeWithBorder + z] = h;
 			}
 		}
