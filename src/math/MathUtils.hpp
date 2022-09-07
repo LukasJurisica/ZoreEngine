@@ -1,5 +1,7 @@
 #pragma once
 #include <cmath>
+#include <vector>
+#include "debug/Logger.hpp"
 
 namespace zm {
 
@@ -26,10 +28,12 @@ namespace zm {
 	inline float Fract(float n) { return n - (n > 0 ? static_cast<int>(n) : -static_cast<int>(n)); }
 
 	// Performs a linear interpolation between a and b of n
-	inline float Lerp(float a, float b, float n) { return a + n * (b - a); }
+	template <typename type>
+	inline type Lerp(type a, type b, float n) { return a + n * (b - a); }
 
 	// Performs an inverse linear interpolation of t between a and b
-	inline float InvLerp(float a, float b, float t) { return (t - a) / (b - a); }
+	template <typename type>
+	inline float InvLerp(type a, type b, float t) { return (t - a) / (b - a); }
 
 	// Performs a Smoothstep Intrpolation of t between 0 and 1
 	inline float InterpHermite(float t) { return t * t * (3 - 2 * t); }
@@ -125,5 +129,17 @@ namespace zm {
 	inline type SqrDist(type x1, type y1, type z1, type x2, type y2, type z2) {
 		x2 -= x1; y2 -= y1; z2 -= z1;
 		return (x2 * x2) + (y2 * y2) + (z2 * z2);
+	}
+
+	// Returns a Bezier Curve Interpolation
+	template <typename type>
+	inline type Bezier(std::vector<type> points, float t) {
+		int count = static_cast<int>(points.size() - 1);
+
+		for (int i = 0; i < count; i++)
+			for (int j = 0; j < count - i; j++)
+				points[j] = Lerp(points[j], points[j + 1], t);
+
+		return points[0];
 	}
 }

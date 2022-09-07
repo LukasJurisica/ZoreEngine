@@ -1,9 +1,9 @@
 #pragma once
 #include "voxel/Chunk.hpp"
 #include "core/Camera.hpp"
+
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_int3.hpp>
-#include <glm/ext/vector_int2.hpp>
 #include <unordered_map>
 
 namespace zore {
@@ -16,8 +16,11 @@ namespace zore {
 
 	class ChunkManager {
 	public:
-		static void Init(uint renderDistance, const glm::vec3& position);
+		static void Init(uint renderDistance, const glm::vec3& position, void (*GenFunc)(Chunk* chunk));
 		static void Cleanup();
+
+		static void SetRenderDistance(uint renderDistance);
+		static void SetGenerationFunction(void (*GenFunc)(Chunk* chunk));
 
 		static void Update(Camera* camera);
 		static void RemeshChunk(Chunk* chunk, int xNeighbour, int zNeighbour);
@@ -42,5 +45,6 @@ namespace zore {
 		static Job GetNextJob();
 		static void SortJobs();
 		static int GetDistanceToJob(const Job& job);
+		static void CancelJobs(Chunk* chunk);
 	};
 }

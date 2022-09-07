@@ -2,6 +2,7 @@
 #include "core/Camera.hpp"
 #include "devices/Mouse.hpp"
 #include "devices/Keyboard.hpp"
+#include "utils/DataTypes.hpp"
 
 namespace zore {
 
@@ -35,5 +36,6 @@ namespace zore {
 		bool grounded;
 		bool flying;
 		bool noclip;
+		ushort heldBlock;
 	};
 }

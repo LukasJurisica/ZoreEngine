@@ -14,6 +14,7 @@ namespace zore {
 	}
 
 	template void Logger::Log(std::string);
+	template void Logger::Log(char const*);
 	template void Logger::Log(bool);
 	template void Logger::Log(char);
 	template void Logger::Log(unsigned char);
@@ -28,7 +29,7 @@ namespace zore {
 
 	void Logger::Info(const std::string& s) {
 		DEBUG_ONLY(
-			Console::SetTextColor(Console::Colour::Blue);
+			Console::SetTextColor(Console::Colour::Green);
 			std::cout << "[Info] " << s << std::endl;
 		)
 	}

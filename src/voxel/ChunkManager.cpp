@@ -1,5 +1,4 @@
 #include "voxel/ChunkManager.hpp"
-#include "voxel/TerrainGenerator.hpp"
 #include "math/MathUtils.hpp"
 #include "debug/Debug.hpp"
 
@@ -9,36 +8,38 @@
 
 namespace zore {
 
-	const glm::ivec2 moore[] = { {-1,-1}, {-1, 0}, {-1, 1}, { 0,-1}, { 0, 1}, { 1,-1}, { 1, 0}, { 1, 1} };
-	enum class Task { NONE, GENERATE, MESH };
-	struct Job { Task task; Chunk* chunk; };
-
 	//========================================================================
 	// Chunk Manager Data Members
 	//========================================================================
 
+	const glm::ivec2 moore[] = { {-1,-1}, {-1, 0}, {-1, 1}, { 0,-1}, { 0, 1}, { 1,-1}, { 1, 0}, { 1, 1} };
+	enum class Task { NONE, GENERATE, MESH };
+	struct Job { Task task; zore::Chunk* chunk; };
+
 	std::mutex jobMutex;
 	std::vector<Job> jobs;
 	std::mutex uploadMutex;
-	std::vector<Chunk*> toBeUploaded;
-	std::vector<Chunk*> visibleChunks;
+	std::vector<zore::Chunk*> toBeUploaded;
+	std::vector<zore::Chunk*> visibleChunks;
 
 	std::condition_variable cv;
 	std::vector<std::thread> threadPool;
 	bool running;
 
-	std::unordered_map<size_t, Chunk*> chunks;
+	std::unordered_map<size_t, zore::Chunk*> chunks;
 	float chunkRadiusSquared;
 	glm::ivec2 fulcrum;
 	glm::ivec2 quadrant;
 
-	TerrainGenerator generator;
+	void (*generate)(zore::Chunk* chunk) = nullptr;
 
 	//========================================================================
 	// Chunk Manager Class
 	//========================================================================
 
-	void ChunkManager::Init(uint renderDistance, const glm::vec3& position) {
+	void ChunkManager::Init(uint renderDistance, const glm::vec3& position, void (*GenFunc)(Chunk* chunk)) {
+		DEBUG_ENSURE(GenFunc != nullptr, "A valid chunk generation function must be provided before the chunk manager can be initialized");
+		generate = GenFunc;
 		// Initialize data for chunk management
 		int radius = renderDistance + 1;
 		chunkRadiusSquared = (radius + 0.5f) * (radius + 0.5f);
@@ -59,13 +60,15 @@ namespace zore {
 		SortJobs();
 
 		// Create Threads
-		running = true;
-		int maxThreads = std::thread::hardware_concurrency();
-		int numThreads = 4;
-		for (int i = 0; i < numThreads; i++)
-			threadPool.emplace_back(&ChunkManager::ThreadLoop);
-
-		Logger::Log("numChunks: " + TOSTR(chunks.size()));
+		if (!running) {
+			running = true;
+			int maxThreads = std::thread::hardware_concurrency() - 1;
+			int numThreads = 4;
+			for (int i = 0; i < numThreads; i++)
+				threadPool.emplace_back(&ChunkManager::ThreadLoop);
+			Logger::Info("Threads in use for Chunk Generation and Meshing: " + TOSTR(numThreads) + "/" + TOSTR(maxThreads));
+			Logger::Info("Number of loaded chunks: " + TOSTR(chunks.size()));
+		}
 	}
 
 	void ChunkManager::Cleanup() {
@@ -79,6 +82,33 @@ namespace zore {
 		// Cleanup Chunks
 		for (std::pair<const size_t, Chunk*>& pair : chunks)
 			delete pair.second;
+	}
+
+	void ChunkManager::SetRenderDistance(uint renderDistance) {
+		int oldChunkRadiusSquared = chunkRadiusSquared;
+		int radius = renderDistance + 1;
+		chunkRadiusSquared = (radius + 0.5f) * (radius + 0.5f);
+
+		// Need to remove chunks that are no longer in range
+		if (chunkRadiusSquared < oldChunkRadiusSquared) {
+			UnloadChunks();
+		}
+		// Need to add chunks that are now in range
+		else if (chunkRadiusSquared > oldChunkRadiusSquared) {
+			for (int x = -radius; x <= radius; x++) {
+				for (int z = -radius; z <= radius; z++) {
+					int lx = fulcrum.x + x, lz = fulcrum.y + z;
+					if (CoordInRenderRange(lx, lz))
+						EnsureChunk(lx, lz);
+				}
+			}
+			SortJobs();
+			cv.notify_all();
+		}
+	}
+
+	void ChunkManager::SetGenerationFunction(void (*GenFunc)(Chunk* chunk)) {
+		generate = GenFunc;
 	}
 
 	void ChunkManager::Update(Camera* camera) {
@@ -196,9 +226,8 @@ namespace zore {
 		for (std::unordered_map<const size_t, Chunk*>::iterator iter = chunks.begin(); iter != chunks.end();) {
 			Chunk* chunk = iter->second;
 			
-			if (chunk->numNeighbours < 9 && !CoordInRenderRange(chunk->chunkPos.x, chunk->chunkPos.y)) {
-				for (std::vector<Job>::iterator job = jobs.begin(); job != jobs.end();)
-					(job->chunk == chunk) ? job = jobs.erase(job) : ++job;
+			if (!CoordInRenderRange(chunk->chunkPos.x, chunk->chunkPos.y)) {
+				CancelJobs(chunk);
 
 				// All neighbours are ok with unload
 				if (UnloadNeighbours(chunk)) {
@@ -292,7 +321,7 @@ namespace zore {
 
 			switch (j.task) {
 			case Task::GENERATE:
-				generator.Generate(j.chunk);
+				generate(j.chunk);
 				jobMutex.lock();
 				j.chunk->state = Chunk::State::GENERATED;
 				jobMutex.unlock();
@@ -340,5 +369,10 @@ namespace zore {
 
 	int ChunkManager::GetDistanceToJob(const Job& job) {
 		return zm::SqrDist(job.chunk->chunkPos.x, job.chunk->chunkPos.y, fulcrum.x, fulcrum.y);
+	}
+
+	void ChunkManager::CancelJobs(Chunk* chunk) {
+		for (std::vector<Job>::iterator job = jobs.begin(); job != jobs.end();)
+			(job->chunk == chunk) ? job = jobs.erase(job) : ++job;
 	}
 }

@@ -1,11 +1,13 @@
 #shaderstage vertex
 #version 430 core
 
-layout(location = 0) in int vertexID;
-layout(location = 1) in uvec2 face;
-layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; vec2 res; };
-layout (std140, binding = 1) uniform modelData { ivec4 offsets[32]; };
+// Uniform Data
+layout(std140, binding = 0) uniform dynamicShaderData { mat4 vp_mat; mat4 inv_vp_mat; vec3 cam_pos; float time; };
+layout(std140, binding = 2) uniform modelData { ivec4 offsets[32]; };
 uniform ivec3 chunkPos;
+
+// Vertex Data
+layout(location = 0) in uvec2 face;
 out flat unsigned int fluidID;
 out flat unsigned int dir;
 out vec3 position;
@@ -23,7 +25,7 @@ void main() {
 
 	fluidID = (face.y >> 16) & 0xFFFF;
 	dir = face.y & 0x7;
-	position = offsets[(dir * 4) + vertexID].xyz + vec3(x, y, z) + chunkPos;
+	position = offsets[(dir * 4) + gl_VertexID].xyz + vec3(x, y, z) + chunkPos;
 
 	// Apply waves
 	vec3 pos = position;
@@ -39,19 +41,15 @@ void main() {
 #shaderstage fragment
 #version 430 core
 
+// Fragment Data
 in flat unsigned int fluidID;
 in flat unsigned int dir;
 in vec3 position;
 out vec4 FragColor;
 
+// Constants
 const vec4 colour[2] = vec4[2]( vec4(0.314, 0.655, 0.749, 1.0), vec4(0.812, 0.063, 0.125, 0.8) );
 const int blockSubDivisions = 4;
-
-float hash13(in vec3 p3) {
-	p3 = fract(p3 * 0.1031);
-    p3 += dot(p3, p3.yzx + 31.32);
-    return fract((p3.x + p3.y) * p3.z);
-}
 
 vec2 hash23(vec3 p3) {
 	p3 = fract(p3 * vec3(0.1031, 0.1030, 0.0973));

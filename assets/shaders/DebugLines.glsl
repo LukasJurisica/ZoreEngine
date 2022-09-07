@@ -1,18 +1,16 @@
 #shaderstage vertex
 #version 430 core
 
-layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; vec2 res; };
-layout (std140, binding = 1) uniform modelData { ivec4 offsets[32]; };
-uniform ivec3 pos;
+// Uniform Data
+layout(std140, binding = 0) uniform dynamicShaderData { mat4 vp_mat; mat4 inv_vp_mat; vec3 cam_pos; float time; };
+uniform ivec3 offset;
 
+// Vertex Data
+layout(location = 0) in ivec3 pos;
 out vec2 uv;
 
 void main() {
-	int dir = gl_InstanceID;
-	uv = vec2(gl_VertexID >> 1, gl_VertexID & 1);
-	vec3 position = offsets[(dir * 4) + gl_VertexID].xyz + pos;
-
-	gl_Position = vp_mat * vec4(position, 1.f);
+	gl_Position = vp_mat * vec4(pos + offset, 1.f);
 }
 
 
@@ -21,12 +19,19 @@ void main() {
 #shaderstage fragment
 #version 430 core
 
-in vec2 uv;
+// Uniform Data
+layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; };
+layout(binding = 1) uniform sampler2D depth;
+
+// Fragment Data
 out vec4 FragColor;
 
+// Constants
+const float bias = -0.0001;
+
 void main() {
-	float t = 1.0 / 128.0;
-	if (uv.x > t && uv.x < (1 - t) && uv.y > t && uv.y < (1.0 - t))
-		discard;
-	FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+	vec2 uv = gl_FragCoord.xy * inv_res;
+	float d = texture2D(depth, uv).x;
+	float opacity = mix(1.0, 0.1, (d - gl_FragCoord.z) < bias);
+	FragColor = vec4(0.1, 0.1, 0.1, opacity);
 } 

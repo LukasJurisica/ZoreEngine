@@ -1,5 +1,6 @@
 #pragma once
 #include "voxel/Block.hpp"
+#include "utils/DataTypes.hpp"
 #include <vector>
 
 

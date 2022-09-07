@@ -9,12 +9,15 @@
 
 namespace zore {
 
-	struct ShaderData {
+	struct DynamicShaderData {
 		glm::mat4 vp_mat;
-		glm::mat4 ivp_mat;
-		glm::vec3 cameraPos;
+		glm::mat4 inv_vp_mat;
+		glm::vec3 cam_pos;
 		float time;
-		glm::vec2 resolution;
+	};
+
+	struct StaticShaderData {
+		glm::vec2 inv_res;
 	};
 
 	class Application : WindowListener, KeyListener {
@@ -34,6 +37,12 @@ namespace zore {
 		RenderEngine* engine;
 		FrameBuffer* frameBuffer;
 
+		DynamicShaderData dynamicShaderData;
+		StaticShaderData staticShaderData;
+		UniformBuffer* dynamicShaderDataBuffer;
+		UniformBuffer* staticShaderDataBuffer;
+		UniformBuffer* offsetDataBuffer;
+
 		Shader* blockShader;
 		Shader* spriteShader;
 		Shader* fluidShader;
@@ -44,7 +53,5 @@ namespace zore {
 		
 		Sampler* linearSampler;
 		Sampler* nearestSampler;
-
-		glm::vec2 inverseWindowResolution;
 	};
 }

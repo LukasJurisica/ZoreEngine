@@ -1,18 +1,21 @@
 #shaderstage vertex
 #version 430 core
 
-layout(location = 0) in int vertexID;
-layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float t; vec2 res; };
+// Uniform Data
+layout(std140, binding = 0) uniform dynamicShaderData { mat4 vp_mat; mat4 inv_vp_mat; vec3 cam_pos; float t; };
+
+// Vertex Data
 out vec3 pos;
 flat out float time;
 flat out float sunAngle;
 flat out vec3 sunVec;
 
+// Constants
 const vec2 position[4] = vec2[4](vec2(-1, 1), vec2(-1, -1), vec2(1, 1), vec2(1, -1));
 
 void main() {
-	gl_Position = vec4(position[vertexID], 1.0, 1.0);
-	pos = (ivp_mat * gl_Position).xyz;
+	gl_Position = vec4(position[gl_VertexID], 1.0, 1.0);
+	pos = (inv_vp_mat * gl_Position).xyz;
 	time = t;
     sunAngle = (time + 20) / 20;
     sunVec = vec3(sin(sunAngle), -cos(sunAngle), 0.0);
@@ -23,12 +26,15 @@ void main() {
 
 #shaderstage fragment
 #version 430 core
+
+// Fragment Data
 in vec3 pos;
 flat in float time;
 flat in vec3 sunVec;
 flat in float sunAngle;
 out vec4 color;
 
+// Constants
 #define SKY_DENSITY_D 0.35
 #define SKY_HORIZON_F 1.50
 #define SKY_HORIZON_N 1.00

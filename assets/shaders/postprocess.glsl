@@ -1,16 +1,15 @@
 #shaderstage vertex
 #version 430 core
 
-layout(location = 0) in int vertexID;
-layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; vec2 res; };
+// Uniform Data
+layout(std140, binding = 0) uniform dynamicShaderData { mat4 vp_mat; mat4 inv_vp_mat; vec3 cam_pos; float time; };
+
+// Vertex Data
 out vec2 uv;
-flat out vec2 resolution;
 
 void main() {
-	uv = vec2(vertexID >> 1, 1 - (vertexID & 1));
-	vec2 position = uv * 2 - 1;
-	resolution = res;
-	gl_Position = vec4(position, 0.0, 1.0);
+	uv = vec2(gl_VertexID >> 1, 1 - (gl_VertexID & 1));
+	gl_Position = vec4(uv * 2 - 1, 0.0, 1.0);
 }
 
 
@@ -20,12 +19,16 @@ void main() {
 #shaderstage fragment
 #version 430 core
 
-in vec2 uv;
-flat in vec2 resolution;
+// Uniform Data
+layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; };
 layout(binding = 0) uniform sampler2DArray screen;
 layout(binding = 1) uniform sampler2D depth;
+
+// Fragment Data
+in vec2 uv;
 out vec4 fragColor;
 
+// Constants
 #define EDGE_THRESHOLD_MIN 0.0312
 #define EDGE_THRESHOLD_MAX 0.125
 #define ITERATIONS 12
@@ -82,7 +85,7 @@ vec3 Fxaa() {
 	bool isHorizontal = (edgeHorizontal >= edgeVertical);
 
 	// Choose the step size (one pixel) accordingly.
-	float stepLength = isHorizontal ? resolution.y : resolution.x;
+	float stepLength = isHorizontal ? inv_res.y : inv_res.x;
 
 	// Select the two neighboring texels lumas in the opposite direction to the local edge.
 	float luma1 = isHorizontal ? lumaDown : lumaLeft;
@@ -115,7 +118,7 @@ vec3 Fxaa() {
 		currentUv.x += stepLength * 0.5;
 
 	// Compute offset (for each iteration step) in the right direction.
-	vec2 offset = isHorizontal ? vec2(resolution.x, 0.0) : vec2(0.0, resolution.y);
+	vec2 offset = isHorizontal ? vec2(inv_res.x, 0.0) : vec2(0.0, inv_res.y);
 	// Compute UVs to explore on each side of the edge, orthogonally. The QUALITY allows us to step faster.
 	vec2 uv1 = currentUv - offset * quality[0];
 	vec2 uv2 = currentUv + offset * quality[0];
@@ -219,7 +222,7 @@ vec3 Fxaa() {
 	return textureLod(screen, vec3(finalUv, 0), 0.0).rgb;
 }
 
-//#define ENABLE_FXAA
+#define ENABLE_FXAA
 
 float LinearizeDepth() {
 	float zNear = 0.1;    // TODO: Replace by the zNear of your perspective projection
@@ -241,7 +244,7 @@ void main() {
 	//fragColor = vec4(mix(rgbM.rgb, vec3(0.8), rgbM.a), 1.f); // FOG
 
     vec2 ssc = uv * 2 - 1;
-    ssc.y *= resolution.x / resolution.y;
+    ssc.y *= inv_res.x / inv_res.y;
     if (sqrt(ssc.x * ssc.x + ssc.y * ssc.y) < 0.002)
         fragColor = vec4(0.0, 0.0, 0.0, 1.0);
 } 

@@ -11,7 +11,7 @@ namespace zore {
 	//========================================================================
 
 	const unsigned int VertexDataTypeToGLDataType[] = {
-		GL_BOOL, GL_BYTE, GL_UNSIGNED_BYTE, GL_INT, GL_UNSIGNED_INT, GL_FLOAT
+		GL_BOOL, GL_BYTE, GL_UNSIGNED_BYTE, GL_INT, GL_UNSIGNED_INT, GL_FLOAT, GL_DOUBLE
 	};
 
 	GLVertexLayout::GLVertexLayout(Shader* shader, const std::vector<VertexElement>& vertexElements, const std::vector<VertexElement>& instanceElements, unsigned int interval) {

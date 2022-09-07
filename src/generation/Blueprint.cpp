@@ -1,6 +1,7 @@
-#include "voxel/Blueprint.hpp"
+#include "generation/Blueprint.hpp"
 
 namespace zore {
+
 	Blueprint::Blueprint() {
 
 	}

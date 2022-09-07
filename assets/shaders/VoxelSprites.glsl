@@ -1,11 +1,13 @@
 #shaderstage vertex
 #version 430 core
 
-layout(location = 0) in int vertexID;
-layout(location = 1) in uvec2 face;
-layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; vec2 res; };
-layout (std140, binding = 1) uniform modelData { ivec4 offsets[32]; };
+// Uniform Data
+layout(std140, binding = 0) uniform dynamicShaderData { mat4 vp_mat; mat4 inv_vp_mat; vec3 cam_pos; float time; };
+layout(std140, binding = 2) uniform modelData { ivec4 offsets[32]; };
 uniform ivec3 chunkPos;
+
+// Vertex Data
+layout(location = 0) in uvec2 face;
 out flat unsigned int spriteID;
 out vec2 uv;
 
@@ -16,8 +18,8 @@ void main() {
 
 	spriteID = (face.y >> 16) & 0xFFFF;
 	unsigned int dir = face.y & 0x7;
-	uv = vec2(vertexID >> 1, vertexID & 1);
-	vec3 position = offsets[(dir * 4) + vertexID].xyz + vec3(x, y, z) + chunkPos;
+	uv = vec2(gl_VertexID >> 1, gl_VertexID & 1);
+	vec3 position = offsets[(dir * 4) + gl_VertexID].xyz + vec3(x, y, z) + chunkPos;
 
 	gl_Position = vp_mat * vec4(position, 1.f);
 }
@@ -28,16 +30,20 @@ void main() {
 #shaderstage fragment
 #version 430 core
 
+// Uniform Data
+layout(binding = 2) uniform sampler2DArray sprites;
+
+// Fragment Data
 in flat unsigned int spriteID;
 in vec2 uv;
-layout(binding = 2) uniform sampler2DArray sprites;
 out vec4 FragColor;
 
+// Constants
 const vec3 color[8] = vec3[8]( vec3(0.3, 0.3, 0.3), vec3(0, 0, 1), vec3(0.403, 0.831, 0.023), vec3(0, 1, 1), vec3(1, 0, 0), vec3(1, 0, 1), vec3(1, 1, 0), vec3(0.631, 0.666, 0.639) );
 
 void main() {
 	vec4 colour = texture(sprites, vec3(uv, spriteID - 1));
-	if (colour.a < 0.1)
+	if (colour.a == 0.0)
 		discard;
 	FragColor = colour;
 } 

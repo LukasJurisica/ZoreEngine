@@ -1,13 +1,17 @@
 #shaderstage vertex
 #version 430 core
 
-layout(location = 0) in int vertexID;
-layout(location = 1) in uvec2 string;
-layout (std140, binding = 0) uniform shaderData { mat4 vp_mat; mat4 ivp_mat; vec3 cameraPos; float time; vec2 res; };
+// Uniform Data
+layout(std140, binding = 0) uniform dynamicShaderData { mat4 vp_mat; mat4 inv_vp_mat; vec3 cam_pos; float time; };
+layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; };
+
+// Vertex Data
+layout(location = 0) in uvec2 string;
 out vec2 uv;
 flat out float screenPxRange;
 flat out uint charOffset;
 
+// Constants
 const int pxRange = 2;
 const float baseScale = 2.5;
 const vec2 charSize = vec2(20, 32) * baseScale;
@@ -20,9 +24,9 @@ void main() {
 	uint width = (string.y >> 16) & 0xFF;
 	charOffset = string.y & 0xFFFF;
  
-	uv = vec2(vertexID >> 1, 1 - (vertexID & 1));
-	vec2 p = vec2(base_x * res.x, base_y * res.y) * 2;
-	vec2 s = vec2(uv.x * res.x * charSize.x * width, uv.y * res.y * charSize.y) * scale * 2;
+	uv = vec2(gl_VertexID >> 1, 1 - (gl_VertexID & 1));
+	vec2 p = vec2(base_x * inv_res.x, base_y * inv_res.y) * 2;
+	vec2 s = vec2(uv.x * inv_res.x * charSize.x * width, uv.y * inv_res.y * charSize.y) * scale * 2;
 	screenPxRange = baseScale * pxRange * scale;
 	uv.x *= width;
 
@@ -39,14 +43,19 @@ void main() {
 #shaderstage fragment
 #version 430 core
 
-//#define BACKGROUND_COLOUR vec3(0.0, 0.0, 1.0)
+// Uniform Data
+layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; };
+layout(binding = 2) uniform sampler2DArray glyphs;
+layout(std430, binding = 0) buffer charBuffer { uint chars[]; };
 
+// Fragment Data
 in vec2 uv;
 flat in float screenPxRange;
 flat in uint charOffset;
-layout(binding = 2) uniform sampler2DArray glyphs;
-layout(std430, binding = 0) buffer charBuffer { uint chars[]; };
 out vec4 FragColor;
+
+// Constants
+//#define BACKGROUND_COLOUR vec3(0.0, 0.0, 1.0)
 
 float median(float r, float g, float b) {
     return max(min(r, g), min(max(r, g), b));

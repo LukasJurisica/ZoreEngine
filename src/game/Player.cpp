@@ -17,6 +17,7 @@ namespace zore {
 		flying = true;
 		noclip = false;
 		grounded = true;
+		heldBlock = BLOCK_STONE;
 	}
 
 	void Player::Update(float deltaTime) {
@@ -88,7 +89,7 @@ namespace zore {
 			World::SetBlock(BLOCK_AIR, camera->GetPosition(), camera->GetForward(), 10);
 		}
 		else if (button == MOUSE_BUTTON_RIGHT) {
-			World::SetBlock(BLOCK_STONE, camera->GetPosition(), camera->GetForward(), 10);
+			World::SetBlock(heldBlock, camera->GetPosition(), camera->GetForward(), 10);
 		}
 	}
 
@@ -97,9 +98,37 @@ namespace zore {
 	}
 
 	void Player::OnKeyPress(int key, int mods) {
-		if (key == KEY_F)
+		switch (key) {
+		case KEY_F:
 			flying = !flying;
-		if (key == KEY_N)
+			break;
+		case KEY_N:
 			noclip = !noclip;
+			break;
+		case KEY_1:
+			heldBlock = BLOCK_STONE;
+			break;
+		case KEY_2:
+			heldBlock = BLOCK_DIRT;
+			break;
+		case KEY_3:
+			heldBlock = BLOCK_GRASS;
+			break;
+		case KEY_4:
+			heldBlock = BLOCK_CLAY;
+			break;
+		case KEY_5:
+			heldBlock = FLUID_WATER;
+			break;
+		case KEY_6:
+			heldBlock = FLUID_LAVA;
+			break;
+		case KEY_7:
+			heldBlock = SPRITE_MUSHROOM;
+			break;
+		case KEY_8:
+			heldBlock = SPRITE_PLANT;
+			break;
+		}
 	}
 }

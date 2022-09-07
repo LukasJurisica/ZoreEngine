@@ -5,6 +5,10 @@
 
 namespace zm {
 
+	CellNoise::CellNoise() : frequency(0.1f), seed(123456) {
+		SetCentralBias(0.f);
+	}
+
 	CellNoise::CellNoise(float frequency, float centralBias, int seed) :
 		frequency(frequency), seed(seed) {
 		SetCentralBias(centralBias);
