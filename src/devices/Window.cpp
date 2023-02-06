@@ -28,7 +28,7 @@ namespace zore {
 		case API::OPENGL:
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API); // Initialize OpenGL
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 			break;
 		case API::VULKAN:
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // Initialize Vulkan
@@ -70,7 +70,10 @@ namespace zore {
 		glfwSetScrollCallback(windowHandle, Mouse::ScrollCallback);
 		glfwSetCursorPosCallback(windowHandle, Mouse::MoveCallback);
 		glfwSetMouseButtonCallback(windowHandle, Mouse::ActionCallback);
+
 		Logger::Info("Window Creation Complete");
+		RenderEngine::Init();
+		Logger::Info("Render Engine Initialization Complete");
 	}
 
 	void Window::Cleanup() {
@@ -105,6 +108,10 @@ namespace zore {
 
 	void Window::ToggleFullscreen() {
 		SetFullscreen(!fullscreen);
+	}
+
+	void Window::BringToFront() {
+		glfwFocusWindow(windowHandle);
 	}
 
 	void Window::HideCursor(bool value) {
@@ -150,14 +157,19 @@ namespace zore {
 		return size;
 	}
 
-	const glm::ivec2 Window::GetNativeResolution() {
-		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-		glm::vec2 resolution = { 0, 0 };
-		if (monitor) {
-			const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
-			resolution = { videoMode->width, videoMode->height };
-		}
-		return resolution;
+	glm::ivec2 Window::GetNativeResolution(int monitorIndex) {
+		int count;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+		ENSURE(monitorIndex >= 0 && monitorIndex < count, "MonitorIndex specified out of range");
+
+		if (!monitors[monitorIndex])
+			return { 0, 0 };
+		const GLFWvidmode* videoMode = glfwGetVideoMode(monitors[monitorIndex]);
+		return { videoMode->width, videoMode->height };
+	}
+
+	GLFWwindow* Window::GetWindowHandle() {
+		return windowHandle;
 	}
 
 	//------------------------------------------------------------------------

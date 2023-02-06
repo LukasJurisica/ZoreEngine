@@ -20,7 +20,7 @@ void main() {
 #version 430 core
 
 // Uniform Data
-layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; };
+layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; float near_dist; float far_dist; };
 layout(binding = 1) uniform sampler2D depth;
 
 // Fragment Data
@@ -32,6 +32,6 @@ const float bias = -0.0001;
 void main() {
 	vec2 uv = gl_FragCoord.xy * inv_res;
 	float d = texture2D(depth, uv).x;
-	float opacity = mix(1.0, 0.1, (d - gl_FragCoord.z) < bias);
+	float opacity = mix(1.0, 0.05, (d - gl_FragCoord.z) < bias);
 	FragColor = vec4(0.1, 0.1, 0.1, opacity);
 } 

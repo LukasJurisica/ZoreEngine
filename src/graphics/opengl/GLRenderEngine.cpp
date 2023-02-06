@@ -9,25 +9,43 @@ namespace zore {
 	//	OpenGL Render Engine
 	//========================================================================
 
-	const unsigned int BufferTypeToGLBufferType[] = { GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT };
-	const unsigned int MeshTopologyToGLMeshTopology[] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN };
-
-	GLRenderEngine::GLRenderEngine() : clearMode(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT), topology(GL_TRIANGLES) {
+	GLRenderEngine::GLRenderEngine() : clearMode(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT), topology(GL_TRIANGLES), indexType(GL_UNSIGNED_INT), faceCullingMode(GL_BACK), faceCullingEnabled(false) {
 		ENSURE(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)), "Failed to initialize GLAD");
 
-		glEnable(GL_BLEND); // TEMPORARY UNTIL I WRITE NEW BLENDING METHOD FOR FLUIDS
+		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDepthFunc(GL_LEQUAL);
 
 		glLineWidth(2.f);
 	}
 
+	void GLRenderEngine::SetIndexType(IndexType type) {
+		static const unsigned int IndexTypeToGLIndexType[] = { GL_UNSIGNED_SHORT, GL_UNSIGNED_INT };
+		indexType = IndexTypeToGLIndexType[static_cast<unsigned int>(type)];
+	}
+
 	void GLRenderEngine::SetViewport(unsigned int width, unsigned int height, unsigned int x, unsigned int y) {
 		glViewport(x, y, width, height);
 	}
 
-	void GLRenderEngine::SetBackFaceCulling(bool value) {
-		value ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+	void GLRenderEngine::SetFaceCulling(CullingMode mode) {
+		static const unsigned int CullingModeToGLCullingMode[] = { 0, GL_FRONT, GL_BACK, GL_FRONT_AND_BACK };
+
+		if (mode == CullingMode::NONE && faceCullingEnabled) {
+			glDisable(GL_CULL_FACE);
+			faceCullingEnabled = false;
+		}
+		else if (mode != CullingMode::NONE) {
+			if (!faceCullingEnabled) {
+				glEnable(GL_CULL_FACE);
+				faceCullingEnabled = true;
+			}
+			unsigned int glMode = CullingModeToGLCullingMode[static_cast<unsigned int>(mode)];
+			if (glMode != faceCullingMode) {
+				glCullFace(glMode);
+				faceCullingMode = glMode;
+			}
+		}
 	}
 
 	void GLRenderEngine::SetDepthTest(bool value) {
@@ -51,12 +69,18 @@ namespace zore {
 	}
 
 	void GLRenderEngine::SetClearMode(const std::vector<BufferType>& buffers) {
+		static const unsigned int BufferTypeToGLBufferType[] = { GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT };
 		clearMode = 0u;
 		for (const BufferType& b : buffers)
 			clearMode |= BufferTypeToGLBufferType[static_cast<int>(b)];
 	}
 
+	void GLRenderEngine::EnableColourChannels(bool r, bool g, bool b, bool a) {
+		glColorMask(r, g, b, a);
+	}
+
 	void GLRenderEngine::SetTopology(MeshTopology t) {
+		static const unsigned int MeshTopologyToGLMeshTopology[] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN };
 		topology = MeshTopologyToGLMeshTopology[static_cast<int>(t)];
 	}
 
@@ -71,7 +95,7 @@ namespace zore {
 
 	void GLRenderEngine::DrawIndexed(unsigned int count, unsigned int offset) {
 		if (count > 0)
-			glDrawElements(topology, count, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)));
+			glDrawElements(topology, count, indexType, reinterpret_cast<void*>(offset * sizeof(Index)));
 	}
 
 	void GLRenderEngine::DrawLinearInstanced(unsigned int vertexCount, unsigned int modelCount, unsigned int offset) {
@@ -81,7 +105,7 @@ namespace zore {
 
 	void GLRenderEngine::DrawIndexedInstanced(unsigned int indexCount, unsigned int modelCount, unsigned int offset) {
 		if (indexCount > 0 && modelCount > 0)
-			glDrawElementsInstanced(topology, indexCount, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(offset * sizeof(Index)), modelCount);
+			glDrawElementsInstanced(topology, indexCount, indexType, reinterpret_cast<void*>(offset * sizeof(Index)), modelCount);
 	}
 
 	//========================================================================
@@ -114,5 +138,4 @@ namespace zore {
 	void GLMultidrawCommandBuffer::Unbind() const {
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 	}
-
 }

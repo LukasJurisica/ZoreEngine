@@ -118,15 +118,21 @@ namespace zore {
 			heldBlock = BLOCK_CLAY;
 			break;
 		case KEY_5:
-			heldBlock = FLUID_WATER;
+			heldBlock = BLOCK_SNOW;
 			break;
 		case KEY_6:
-			heldBlock = FLUID_LAVA;
+			heldBlock = BLOCK_SAND;
 			break;
 		case KEY_7:
-			heldBlock = SPRITE_MUSHROOM;
+			heldBlock = FLUID_WATER;
 			break;
 		case KEY_8:
+			heldBlock = FLUID_LAVA;
+			break;
+		case KEY_9:
+			heldBlock = SPRITE_MUSHROOM;
+			break;
+		case KEY_0:
 			heldBlock = SPRITE_PLANT;
 			break;
 		}

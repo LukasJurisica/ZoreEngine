@@ -7,6 +7,7 @@ namespace zore {
 #define TOSTR std::to_string
 #define VEC2TOSTR(v) std::to_string(v.x) + " " + std::to_string(v.y)
 #define VEC3TOSTR(v) std::to_string(v.x) + " " + std::to_string(v.y) + " " + std::to_string(v.z)
+#define VEC4TOSTR(v) std::to_string(v.x) + " " + std::to_string(v.y) + " " + std::to_string(v.z) + " " + std::to_string(v.w)
 	
 	class Logger {
 	public:

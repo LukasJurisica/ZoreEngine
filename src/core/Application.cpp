@@ -11,6 +11,7 @@
 #include "generation/TerrainGenerator.hpp"
 
 #include "ui/Text.hpp"
+#include "math/Spline.hpp"
 
 namespace zore {
 
@@ -23,6 +24,9 @@ namespace zore {
 		RenderEngine::SetAPI(API::OPENGL);
 		Window::Init(options.Get("width", 0), options.Get("height", 0));
 		RenderEngine::Init();
+
+		// Testing Spline
+		zm::Spline s({ {-1, 2}, {0, 0}, {1, -2}, {2, 0} });
 
 		Application app;
 		app.Run();
@@ -39,7 +43,7 @@ namespace zore {
 		Window::SetFullscreen(options.Get("fullscreen", false));
 		Window::HideCursor(true);
 		glm::ivec2 res = Window::GetSize();
-		staticShaderData = { {1.f / res.x, 1.f / res.y} };
+		staticShaderData = { {1.f / res.x, 1.f / res.y}, camera.GetNearDist(), camera.GetFarDist() };
 		dynamicShaderData = {};
 
 		// Set initial settings for render engine
@@ -57,16 +61,20 @@ namespace zore {
 		postProcessShader = Shader::Create("PostProcess");
 		
 		// Set texture slots for shaders
+		Texture::SetTextureSlot("screen", 0);
+		Texture::SetTextureSlot("depth", 1);
+		Texture::SetTextureSlot("glyphs", 2);
+		Texture::SetTextureSlot("sprites", 3);
+
 		postProcessShader->Bind();
-		postProcessShader->SetTextureSlot("screen", 0);
-		postProcessShader->SetTextureSlot("depth", 1);
+		postProcessShader->SetTextureSlot("screen", Texture::GetTextureSlot("screen"));
+		postProcessShader->SetTextureSlot("depth", Texture::GetTextureSlot("depth"));
 		debugLineShader->Bind();
-		debugLineShader->SetTextureSlot("depth", 1);
+		debugLineShader->SetTextureSlot("depth", Texture::GetTextureSlot("depth"));
 		spriteShader->Bind();
-		spriteShader->SetTextureSlot("sprites", 3);
+		spriteShader->SetTextureSlot("sprites", Texture::GetTextureSlot("sprites"));
 		textShader->Bind();
-		textShader->SetTextureSlot("glyphs", 2);
-		Font::SetTextureSlot(2);
+		textShader->SetTextureSlot("glyphs", Texture::GetTextureSlot("glyphs"));
 
 		// Initialize Uniform Buffers for shaders
 		dynamicShaderDataBuffer = UniformBuffer::Create(nullptr, sizeof(dynamicShaderData), BufferMode::DYNAMIC);
@@ -87,17 +95,17 @@ namespace zore {
 		offsetDataBuffer->Bind(2);
 
 		// Create framebuffer
-		frameBuffer = FrameBuffer::Create(res.x, res.y, 1, TextureFormat::RGBA, DepthFormat::DEPTH32_TEXTURE);
-		frameBuffer->GetTextureArray()->Bind(0);
-		frameBuffer->GetDepthTexture()->Bind(1);
+		frameBuffer = FrameBuffer::Create(res.x, res.y, 1, Texture::Format::RGBA, DepthFormat::DEPTH32_TEXTURE);
+		frameBuffer->GetTextureArray()->Bind(Texture::GetTextureSlot("screen"));
+		frameBuffer->GetDepthTexture()->Bind(Texture::GetTextureSlot("depth"));
 
 		// Create Texture samplers and bind them to their respective texture units
-		linearSampler = Sampler::Create(SampleMode::LINEAR);
-		linearSampler->Bind(0);
-		linearSampler->Bind(1);
-		linearSampler->Bind(2);
-		nearestSampler = Sampler::Create(SampleMode::NEAREST);
-		nearestSampler->Bind(3);
+		linearSampler = Texture::Sampler::Create(Texture::SampleMode::LINEAR);
+		linearSampler->Bind(Texture::GetTextureSlot("screen"));
+		linearSampler->Bind(Texture::GetTextureSlot("depth"));
+		linearSampler->Bind(Texture::GetTextureSlot("glyphs"));
+		nearestSampler = Texture::Sampler::Create(Texture::SampleMode::NEAREST);
+		nearestSampler->Bind(Texture::GetTextureSlot("sprites"));
 	}
 
 	Application::~Application() {
@@ -121,8 +129,11 @@ namespace zore {
 
 	void Application::Run() {
 		bool wireframe = false;
+		if (wireframe)
+			engine->SetClearMode({ BufferType::DEPTH, BufferType::COLOUR });
 		// Create Textboxes
-		//Font f("consola");
+		//Font font("consola");
+		//font.GetTextureArray()->Bind(2);
 		//Textbox t(300, 100, "Sample Text");
 		//Textbox b(300, 300, "Poggers");
 		//Textbox::Flush();
@@ -136,13 +147,13 @@ namespace zore {
 		Mesh* debugCubeMesh = Mesh::Create(&lineVertices, sizeof(ubyte) * 3, 8, &lineIndices, 24);
 		debugCubeMesh->Bind();
 
-		// Create the mesh used for screenspace rendering and voxel faces
-		VertexLayout* UBx1 = VertexLayout::Create(blockShader, {}, { {"face", VertexDataType::UINT, 2} }, 1u);
-		UBx1->Bind();
+		// Create the Vertex layout for rendering the screen and block faces
+		VertexLayout* UIx2 = VertexLayout::Create(blockShader, {}, { {"face", VertexDataType::UINT, 2} }, 1u);
+		UIx2->Bind();
 
 		// Create texture array for sprites;
-		Texture2DArray* spriteTexture = Texture2DArray::Create({ "grass.png", "mush1.png" }, "assets/textures/", TextureFormat::RGBA);
-		spriteTexture->Bind(3);
+		Texture2DArray* spriteTexture = Texture2DArray::Create({ "grass.png", "mush1.png" }, "assets/textures/", Texture::Format::RGBA);
+		spriteTexture->Bind(Texture::GetTextureSlot("sprites"));
 
 		// Initialize the player and chunk manager
 		Player player(&camera, { 32, 128, 32 });
@@ -158,8 +169,9 @@ namespace zore {
 			deltaTime = timer.DeltaTime(true);
 			runningTime += deltaTime;
 			frameCount++;
+
 			if (timer.TimeSinceStart() > 1) {
-				Logger::Log("FrameRate: " + std::to_string(frameCount));
+				//Logger::Log("FrameRate: " + std::to_string(frameCount));
 				frameCount = 0;
 				timer.Reset();
 			}
@@ -172,8 +184,10 @@ namespace zore {
 
 			// RENDER THE SCENE TO FRAMEBUFFER --------
 			frameBuffer->Bind();
-			if (wireframe)
+			if (wireframe) {
 				engine->SetWireframe(true);
+				engine->Clear();
+			}
 			engine->SetDepthTest(true);
 			engine->Clear();
 
@@ -184,7 +198,7 @@ namespace zore {
 				engine->DrawLinearInstanced(4, chunk->GetChunkMesh(ChunkMeshType::BLOCKS).Bind());
 			}
 			// Render sprites (plants)
-			engine->SetBackFaceCulling(false);
+			engine->SetFaceCulling(CullingMode::NONE);
 			spriteShader->Bind();
 			for (const Chunk* chunk : ChunkManager::GetVisibleChunks()) {
 				spriteShader->SetInt3("chunkPos", chunk->GetPosition());
@@ -210,11 +224,11 @@ namespace zore {
 				debugLineShader->Bind();
 				debugLineShader->SetInt3("offset", pos);
 				engine->DrawIndexed(debugCubeMesh->GetCount());
-				// Rebind quad layout and mesh
+				// Rebind quad layout and topolgy
 				engine->SetTopology(MeshTopology::TRIANGLE_STRIP);
-				UBx1->Bind();
+				UIx2->Bind();
 			}
-			engine->SetBackFaceCulling(true);
+			engine->SetFaceCulling(CullingMode::BACK);
 
 			// RENDER FRAMEBUFFER TEXTURE TO SCREEN --------
 			frameBuffer->Unbind();
@@ -225,13 +239,13 @@ namespace zore {
 
 			// RENDER User Interface --------
 			//textShader->Bind();
-			//engine->DrawLinearInstanced(quadMesh->GetCount(), Textbox::Bind());
+			//engine->DrawLinearInstanced(4, Textbox::Bind());
 
 			Window::Update();
 		}
 		
 		delete debugCubeMesh;
-		delete UBx1;
+		delete UIx2;
 		delete UBx3;
 		delete spriteTexture;
 	}

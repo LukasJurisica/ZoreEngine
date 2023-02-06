@@ -1,8 +1,7 @@
 #include "utils/FileManager.hpp"
+#include "utils/StringUtils.hpp"
 #include "debug/Debug.hpp"
 #include "path_config.h"
-#include <filesystem>
-#include <fstream>
 
 namespace zore {
 
@@ -50,11 +49,33 @@ namespace zore {
 	}
 
 	void FileManager::WriteContent(const std::string& data, const std::string& filename, bool overwrite) {
-		std::ofstream f(filename);
-		f << data;
+		std::ofstream f(filename, overwrite ? std::ios::out : std::ios::out | std::ios::app);
+		if (f.good())
+			f << data;
+		else
+			Logger::Error("Error writing to file: " + filename);
 	}
 
-	std::string FileManager::GetPath(const std::string& filename) {
-		return filename;
+	void FileManager::IncrementFilenameIfExists(std::string& filename) {
+		if (std::filesystem::exists(filename)) {
+			std::vector<std::string> tokens;
+			StringUtils::SplitOnChr(tokens, filename, ".");
+
+			uint index = static_cast<uint>(tokens[0].length()) + 2u;
+			std::string test = tokens[0] + "_01." + tokens[1];
+			for (int count = 1; std::filesystem::exists(test); count++) {
+				if (count % 10)
+					test[index] += 1;
+				else {
+					test[index - 1] += 1;
+					test[index] = '0';
+				}
+			}
+			filename = test;
+		}
+	}
+
+	std::string FileManager::GetAbsolutePath(const std::string& filename) {
+		return std::filesystem::current_path().u8string() + filename;
 	}
 }

@@ -32,14 +32,14 @@ namespace zore {
 
 	class MouseListener {
 		friend class Mouse;
+	protected:
+		MouseListener();
+		~MouseListener();
+
 	private:
 		virtual void OnMouseMove(float nx, float ny, float dx, float dy) {};
 		virtual void OnMousePress(int button) {};
 		virtual void OnMouseRelease(int button) {};
 		virtual void OnMouseScroll(float dx, float dy) {};
-
-	protected:
-		MouseListener();
-		~MouseListener();
 	};
 }

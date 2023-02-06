@@ -9,11 +9,31 @@ namespace zore {
 	//	Platform Agnostic Texture Utility
 	//========================================================================
 
-	enum class TextureFormat {
-		R, RG, RGB, RGBA
-	};
+	class Texture {
+	public:
+		static void SetTextureSlot(const std::string& name, unsigned int slot);
+		static unsigned int GetTextureSlot(const std::string& name);
+		
+		enum class Format { R, RG, RGB, RGBA };
 
-	static constexpr int TextureFormatCount = 4;
+		//========================================================================
+		//	Platform Agnostic Texture Sampler Class
+		//========================================================================
+
+		enum class SampleMode { LINEAR, NEAREST };
+		enum class WrapMode { CLAMP, REPEAT };
+
+		class Sampler {
+		public:
+			static Sampler* Create(SampleMode mode);
+			virtual ~Sampler() = default;
+
+			void Bind(const std::string& slot);
+			virtual void Bind() const = 0;
+			virtual void Bind(unsigned int slot) = 0;
+			virtual void Unbind() const = 0;
+		};
+	};
 
 	//========================================================================
 	//	Platform Agnostic 2D Texture Class
@@ -21,10 +41,11 @@ namespace zore {
 
 	class Texture2D {
 	public:
-		static Texture2D* Create(const std::string& name, TextureFormat textureFormat = TextureFormat::RGBA);
-		static Texture2D* Create(uint width, uint height, TextureFormat textureFormat = TextureFormat::RGBA, void* data = nullptr);
+		static Texture2D* Create(const std::string& filename, Texture::Format format = Texture::Format::RGBA);
+		static Texture2D* Create(uint width, uint height, Texture::Format format = Texture::Format::RGBA, void* data = nullptr);
 		virtual ~Texture2D() = default;
 
+		void Bind(const std::string& slot);
 		virtual void Bind() const = 0;
 		virtual void Bind(unsigned int slot) = 0;
 		virtual void Unbind() const = 0;
@@ -42,10 +63,11 @@ namespace zore {
 	
 	class Texture2DArray {
 	public:
-		static Texture2DArray* Create(const std::vector<std::string>& filenames, const std::string& root = "assets/", TextureFormat textureFormat = TextureFormat::RGBA);
-		static Texture2DArray* Create(uint width, uint height, uint layers, void* data = nullptr, TextureFormat textureFormat = TextureFormat::RGBA);
+		static Texture2DArray* Create(const std::vector<std::string>& filenames, const std::string& root = "assets/", Texture::Format format = Texture::Format::RGBA);
+		static Texture2DArray* Create(uint width, uint height, uint layers, Texture::Format format = Texture::Format::RGBA, void* data = nullptr);
 		virtual ~Texture2DArray() = default;
 
+		void Bind(const std::string& slot);
 		virtual void Bind() const = 0;
 		virtual void Bind(unsigned int slot) = 0;
 		virtual void Unbind() const = 0;

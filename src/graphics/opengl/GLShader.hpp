@@ -9,9 +9,13 @@ namespace zore {
 	//========================================================================
 	//	OpenGL Shader Utilities
 	//========================================================================
-
-	// Generic Shader String name to OpenGL Shader Type
-	unsigned int STRtoGLST(const std::string& stage);
+	
+	struct GLShaderStage {
+		GLShaderStage(const std::string& name);
+		uint type;
+		std::string name;
+		std::string source;
+	};
 
 	//========================================================================
 	//	OpenGL Shader Class
@@ -19,18 +23,19 @@ namespace zore {
 
 	class GLShader : public Shader {
 	public:
-		GLShader(const std::string& filename);
+		GLShader(const std::string& filename, const std::vector<ShaderDefineItem>& defines);
 		~GLShader();
 
-		unsigned int GetShaderID();
+		uint GetShaderID();
 		void Bind() const override;
 		void Unbind() const override;
 
+		void SetBool(const std::string& name, int data) override;
 		void SetInt(const std::string& name, int data) override;
 		void SetInt2(const std::string& name, const glm::ivec2& data) override;
 		void SetInt3(const std::string& name, const glm::ivec3& data) override;
 		void SetInt4(const std::string& name, const glm::ivec4& data) override;
-		void SetUInt(const std::string& name, unsigned int data) override;
+		void SetUInt(const std::string& name, uint data) override;
 		void SetUInt2(const std::string& name, const glm::uvec2& data) override;
 		void SetUInt3(const std::string& name, const glm::uvec3& data) override;
 		void SetUInt4(const std::string& name, const glm::uvec4& data) override;
@@ -40,16 +45,16 @@ namespace zore {
 		void SetFloat4(const std::string& name, const glm::vec4& data) override;
 		void SetMat3(const std::string& name, const glm::mat3& data) override;
 		void SetMat4(const std::string& name, const glm::mat4& data) override;
-		void SetTextureSlot(const std::string& name, unsigned int index) override;
-		void SetUniformBufferIndex(const std::string& name, unsigned int index) override;
+		void SetTextureSlot(const std::string& name, uint slot) override;
+		void SetUniformBufferIndex(const std::string& name, uint index) override;
 
 	private:
-		unsigned int CreateShaderStage(std::string& source);
-		void Link(std::vector<unsigned int>& shaderStages);
+		unsigned int CreateShaderStage(GLShaderStage& stage, const std::string& defines);
+		void Link(std::vector<uint>& shaderStages);
 		unsigned int GetUniformLoc(const std::string& name);
 
 		std::unordered_map<std::string, int> uniforms;
-		unsigned int id;
+		uint id;
 		std::string name;
 	};
 }

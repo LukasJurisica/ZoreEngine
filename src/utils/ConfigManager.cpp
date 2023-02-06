@@ -8,6 +8,21 @@ namespace zore {
 
 	ConfigGroup::ConfigGroup(const std::string& filename) : filename("config/" + filename + ".cfg"), shouldSave(false) {}
 
+	//ConfigGroup::ConfigValue::ConfigValue(const std::string& value) {
+	//	if (value.find(".") != std::string::npos) { // Floating Point
+	//		type = ConfigValueType::FLOAT;
+	//		data.f = std::stof(value);
+	//	}
+	//	else { // Integer
+	//		type = ConfigValueType::INT;
+	//		data.i = std::stoi(value);
+	//	}
+	//}
+
+	//std::string ConfigGroup::ConfigValue::ToString() {
+
+	//}
+
 	void ConfigGroup::Load() {
 		std::vector<std::string> content;
 		FileManager::ReadLines(content, filename, false, false);
@@ -42,9 +57,20 @@ namespace zore {
 		return iter->second;
 	}
 
-	void ConfigGroup::Set(const std::string& key, int value) {
+	int ConfigGroup::Set(const std::string& key, int value) {
 		entries[key] = value;
 		shouldSave = true;
+		return value;
 	}
 
+	int ConfigGroup::Toggle(const std::string& key) {
+		auto iter = entries.find(key);
+		if (iter == entries.end()) {
+			entries.insert({ key, true });
+			shouldSave = true;
+			return true;
+		}
+		iter->second = !iter->second;
+		return iter->second;
+	}
 }

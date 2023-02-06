@@ -11,7 +11,24 @@ namespace zore {
 		void Load();
 		void Save();
 		int Get(const std::string& key, int defaultValue = 0);
-		void Set(const std::string& key, int value);
+		int Set(const std::string& key, int value);
+		int Toggle(const std::string& key);
+
+	//private:
+	//	enum class ConfigValueType { INT, FLOAT };
+
+	//	union ConfigData {
+	//		int i;
+	//		float f;
+	//	};
+
+	//	struct ConfigValue {
+	//		ConfigValue(const std::string& value);
+	//		std::string ToString();
+
+	//		ConfigValueType type;
+	//		ConfigData data;
+	//	};
 
 	private:
 		std::string filename;

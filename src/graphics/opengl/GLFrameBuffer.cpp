@@ -31,17 +31,18 @@ namespace zore {
 	//========================================================================
 	//	OpenGL Frame Buffer Class
 	//========================================================================
-
+	
 	static const unsigned int DepthFormatToGLDepthFormat[] = { GL_DEPTH_COMPONENT32, GL_DEPTH24_STENCIL8 };
 	static const unsigned int DepthFormatToGLAttachmentType[] = { GL_DEPTH_ATTACHMENT, GL_DEPTH_STENCIL_ATTACHMENT };
 
-	GLFrameBuffer::GLFrameBuffer(uint width, uint height, uint colourAttachmentCount, TextureFormat textureFormat, DepthFormat depthFormat) {
+	GLFrameBuffer::GLFrameBuffer(uint width, uint height, uint colourAttachmentCount, Texture::Format textureFormat, DepthFormat depthFormat) {
+
 		glCreateFramebuffers(1, &id);
 		textureArrayLayerCount = colourAttachmentCount;
 
 		// Create colour attachments
 		uint activeAttachments[MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS];
-		GLTexture2DArray* tex = new GLTexture2DArray(width, height, colourAttachmentCount, nullptr, textureFormat);
+		GLTexture2DArray* tex = new GLTexture2DArray(width, height, colourAttachmentCount, textureFormat, nullptr, 0);
 		uint texID = tex->GetID();
 		textureArray = tex;
 		for (uint i = 0; i < colourAttachmentCount; i++) {

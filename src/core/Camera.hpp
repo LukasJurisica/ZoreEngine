@@ -35,6 +35,8 @@ namespace zore {
 		const glm::vec3& GetForward() const;
 		const glm::vec3& GetRight() const;
 		const glm::vec3& GetUp() const;
+		const float GetNearDist() const;
+		const float GetFarDist() const;
 		
 	private:
 		float fov;

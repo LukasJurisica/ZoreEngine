@@ -46,5 +46,6 @@ namespace zore {
 		static void SortJobs();
 		static int GetDistanceToJob(const Job& job);
 		static void CancelJobs(Chunk* chunk);
+		static void CancelJob(Job job);
 	};
 }

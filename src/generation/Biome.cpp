@@ -1,74 +1,88 @@
 #include "generation/Biome.hpp"
-#include "math/WhiteNoise.hpp"
-#include "math/CellNoise.hpp"
+#include "generation/TerrainGenerator.hpp"
 #include "fnl/fastnoise.hpp"
+#include "math/MathUtils.hpp"
 #include "debug/Debug.hpp"
 
 namespace zore {
 
-	struct BiomeCache {
-		int cellX, cellY;
-		ubyte biome;
-		bool oceanAdj;
-	};
+	static fnl::FastNoiseLite terrain;
+	static std::vector<Biome*> biomes;
+	static int oceanBiomeCount = 0;
+	static float oceanHeight = 0;
 
-	fnl::FastNoiseLite terrain;
-	fnl::FastNoiseLite ocean;
-	fnl::FastNoiseLite biomeOffset;
-	zm::CellNoise biome;
-	zm::CellNoise region;
+	//========================================================================
+	//	Biome Manager Class
+	//========================================================================
 
-	static constexpr int ChunkSizeWithBorder = Chunk::CHUNK_WIDTH + 2;
+	void BiomeManager::Init() {
+		Register(new Ocean(), BiomeType::OCEAN);
+		Register(new Desert(), BiomeType::LAND);
+		Register(new Forest(), BiomeType::LAND);
 
-	void BiomeManager::Init(int seed) {
-		ocean.SetSeed(seed);
-		ocean.SetNoiseType(fnl::NoiseType::Value);
-		ocean.SetFrequency(0.2f);
-		ocean.SetFractalOctaves(2);
-		ocean.SetFractalType(fnl::FractalType::FBm);
+		oceanHeight = TerrainGenerator::GetOceanAltitude();
 
-		biomeOffset.SetSeed(seed);
-		biomeOffset.SetDomainWarpType(fnl::DomainWarpType::BasicGrid);
-		biomeOffset.SetDomainWarpAmp(50);
-		biomeOffset.SetFractalType(fnl::FractalType::DomainWarpProgressive);
-		biomeOffset.SetFractalOctaves(5);
-
-		biome.SetFrequency(0.01f);
-		biome.SetSeed(seed);
-		region.SetFrequency(0.2f);
-		region.SetSeed(seed);
+		terrain.SetSeed(TerrainGenerator::GetSeed());
+		terrain.SetNoiseType(fnl::NoiseType::OpenSimplex2S);
+		terrain.SetFrequency(0.003f);
+		terrain.SetFractalOctaves(3);
+		terrain.SetFractalType(fnl::FractalType::Ridged);
 	}
 
-	void BiomeManager::GenerateBiomeMap(ubyte* biomeMap, Chunk* chunk) {
+	void BiomeManager::Register(Biome* biome, BiomeType type) {
+		if (type == BiomeType::OCEAN)
+			biomes.insert(biomes.begin() + (oceanBiomeCount++), biome);
+		else
+			biomes.emplace_back(biome);
+	}
 
-		std::vector<BiomeCache> temp;
-		BiomeCache prev;
-		glm::ivec3 pos = chunk->GetPosition();
+	biome_t BiomeManager::GetBiomeID(float rand, BiomeType type) {
+		rand = zm::Fract(rand);
+		if (type == BiomeType::OCEAN)
+			return zm::Floor(rand * oceanBiomeCount);
+		else
+			return zm::Floor(rand * (biomes.size() - oceanBiomeCount)) + oceanBiomeCount;
+	}
 
-		for (int x = 0; x < ChunkSizeWithBorder; x++) {
-			for (int z = 0; z < ChunkSizeWithBorder; z++) {
+	Biome* BiomeManager::GetBiome(biome_t id) {
+		return biomes[id];
+	}
 
-				// Domain Warp
-				float xo = x + pos.x - 1.f;
-				float zo = z + pos.z - 1.f;
-				biomeOffset.DomainWarp(xo, zo);
+	//========================================================================
+	//	Custom Biome Classes
+	//========================================================================
 
-				// Biome Determination
-				zm::CellData biomeResult;
-				biome.GetNoise(xo, zo, biomeResult);
-				xo = biomeResult.cell.x + biomeResult.offset.x;
-				zo = biomeResult.cell.y + biomeResult.offset.y;
+	Ocean::Ocean() {}
 
-				// Region Determination
-				//zm::CellData regionResult;
-				//region.GetNoise(xo, zo, regionResult);
-				//xo = regionResult.cell.x + regionResult.offset.x;
-				//zo = regionResult.cell.y + regionResult.offset.y;
+	ubyte Ocean::GetHeight(int x, int z) const {
+		return 20;
+	}
 
-				float n = zm::NormalizeNoise(ocean.GetNoise(xo, zo));
-				ubyte b = n > 0.5f ? 0 : zm::Floor(zm::WhiteNoise::Eval1(biomeResult.cell) * 32) + 1;
-				biomeMap[x * ChunkSizeWithBorder + z] = b;
-			}
-		}
+	block_t Ocean::GetSurfaceBlock() const {
+		return BLOCK_SAND;
+	}
+
+
+	Desert::Desert() {}
+
+	ubyte Desert::GetHeight(int x, int z) const {
+		float n = terrain.GetNoise(static_cast<float>(x), static_cast<float>(z));
+		return zm::Floor(zm::SmoothMax(oceanHeight, zm::NormalizeNoise(n) * 128.f, 15.f));
+	}
+
+	block_t Desert::GetSurfaceBlock() const {
+		return BLOCK_SAND;
+	}
+
+
+	Forest::Forest() {}
+
+	ubyte Forest::GetHeight(int x, int z) const {
+		float n = terrain.GetNoise(static_cast<float>(x), static_cast<float>(z));
+		return zm::Floor(zm::SmoothMax(oceanHeight, zm::NormalizeNoise(n) * 128.f, 15.f));
+	}
+
+	block_t Forest::GetSurfaceBlock() const {
+		return BLOCK_GRASS;
 	}
 }

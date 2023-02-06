@@ -14,7 +14,7 @@ namespace zore {
 	}
 
 	template void Logger::Log(std::string);
-	template void Logger::Log(char const*);
+	template void Logger::Log(const char*);
 	template void Logger::Log(bool);
 	template void Logger::Log(char);
 	template void Logger::Log(unsigned char);

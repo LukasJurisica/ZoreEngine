@@ -14,14 +14,14 @@ namespace zore {
 		if (block != BLOCK_AIR)
 			out[axis] -= zm::Sign(ray[axis]);
 
-		glm::ivec2 chunkOffset = { out.x >> Chunk::CHUNK_WIDTH_BIT_DEPTH, out.z >> Chunk::CHUNK_WIDTH_BIT_DEPTH, };
+		glm::ivec2 chunkOffset = { out.x >> CHUNK_WIDTH_BIT_DEPTH, out.z >> CHUNK_WIDTH_BIT_DEPTH, };
 		chunk = chunk->GetNeighbour(chunkOffset.x, chunkOffset.y);
-		out.x -= chunkOffset.x * Chunk::CHUNK_WIDTH;
-		out.z -= chunkOffset.y * Chunk::CHUNK_WIDTH;
+		out.x -= chunkOffset.x * CHUNK_WIDTH;
+		out.z -= chunkOffset.y * CHUNK_WIDTH;
 		chunk->SetBlock(out.x, out.y, out.z, block);
 		ChunkManager::RemeshChunk(chunk,
-			out.x == 0 ? -1 : (out.x == Chunk::CHUNK_WIDTH - 1 ? 1 : 0),
-			out.z == 0 ? -1 : (out.z == Chunk::CHUNK_WIDTH - 1 ? 1 : 0)
+			out.x == 0 ? -1 : (out.x == CHUNK_WIDTH - 1 ? 1 : 0),
+			out.z == 0 ? -1 : (out.z == CHUNK_WIDTH - 1 ? 1 : 0)
 		);
 
 		return true;
@@ -62,7 +62,7 @@ namespace zore {
 	Chunk* World::RaycastBlock(glm::vec3 pos, glm::vec3 ray, glm::ivec3& out, int& axis, int range) {
 		Chunk* chunk = ChunkManager::GetChunk(pos);
 		pos -= chunk->GetPosition();
-		DEBUG_ENSURE(range <= Chunk::CHUNK_HALF_WIDTH, "The maximum block raycast range is half a chunk width");
+		DEBUG_ENSURE(range <= CHUNK_HALF_WIDTH, "The maximum block raycast range is half a chunk width");
 		range *= range;
 		out = { zm::Floor(pos.x), zm::Floor(pos.y), zm::Floor(pos.z) };
 		ray = 1.f / ray;

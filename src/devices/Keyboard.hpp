@@ -29,13 +29,13 @@ namespace zore {
 
 	class KeyListener {
 		friend class Keyboard;
+	protected:
+		KeyListener();
+		~KeyListener();
+
 	private:
 		virtual void OnKeyPress(int key, int mods) { };
 		virtual void OnKeyRelease(int key) { };
 		virtual void OnChar(char code) { };
-
-	protected:
-		KeyListener();
-		~KeyListener();
 	};
 }

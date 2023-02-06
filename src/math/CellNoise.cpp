@@ -35,8 +35,9 @@ namespace zm {
 
 	void CellNoise::GetNoise(float x, float y, CellData& out) {
 		glm::vec2 p = glm::vec2(x, y) * frequency;
-		glm::vec2 i = glm::round(p); // Integer Position
-		glm::vec2 f = p - i - offset; // Fractional Position
+		glm::vec2 c = glm::round(p); // Cell Position
+		glm::vec2 f = p - c - offset; // Fractional Position
+		glm::ivec2 i = c; // Integer Position
 
 		out.dist = 8.f;
 		for (int x = -1; x < 1; x++) {
@@ -49,7 +50,7 @@ namespace zm {
 				float d = glm::dot(r, r);
 
 				if (d < out.dist)
-					out = { d, v, i + l };
+					out = { d, v, c + l };
 			}
 		}
 	}

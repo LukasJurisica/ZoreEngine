@@ -2,6 +2,7 @@
 #include "glm/ext/vector_int2.hpp"
 
 struct GLFWwindow;
+struct GLFWMonitor;
 
 namespace zore {
 
@@ -20,6 +21,7 @@ namespace zore {
 		static void SetBorderless(bool value);
 		static void SetFullscreen(bool value);
 		static void ToggleFullscreen();
+		static void BringToFront();
 		static void HideCursor(bool value);
 		static void ToggleCursor();
 		static void SetSize(int width, int height);
@@ -28,7 +30,9 @@ namespace zore {
 
 		static float GetAspectRatio();
 		static const glm::ivec2& GetSize();
-		static const glm::ivec2 GetNativeResolution();
+		static GLFWwindow* GetWindowHandle();
+		static void GetNativeHandle(void* result);
+		static glm::ivec2 GetNativeResolution(int monitorIndex = 0);
 
 	private:
 		static void ErrorCallback(int error, const char* description);
@@ -43,13 +47,13 @@ namespace zore {
 
 	class WindowListener {
 		friend class Window;
+	protected:
+		WindowListener();
+		~WindowListener();
+
 	private:
 		virtual void OnWindowResize(int width, int height) {};
 		virtual void OnWindowMove(int xpos, int ypos) {};
 		virtual void OnWindowFocus(int focused) {};
-
-	protected:
-		WindowListener();
-		~WindowListener();
 	};
 }

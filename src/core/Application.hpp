@@ -4,7 +4,7 @@
 #include "devices/Keyboard.hpp"
 #include "graphics/RenderEngine.hpp"
 #include "graphics/FrameBuffer.hpp"
-#include "graphics/Sampler.hpp"
+#include "graphics/Texture.hpp"
 #include "graphics/Shader.hpp"
 
 namespace zore {
@@ -18,6 +18,8 @@ namespace zore {
 
 	struct StaticShaderData {
 		glm::vec2 inv_res;
+		float near_dist;
+		float far_dist;
 	};
 
 	class Application : WindowListener, KeyListener {
@@ -51,7 +53,7 @@ namespace zore {
 		Shader* textShader;
 		Shader* postProcessShader;
 		
-		Sampler* linearSampler;
-		Sampler* nearestSampler;
+		Texture::Sampler* linearSampler;
+		Texture::Sampler* nearestSampler;
 	};
 }

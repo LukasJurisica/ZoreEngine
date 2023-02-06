@@ -7,7 +7,7 @@ namespace zm {
 	struct CellData {
 		float dist;
 		glm::vec2 offset;
-		glm::vec2 cell;
+		glm::ivec2 cell;
 	};
 
 	class CellNoise {

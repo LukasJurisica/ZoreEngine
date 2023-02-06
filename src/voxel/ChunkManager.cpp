@@ -1,4 +1,5 @@
 #include "voxel/ChunkManager.hpp"
+#include "voxel/ChunkConstants.hpp"
 #include "math/MathUtils.hpp"
 #include "debug/Debug.hpp"
 
@@ -45,8 +46,8 @@ namespace zore {
 		chunkRadiusSquared = (radius + 0.5f) * (radius + 0.5f);
 
 		glm::ivec2 fpos = { zm::Floor(position.x), zm::Floor(position.z) };
-		fulcrum = { fpos.x >> Chunk::CHUNK_WIDTH_BIT_DEPTH, fpos.y >> Chunk::CHUNK_WIDTH_BIT_DEPTH };
-		quadrant = { fpos.x & Chunk::CHUNK_HALF_WIDTH, fpos.y & Chunk::CHUNK_HALF_WIDTH };
+		fulcrum = { fpos.x >> CHUNK_WIDTH_BIT_DEPTH, fpos.y >> CHUNK_WIDTH_BIT_DEPTH };
+		quadrant = { fpos.x & CHUNK_HALF_WIDTH, fpos.y & CHUNK_HALF_WIDTH };
 
 		// Create chunk columns
 		for (int x = -radius; x <= radius; x++) {
@@ -85,7 +86,7 @@ namespace zore {
 	}
 
 	void ChunkManager::SetRenderDistance(uint renderDistance) {
-		int oldChunkRadiusSquared = chunkRadiusSquared;
+		float oldChunkRadiusSquared = chunkRadiusSquared;
 		int radius = renderDistance + 1;
 		chunkRadiusSquared = (radius + 0.5f) * (radius + 0.5f);
 
@@ -124,13 +125,13 @@ namespace zore {
 		glm::vec3 position = camera->GetPosition();
 		glm::ivec2 fpos = { zm::Floor(position.x), zm::Floor(position.z) };
 		// Check if the position crossed a chunk quadrant since last update
-		glm::ivec2 newQuadrant = { fpos.x & Chunk::CHUNK_HALF_WIDTH, fpos.y & Chunk::CHUNK_HALF_WIDTH };
+		glm::ivec2 newQuadrant = { fpos.x & CHUNK_HALF_WIDTH, fpos.y & CHUNK_HALF_WIDTH };
 		if (quadrant != newQuadrant) {
 			quadrant = newQuadrant;
 
 			std::lock_guard<std::mutex> lk(jobMutex);
 			// Additionally check if the position crossed a chunk border
-			glm::ivec2 newFulcrum = { fpos.x >> Chunk::CHUNK_WIDTH_BIT_DEPTH, fpos.y >> Chunk::CHUNK_WIDTH_BIT_DEPTH };
+			glm::ivec2 newFulcrum = { fpos.x >> CHUNK_WIDTH_BIT_DEPTH, fpos.y >> CHUNK_WIDTH_BIT_DEPTH };
 			if (fulcrum != newFulcrum) {
 				fulcrum = newFulcrum;
 				LoadChunks();
@@ -143,9 +144,9 @@ namespace zore {
 		
 		visibleChunks.clear();
 		for (const std::pair<size_t, Chunk*>& pair : chunks)
-			if (camera->TestAABB(pair.second->renderPos, glm::vec3(Chunk::CHUNK_WIDTH, Chunk::CHUNK_HEIGHT, Chunk::CHUNK_WIDTH)))
-				visibleChunks.push_back(pair.second);
-
+			if (camera->TestAABB(pair.second->renderPos, glm::vec3(CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_WIDTH)))
+				visibleChunks.emplace_back(pair.second);
+		
 		//UpdateChunks();
 	}
 
@@ -175,16 +176,16 @@ namespace zore {
 	}
 
 	Chunk* ChunkManager::GetChunk(const glm::vec3& position) {
-		size_t chunkKey = GetChunkKey(zm::Floor(position.x) >> Chunk::CHUNK_WIDTH_BIT_DEPTH, zm::Floor(position.z) >> Chunk::CHUNK_WIDTH_BIT_DEPTH);
+		size_t chunkKey = GetChunkKey(zm::Floor(position.x) >> CHUNK_WIDTH_BIT_DEPTH, zm::Floor(position.z) >> CHUNK_WIDTH_BIT_DEPTH);
 		std::unordered_map<size_t, Chunk*>::iterator iter = chunks.find(chunkKey);
 		return (iter == chunks.end()) ? nullptr : iter->second;
 	}
 
 	glm::ivec3 ChunkManager::GetChunkCoord(const glm::vec3& position) {
 		return {
-			zm::Floor(position.x) >> Chunk::CHUNK_WIDTH_BIT_DEPTH,
-			zm::Floor(position.y) >> Chunk::CHUNK_HEIGHT_BIT_DEPTH,
-			zm::Floor(position.z) >> Chunk::CHUNK_WIDTH_BIT_DEPTH
+			zm::Floor(position.x) >> CHUNK_WIDTH_BIT_DEPTH,
+			zm::Floor(position.y) >> CHUNK_HEIGHT_BIT_DEPTH,
+			zm::Floor(position.z) >> CHUNK_WIDTH_BIT_DEPTH
 		};
 	}
 
@@ -233,11 +234,11 @@ namespace zore {
 				if (UnloadNeighbours(chunk)) {
 					delete iter->second;
 					iter = chunks.erase(iter);
+					continue;
 				}
 			}
 			// Chunk unload could not be completed
-			else
-				++iter;
+			++iter;
 		}
 	}
 
@@ -297,15 +298,8 @@ namespace zore {
 				chunk->numNeighbours--;
 
 				// Remove any meshing jobs related to neighbour
-				if (neighbour->state < Chunk::State::MESHED) {
-					for (std::vector<Job>::iterator iter = jobs.begin(); iter != jobs.end(); ++iter) {
-						if (iter->task == Task::MESH && iter->chunk == neighbour) {
-							jobs.erase(iter);
-							break;
-						}
-					}
-				}
-
+				if (neighbour->state < Chunk::State::MESHED)
+					CancelJob({ Task::MESH, neighbour });
 			}
 		}
 		return retVal;
@@ -321,16 +315,21 @@ namespace zore {
 
 			switch (j.task) {
 			case Task::GENERATE:
+				// Generate the chunk
 				generate(j.chunk);
+				// Change the chunk state to generated
 				jobMutex.lock();
 				j.chunk->state = Chunk::State::GENERATED;
 				jobMutex.unlock();
 				break;
 			case Task::MESH:
+				// Mesh the chunk
 				j.chunk->Mesh();
+				// Change the chunk state to meshed
 				jobMutex.lock();
 				j.chunk->state = Chunk::State::MESHED;
 				jobMutex.unlock();
+				// Add the chunk to the upload list
 				uploadMutex.lock();
 				toBeUploaded.emplace_back(j.chunk);
 				uploadMutex.unlock();
@@ -343,20 +342,17 @@ namespace zore {
 		std::unique_lock<std::mutex> lk(jobMutex);
 		cv.wait(lk, [] { return jobs.size() > 0 || !running; });
 
-		for (int i = 0; i < jobs.size(); i++) {
-			Job j = jobs[i];
+		for (std::vector<Job>::iterator iter = jobs.begin(); iter != jobs.end(); iter++) {
+			if (iter->task == Task::GENERATE)
+				iter->chunk->state = Chunk::State::GENERATING;
+			else if (iter->task == Task::MESH && iter->chunk->CanBeMeshed())
+				iter->chunk->state = Chunk::State::MESHING;
+			else
+				continue;
 
-			if (j.task == Task::GENERATE)
-				j.chunk->state = Chunk::State::GENERATING;
-			else if (j.task == Task::MESH) {
-				if (j.chunk->CanBeMeshed())
-					j.chunk->state = Chunk::State::MESHING;
-				else
-					continue;
-			}
-
-			jobs.erase(jobs.begin() + i);
-			return j;
+			Job job = *iter;
+			jobs.erase(iter);
+			return job;
 		}
 		return { Task::NONE, nullptr };
 	}
@@ -374,5 +370,14 @@ namespace zore {
 	void ChunkManager::CancelJobs(Chunk* chunk) {
 		for (std::vector<Job>::iterator job = jobs.begin(); job != jobs.end();)
 			(job->chunk == chunk) ? job = jobs.erase(job) : ++job;
+	}
+
+	void ChunkManager::CancelJob(Job job) {
+		for (std::vector<Job>::iterator j = jobs.begin(); j != jobs.end(); j++) {
+			if (j->chunk == job.chunk && j->task == job.task) {
+				jobs.erase(j);
+				return;
+			}
+		}
 	}
 }

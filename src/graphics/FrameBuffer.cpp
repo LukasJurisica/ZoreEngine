@@ -13,7 +13,7 @@ namespace zore {
 		delete textureArray;
 	}
 
-	FrameBuffer* FrameBuffer::Create(uint width, uint height, uint colorAttachmentCount, TextureFormat textureFormat, DepthFormat depthFormat) {
+	FrameBuffer* FrameBuffer::Create(uint width, uint height, uint colorAttachmentCount, Texture::Format textureFormat, DepthFormat depthFormat) {
 		DEBUG_ENSURE(colorAttachmentCount <= MAX_FRAMEBUFFER_COLOUR_ATTACHMENTS, "Failed to create framebuffer - Requested color attachment count is larger than the maximum.");
 
 		switch (RenderEngine::GetAPI()) {

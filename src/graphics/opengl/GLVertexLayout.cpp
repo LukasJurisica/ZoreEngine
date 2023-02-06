@@ -20,10 +20,10 @@ namespace zore {
 		glBindVertexArray(id);
 
 		// Get the ID of the Shader for retrieving Vertex Attribute Locations
-		shaderID = reinterpret_cast<GLShader*>(shader)->GetShaderID();
+		unsigned int shaderID = reinterpret_cast<GLShader*>(shader)->GetShaderID();
 
-		InitAttributes(vertexElements, 0, 0);
-		InitAttributes(instanceElements, 1, interval);
+		InitAttributes(vertexElements, 0, 0, shaderID);
+		InitAttributes(instanceElements, 1, interval, shaderID);
 	}
 
 	void GLVertexLayout::Bind() const {
@@ -34,7 +34,7 @@ namespace zore {
 		glBindVertexArray(0);
 	}
 
-	void GLVertexLayout::InitAttributes(const std::vector<VertexElement>& elements, unsigned int index, unsigned int interval) {
+	void GLVertexLayout::InitAttributes(const std::vector<VertexElement>& elements, unsigned int index, unsigned int interval, unsigned int shaderID) {
 		unsigned int offset = 0;
 		for (const VertexElement& e : elements) {
 			// Verify that the element exists in the shader

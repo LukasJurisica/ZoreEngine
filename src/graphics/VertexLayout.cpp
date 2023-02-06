@@ -2,6 +2,7 @@
 #include "graphics/opengl/GLVertexLayout.hpp"
 #include "graphics/RenderEngine.hpp"
 #include "debug/Debug.hpp"
+#include <iostream>
 
 namespace zore {
 
@@ -17,6 +18,8 @@ namespace zore {
 	}
 
 	VertexLayout* VertexLayout::Create(Shader* shader, const std::vector<VertexElement>& vertexElements, const std::vector<VertexElement>& instanceElements, unsigned int interval) {
+		DEBUG_ENSURE(shader, "Failed to create vertex layout. Null shader pointer provided.");
+
 		switch (RenderEngine::GetAPI()) {
 		case API::OPENGL:
 			return new GLVertexLayout(shader, vertexElements, instanceElements, interval);

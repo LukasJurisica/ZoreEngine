@@ -18,7 +18,7 @@ namespace zore {
 
 	class FrameBuffer {
 	public:
-		static FrameBuffer* Create(uint width, uint height, uint colorAttachmentCount = 1, TextureFormat textureFormat = TextureFormat::RGBA, DepthFormat depthFormat = DepthFormat::DEPTH32_BUFFER);
+		static FrameBuffer* Create(uint width, uint height, uint colorAttachmentCount = 1, Texture::Format textureFormat = Texture::Format::RGBA, DepthFormat depthFormat = DepthFormat::DEPTH32_BUFFER);
 		virtual ~FrameBuffer();
 
 		virtual void Bind() const = 0;

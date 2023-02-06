@@ -10,27 +10,20 @@ namespace zore {
 	//  Platform Agnostic Font Class
 	//========================================================================
 
-	uint fontBindPoint;
-
 	Font::Font(const std::string& name) {
 		int asciiTextRange = 127 - 32;
 		std::vector<std::string> textFilenames(asciiTextRange);
 		for (int i = 0; i < asciiTextRange; i++)
 			textFilenames[i] = std::to_string(i + 32) + ".png";
-		texture = Texture2DArray::Create(textFilenames, "assets/fonts/" + name + "/", TextureFormat::RGB);
-		Bind();
+		texture = Texture2DArray::Create(textFilenames, "assets/fonts/" + name + "/", Texture::Format::RGB);
 	}
 
 	Font::~Font() {
 		delete texture;
 	}
 
-	void Font::Bind() {
-		texture->Bind(fontBindPoint);
-	}
-
-	void Font::SetTextureSlot(uint slot) {
-		fontBindPoint = slot;
+	Texture2DArray* Font::GetTextureArray() {
+		return texture;
 	}
 
 	//========================================================================

@@ -37,6 +37,15 @@ namespace zm {
 
 	// Performs a Smoothstep Intrpolation of t between 0 and 1
 	inline float InterpHermite(float t) { return t * t * (3 - 2 * t); }
+	
+	// Performs a Smoothstep Intrpolation of t between a and b
+	template <typename type>
+	inline float InterpHermite(type a, type b, float t) {
+		//t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+		//return t * t * (3.0 - 2.0 * t);
+		float res = t * t * (3 - 2 * t);
+		return a + (res * (b - a));
+	}
 
 	// Performs a Smoothstep Intrpolation of t between 0 and 1
 	inline float InterpQuintic(float t) { return t * t * t * (t * (t * 6 - 15) + 10); }
@@ -103,18 +112,28 @@ namespace zm {
 		return value;
 	}
 
+	// Returns the length of the vector (x, y)
+	template <typename type>
+	inline float Length(type x, type y) {
+		return std::sqrt((x * x) + (y * y));
+	}
+
+	// Returns the length of the vector (x, y, z)
+	template <typename type>
+	inline float Length(type x, type y, type z) {
+		return std::sqrt((x * x) + (y * y) + (z * z));
+	}
+
 	// Returns the distance between points (x1, y1) and (x2, y2)
 	template <typename type>
 	inline float Dist(type x1, type y1, type x2, type y2) {
-		x2 -= x1; y2 -= y1;
-		return std::sqrt((x2 * x2) + (y2 * y2));
+		return Length(x2 - x1, y2 - y1);
 	}
 
 	// Returns the distance between points (x1, y1, z1) and (x2, y2, z2)
 	template <typename type>
 	inline float Dist(type x1, type y1, type z1, type x2, type y2, type z2) {
-		x2 -= x1; y2 -= y1; z2 -= z1;
-		return std::sqrt((x2 * x2) + (y2 * y2) + (z2 * z2));
+		return Length(x2 - x1, y2 - y1, z2 - z1);
 	}
 
 	// Returns the squared distance between points (x1, y1) and (x2, y2)

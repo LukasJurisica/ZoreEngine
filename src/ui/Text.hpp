@@ -15,8 +15,7 @@ namespace zore {
 		Font(const std::string& name);
 		~Font();
 
-		void Bind();
-		static void SetTextureSlot(uint slot);
+		Texture2DArray* GetTextureArray();
 
 	private:
 		Texture2DArray* texture;

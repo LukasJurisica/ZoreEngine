@@ -3,7 +3,7 @@
 
 // Uniform Data
 layout(std140, binding = 0) uniform dynamicShaderData { mat4 vp_mat; mat4 inv_vp_mat; vec3 cam_pos; float time; };
-layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; };
+layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; float near_dist; float far_dist; };
 
 // Vertex Data
 layout(location = 0) in uvec2 string;
@@ -44,7 +44,6 @@ void main() {
 #version 430 core
 
 // Uniform Data
-layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; };
 layout(binding = 2) uniform sampler2DArray glyphs;
 layout(std430, binding = 0) buffer charBuffer { uint chars[]; };
 

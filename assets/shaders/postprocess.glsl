@@ -20,7 +20,7 @@ void main() {
 #version 430 core
 
 // Uniform Data
-layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; };
+layout(std140, binding = 1) uniform staticShaderData { vec2 inv_res; float near_dist; float far_dist; };
 layout(binding = 0) uniform sampler2DArray screen;
 layout(binding = 1) uniform sampler2D depth;
 
@@ -223,25 +223,28 @@ vec3 Fxaa() {
 }
 
 #define ENABLE_FXAA
+//#define ENABLE_FOG
+#define FOG_COL vec3(0.671, 0.682, 0.69)
 
 float LinearizeDepth() {
-	float zNear = 0.1;    // TODO: Replace by the zNear of your perspective projection
-	float zFar  = 1200.0; // TODO: Replace by the zFar  of your perspective projection
 	float d = texture2D(depth, uv).x;
-	return (2.0 * zNear) / (zFar + zNear - d * (zFar - zNear));
+	return (2.0 * near_dist) / (far_dist + near_dist - d * (far_dist - near_dist));
 }
 
 void main() {
-
 	#ifdef ENABLE_FXAA
 		fragColor = vec4(Fxaa(), 1.0);
 	#else
 		fragColor = vec4(texture(screen, vec3(uv, 0)).rgb, 1.0);
-		//float d = LinearizeDepth();
-		//fragColor = vec4(d, d, d, 1.0); // Depth
 	#endif
 
-	//fragColor = vec4(mix(rgbM.rgb, vec3(0.8), rgbM.a), 1.f); // FOG
+
+	#ifdef ENABLE_FOG
+		float fogDensity = 3.0;
+		float fogAmount = 1 / exp(LinearizeDepth() * fogDensity);
+		fragColor = vec4(mix(FOG_COL, fragColor.rgb, fogAmount), 1.f);
+	#endif
+
 
     vec2 ssc = uv * 2 - 1;
     ssc.y *= inv_res.x / inv_res.y;

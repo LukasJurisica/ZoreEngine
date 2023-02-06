@@ -15,9 +15,8 @@ namespace zore {
 		void Unbind() const override;
 
 	private:
-		void InitAttributes(const std::vector<VertexElement>& elements, unsigned int index, unsigned int interval);
+		void InitAttributes(const std::vector<VertexElement>& elements, unsigned int index, unsigned int interval, unsigned int shaderID);
 
 		unsigned int id;
-		unsigned int shaderID;
 	};
 }

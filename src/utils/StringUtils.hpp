@@ -34,7 +34,16 @@ namespace zore {
 			RTrimInPlace(s, delimiter);
 		}
 
-		
+		static inline std::string SubStrRange(const std::string& s, size_t left, size_t right = std::string::npos) {
+			return s.substr(left, right - left);
+		}
+
+		static inline std::string ToStrMinDigits(int value, int count) {
+			std::string num = std::to_string(value);
+			count -= static_cast<int>(num.length());
+			std::string result(count, '0');
+			return result + num;
+		}
 
 		static std::wstring to_wstring(const std::string& string);
 		static std::string to_string(const std::wstring& string);

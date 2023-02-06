@@ -146,4 +146,12 @@ namespace zore {
 	const glm::vec3& Camera::GetUp() const {
 		return up;
 	}
+
+	const float Camera::GetNearDist() const {
+		return nearDist;
+	}
+
+	const float Camera::GetFarDist() const {
+		return farDist;
+	}
 }

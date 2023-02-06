@@ -52,7 +52,7 @@ in float dist;
 out vec4 FragColor;
 
 // Constants
-const vec3 colour[4] = vec3[4]( vec3(0.482, 0.247, 0.0), vec3(0.403, 0.831, 0.023), vec3(0.631, 0.666, 0.639), vec3(0.584, 0.271, 0.208) );
+const vec3 colour[6] = vec3[6]( vec3(0.482, 0.247, 0.0), vec3(0.403, 0.831, 0.023), vec3(0.631, 0.666, 0.639), vec3(0.584, 0.271, 0.208), vec3(1.0, 0.98, 0.98), vec3(0.761, 0.698, 0.502) );
 const float lighting[6] = float[6](0.9f, 0.9f, 0.7f, 1.0f, 0.9f, 0.9f);
 const int blockSubDivisions = 4;
 
