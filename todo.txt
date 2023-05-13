@@ -1,0 +1,8 @@
+
+VertexBuffer copy_constructor(vbo);
+VertexBuffer copy_constructor{ vbo };
+VertexBuffer copy_constructor = vbo;
+VertexBuffer copy_assignment; copy_assignment = vbo;
+
+
+GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_ARRAY

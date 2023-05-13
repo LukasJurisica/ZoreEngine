@@ -1,1 +1,0 @@
-add_library(fastnoiselite fastnoise.cpp fastnoise.hpp)
