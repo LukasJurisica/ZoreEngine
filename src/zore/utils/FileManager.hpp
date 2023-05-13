@@ -13,5 +13,6 @@ namespace zore {
 		static void WriteContent(const std::string& data, const std::string& filename, bool overwrite = true);
 		static void IncrementFilenameIfExists(std::string& filename);
 		static std::string GetAbsolutePath(const std::string& filename);
+		static void EnsureDir(const std::string& path);
 	};
 }

@@ -52,6 +52,7 @@ namespace zore {
 	}
 
 	void FileManager::WriteContent(const std::string& data, const std::string& filename, bool overwrite) {
+		EnsureDir(filename.substr(0, filename.rfind("/")));
 		std::ofstream f(filename, overwrite ? std::ios::out : std::ios::out | std::ios::app);
 		if (f.good())
 			f << data;
@@ -80,5 +81,10 @@ namespace zore {
 
 	std::string FileManager::GetAbsolutePath(const std::string& filename) {
 		return std::filesystem::current_path().u8string() + filename;
+	}
+
+	void FileManager::EnsureDir(const std::string& path) {
+		if (!std::filesystem::exists(path))
+			std::filesystem::create_directories(path);
 	}
 }
