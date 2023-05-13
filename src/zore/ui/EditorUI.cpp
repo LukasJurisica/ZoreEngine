@@ -62,14 +62,14 @@ namespace zore {
 	}
 
 	bool EditorUI::WantsMouse() {
-		return io->WantCaptureMouse;
+		return io && io->WantCaptureMouse;
 	}
 
 	bool EditorUI::WantsKeyboard() {
-		return io->WantCaptureKeyboard;
+		return io && io->WantCaptureKeyboard;
 	}
 
 	bool EditorUI::DynamicViewportsEnabled() {
-		return io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable;
+		return io && io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable;
 	}
 }
