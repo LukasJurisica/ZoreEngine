@@ -9,7 +9,7 @@ namespace zore {
 	//	Keyboard class
 	//========================================================================
 
-	std::bitset<KEY_LAST> keyStates;
+	static std::bitset<KEY_LAST> keyStates;
 
 	void Keyboard::ClearState() {
 		keyStates.reset();
@@ -20,11 +20,35 @@ namespace zore {
 		return keyStates[key];
 	}
 
+	bool Keyboard::GetKeyMod(KeyMod keymod) {
+		switch (keymod) {
+		case zore::Keyboard::KeyMod::CTRL:
+			return keyStates[KEY_L_CTRL] || keyStates[KEY_R_CTRL];
+		case zore::Keyboard::KeyMod::ALT:
+			return keyStates[KEY_L_ALT] || keyStates[KEY_R_ALT];
+		case zore::Keyboard::KeyMod::SHIFT:
+			return keyStates[KEY_L_SHIFT] || keyStates[KEY_R_SHIFT];
+		}
+	}
+
+	//========================================================================
+	//	Keyboard Listener Class
+	//========================================================================
+
+	static std::vector<KeyListener*> listeners;
+
+	KeyListener::KeyListener() {
+		listeners.push_back(this);
+	}
+
+	KeyListener::~KeyListener() {
+		auto iter = find(listeners.begin(), listeners.end(), this);
+		listeners.erase(iter);
+	}
+
 	//------------------------------------------------------------------------
 	//	GLFW Keyboard Callbacks
 	//------------------------------------------------------------------------
-
-	std::vector<KeyListener*> listeners;
 
 	void Keyboard::KeyCallback(GLFWwindow* windowHandle, int key, int scancode, int action, int mods) {
 		if (action != KEY_REPEAT) {
@@ -43,18 +67,5 @@ namespace zore {
 	void Keyboard::CharCallback(GLFWwindow* windowHandle, unsigned int code) {
 		for (KeyListener* listener : listeners)
 			listener->OnChar(code);
-	}
-
-	//========================================================================
-	//	Keyboard Listener Class
-	//========================================================================
-
-	KeyListener::KeyListener() {
-		listeners.push_back(this);
-	}
-
-	KeyListener::~KeyListener() {
-		auto iter = find(listeners.begin(), listeners.end(), this);
-		listeners.erase(iter);
 	}
 }

@@ -4,10 +4,6 @@
 
 namespace zore {
 
-	static const uint32_t BufferModeToGLBufferUsage[] = {
-		GL_STATIC_DRAW, GL_DYNAMIC_DRAW
-	};
-
 	//========================================================================
 	//	OpenGL Vertex Buffer Class
 	//========================================================================
@@ -129,13 +125,11 @@ namespace zore {
 
 	UniformBuffer::UniformBuffer() : m_index(0) {
 		glCreateBuffers(1, &m_id);
-		m_usage = BufferModeToGLBufferUsage[0];
 	}
 
-	UniformBuffer::UniformBuffer(const void* data, uint32_t size, BufferMode mode) : m_index(0) {
+	UniformBuffer::UniformBuffer(const void* data, uint32_t size) : m_index(0) {
 		glCreateBuffers(1, &m_id);
-		m_usage = BufferModeToGLBufferUsage[static_cast<uint32_t>((mode != BufferMode::UNCHANGED) ? mode : BufferMode::STATIC)];
-		glNamedBufferData(m_id, size, data, m_usage);
+		glNamedBufferData(m_id, size, data, GL_STATIC_DRAW);
 	}
 
 	UniformBuffer::~UniformBuffer() {
@@ -146,10 +140,8 @@ namespace zore {
 		return m_id;
 	}
 
-	void UniformBuffer::Set(const void* data, uint32_t size, BufferMode mode) {
-		if (mode != BufferMode::UNCHANGED)
-			m_usage = BufferModeToGLBufferUsage[static_cast<uint32_t>(mode)];
-		glNamedBufferData(m_id, size, data, m_usage);
+	void UniformBuffer::Set(const void* data, uint32_t size) {
+		glNamedBufferData(m_id, size, data, GL_STATIC_DRAW);
 	}
 
 	void UniformBuffer::Update(const void* data, uint32_t size, uint32_t offset) {

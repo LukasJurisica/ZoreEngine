@@ -12,5 +12,5 @@
 #define TOGGLE_N_BITS(num, cnt, off) num ^= ~(~0UL << cnt) << off
 #define SET_N_BITS(num, val, cnt, off) num = (num & ~(~(~0UL << cnt) << off)) | (val << off)
 
-#define PACK_BITS(num, val, off) num |= (val << off)
+#define PACK_BITS(num, val, off) num |= ((val) << off)
 #define UNPACK_BITS(num, msk, off) (num >> off) & msk

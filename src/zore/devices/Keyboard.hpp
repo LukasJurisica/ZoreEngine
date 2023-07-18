@@ -15,7 +15,11 @@ namespace zore {
 	class Keyboard {
 		friend class Window;
 	public:
+		enum class KeyMod { CTRL, ALT, SHIFT };
+
+	public:
 		static bool GetKey(int key);
+		static bool GetKeyMod(KeyMod keymod);
 		static void ClearState();
 
 	private:
@@ -34,8 +38,8 @@ namespace zore {
 		~KeyListener();
 
 	private:
-		virtual void OnKeyPress(int key, int mods) { };
-		virtual void OnKeyRelease(int key) { };
-		virtual void OnChar(char code) { };
+		virtual void OnKeyPress(int key, int mods) {};
+		virtual void OnKeyRelease(int key) {};
+		virtual void OnChar(char code) {};
 	};
 }

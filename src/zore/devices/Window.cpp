@@ -100,7 +100,8 @@ namespace zore {
 	void Window::SetFullscreen(bool value) {
 		GLFWmonitor* monitor = value ? glfwGetPrimaryMonitor() : nullptr;
 		glfwSetWindowMonitor(windowHandle, monitor, position.x, position.y, size.x, size.y, GLFW_DONT_CARE);
-		Centre();
+		if (!value)
+			Centre();
 		fullscreen = value;
 	}
 

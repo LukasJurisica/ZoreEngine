@@ -3,8 +3,6 @@
 
 namespace zore {
 
-	enum class BufferMode { STATIC, DYNAMIC, UNCHANGED };
-
 	//========================================================================
 	//	Vertex Buffer Class
 	//========================================================================
@@ -86,7 +84,7 @@ namespace zore {
 	class UniformBuffer {
 	public:
 		UniformBuffer();
-		UniformBuffer(const void* data, uint32_t size, BufferMode mode = BufferMode::UNCHANGED);
+		UniformBuffer(const void* data, uint32_t size);
 		UniformBuffer(const UniformBuffer&) = delete;
 		UniformBuffer(UniformBuffer&&) = delete;
 		UniformBuffer& operator=(const UniformBuffer&) = delete;
@@ -94,7 +92,7 @@ namespace zore {
 		~UniformBuffer();
 
 		uint32_t GetID() const;
-		void Set(const void* data, uint32_t size, BufferMode mode = BufferMode::UNCHANGED);
+		void Set(const void* data, uint32_t size);
 		void Update(const void* data, uint32_t size, uint32_t offset = 0u);
 		void Bind() const;
 		void Bind(uint32_t index);
@@ -102,6 +100,5 @@ namespace zore {
 	private:
 		uint32_t m_id;
 		uint32_t m_index;
-		uint32_t m_usage;
 	};
 }

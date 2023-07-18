@@ -9,7 +9,7 @@ namespace zore {
 		static void Init();
 		virtual void Run() = 0;
 
-	protected:
+	private:
 		static Application* Create();
 	};
 }

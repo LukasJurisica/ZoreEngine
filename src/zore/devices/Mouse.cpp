@@ -9,8 +9,8 @@ namespace zore {
 	//	Mouse Class
 	//========================================================================
 
-	glm::vec2 position = { 0, 0 };
-	bool buttonStates[MOUSE_BUTTON_COUNT];
+	static glm::vec2 position = { 0, 0 };
+	static bool buttonStates[MOUSE_BUTTON_COUNT];
 
 	void Mouse::ClearState(float x, float y) {
 		memset(&buttonStates, 0, MOUSE_BUTTON_COUNT);
@@ -25,11 +25,24 @@ namespace zore {
 		return buttonStates[button];
 	}
 
+	//========================================================================
+	//	Mouse Listener Class
+	//========================================================================
+
+	static std::vector<MouseListener*> listeners;
+
+	MouseListener::MouseListener() {
+		listeners.push_back(this);
+	}
+
+	MouseListener::~MouseListener() {
+		auto iter = find(listeners.begin(), listeners.end(), this);
+		listeners.erase(iter);
+	}
+
 	//------------------------------------------------------------------------
 	//	GLFW Mouse Callbacks
 	//------------------------------------------------------------------------
-
-	std::vector<MouseListener*> listeners;
 
 	void Mouse::MoveCallback(GLFWwindow* windowHandle, double xpos, double ypos) {
 		glm::vec2 oldPos = position;
@@ -61,18 +74,5 @@ namespace zore {
 
 		for (MouseListener* listener : listeners)
 			listener->OnMouseScroll(static_cast<float>(xOffset), static_cast<float>(yOffset));
-	}
-
-	//========================================================================
-	//	Mouse Listener Class
-	//========================================================================
-
-	MouseListener::MouseListener() {
-		listeners.push_back(this);
-	}
-
-	MouseListener::~MouseListener() {
-		auto iter = find(listeners.begin(), listeners.end(), this);
-		listeners.erase(iter);
 	}
 }
