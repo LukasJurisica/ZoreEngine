@@ -1,6 +1,7 @@
 #include "zore/ui/EditorUI.hpp"
 #include "zore/devices/Window.hpp"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -10,17 +11,18 @@ namespace zore {
 
 	static ImGuiIO* io = nullptr;
 
-	void EditorUI::Init(bool dynamicViewports) {
+	void EditorUI::Init(bool multiViewports, bool enableDocking) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		io = &ImGui::GetIO();
 
 		io->IniFilename = "config/imgui.cfg";
 
-		io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-		//io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-		if (dynamicViewports)
-			io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+		io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;      // Enable Keyboard Controls
+		if (enableDocking)
+			io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
+		if (multiViewports)
+			io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platform Windows
 
 		io->ConfigDockingWithShift = true;
 		//io->ConfigViewportsNoAutoMerge = true;
@@ -38,9 +40,15 @@ namespace zore {
 	}
 
 	void EditorUI::Cleanup() {
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
+		if (io) {
+			ImGui_ImplOpenGL3_Shutdown();
+			ImGui_ImplGlfw_Shutdown();
+			ImGui::DestroyContext();
+		}
+	}
+
+	void EditorUI::ShowDemoWindow() {
+		ImGui::ShowDemoWindow();
 	}
 
 	void EditorUI::BeginFrame() {

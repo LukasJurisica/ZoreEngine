@@ -1,17 +1,37 @@
+# Define required cmake and c++ versions
+cmake_minimum_required(VERSION 3.24.0)
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard version")
+
+project(ZoreEngine)
+
+option(ZORE_BUILD_TESTS OFF)
+option(ZORE_BUILD_EXAMPLES OFF)
+
+list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
 file(GLOB_RECURSE ALL_FILES "src/*.cpp" "src/*.hpp")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src/zore" PREFIX "src" FILES ${ALL_FILES})
-add_library(zorEngine ${ALL_FILES})
+add_library(${PROJECT_NAME} ${ALL_FILES})
 
 configure_file("config/path_config.h.in" "config/path_config.h")
-target_include_directories(zorEngine PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/config")
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/config")
+
+# Add dependencies
+include("cmake/CPM.cmake")
+include("cmake/glm.cmake")
+include("cmake/glfw.cmake")
 
 add_subdirectory("deps/glad")
 add_subdirectory("deps/imgui")
-target_include_directories(zorEngine PUBLIC "src" "deps/include")
+target_include_directories(${PROJECT_NAME} PUBLIC "src" "deps/include")
 
-if(WIN32)
-	find_library(GLFW_LIBRARY glfw3 HINTS "${CMAKE_CURRENT_SOURCE_DIR}/deps/include/glfw")
-else()
-	find_library(GLFW_LIBRARY GLFW)
+target_link_libraries(${PROJECT_NAME} glm glad imgui glfw)
+
+if (${ZORE_BUILD_EXAMPLES})
+	if(WIN32)
+		add_executable(ZoreEngineDemoProject WIN32 "examples/01_sandbox application/main.cpp")
+	else()
+		add_executable(ZoreEngineDemoProject "examples/01_sandbox application/main.cpp")
+	endif()
+	target_link_libraries(ZoreEngineDemoProject PUBLIC ZoreEngine)
 endif()
-target_link_libraries(zorEngine glad imgui ${GLFW_LIBRARY})
