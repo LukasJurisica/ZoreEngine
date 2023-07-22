@@ -1,6 +1,7 @@
 # Define required cmake and c++ versions
-cmake_minimum_required(VERSION 3.24.0)
+cmake_minimum_required(VERSION 3.8)
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard version")
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(ZoreEngine)
 
@@ -9,6 +10,7 @@ option(ZORE_BUILD_EXAMPLES OFF)
 
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
+# Specify project files
 file(GLOB_RECURSE ALL_FILES "src/*.cpp" "src/*.hpp")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src/zore" PREFIX "src" FILES ${ALL_FILES})
 add_library(${PROJECT_NAME} ${ALL_FILES})
