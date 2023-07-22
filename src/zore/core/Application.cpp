@@ -18,7 +18,7 @@ namespace zore {
 		app->Run();
 		delete app;
 
-		Window::Cleanup();
 		EditorUI::Cleanup();
+		Window::Cleanup();
 	}
 }
