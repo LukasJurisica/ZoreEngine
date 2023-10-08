@@ -4,13 +4,20 @@
 
 namespace zore {
 
+	static constexpr uint32_t INVALID_BUFFER_ID = ~0;
+
 	//========================================================================
 	//	OpenGL Vertex Buffer Class
 	//========================================================================
 
-	VertexBuffer::VertexBuffer() : m_id(0), m_stride(0), m_index(0) {}
+	VertexBuffer::VertexBuffer(bool instanced) : m_id(INVALID_BUFFER_ID), m_stride(0), m_index(instanced ? 1 : 0) {}
 
-	VertexBuffer::VertexBuffer(const void* data, uint32_t size, uint32_t stride, bool instanced) : m_stride(stride), m_index(instanced ? 1 : 0) {
+	VertexBuffer::VertexBuffer(const VoidSpan& span, bool instanced) : m_id(0), m_stride(span.ElementSize()), m_index(instanced ? 1 : 0) {
+		glCreateBuffers(1, &m_id);
+		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
+	}
+
+	VertexBuffer::VertexBuffer(const void* data, uint32_t size, uint32_t stride, bool instanced) : m_id(0), m_stride(stride), m_index(instanced ? 1 : 0) {
 		glCreateBuffers(1, &m_id);
 		glNamedBufferData(m_id, size, data, GL_STATIC_DRAW);
 	}
@@ -21,6 +28,11 @@ namespace zore {
 
 	uint32_t VertexBuffer::GetID() const {
 		return m_id;
+	}
+
+	void VertexBuffer::Set(const VoidSpan& span) {
+		m_stride = span.ElementSize();
+		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
 	}
 
 	void VertexBuffer::Set(const void* data, uint32_t size, uint32_t stride) {
@@ -39,20 +51,18 @@ namespace zore {
 		glBindVertexBuffer(m_index, m_id, 0, m_stride);
 	}
 
-	void VertexBuffer::Bind(bool instanced) {
-		m_index = instanced ? 1 : 0;
-		glBindVertexBuffer(m_index, m_id, 0, m_stride);
-	}
-
 	//========================================================================
 	//	OpenGL Index Buffer Class
 	//========================================================================
 
-	IndexBuffer::IndexBuffer() {
+	IndexBuffer::IndexBuffer() : m_id(INVALID_BUFFER_ID) {}
+
+	IndexBuffer::IndexBuffer(const VoidSpan& span) : m_id(0) {
 		glCreateBuffers(1, &m_id);
+		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
 	}
 
-	IndexBuffer::IndexBuffer(const void* data, uint32_t size) {
+	IndexBuffer::IndexBuffer(const void* data, uint32_t size) : m_id(0) {
 		glCreateBuffers(1, &m_id);
 		glNamedBufferData(m_id, size, data, GL_STATIC_DRAW);
 	}
@@ -63,6 +73,10 @@ namespace zore {
 
 	uint32_t IndexBuffer::GetID() const {
 		return m_id;
+	}
+
+	void IndexBuffer::Set(const VoidSpan& span) {
+		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
 	}
 
 	void IndexBuffer::Set(const void* data, uint32_t size) {
@@ -83,11 +97,14 @@ namespace zore {
 	//	OpenGL Shader Storage Buffer Class
 	//========================================================================
 
-	ShaderStorageBuffer::ShaderStorageBuffer() : m_index(0) {
+	ShaderStorageBuffer::ShaderStorageBuffer() : m_id(INVALID_BUFFER_ID), m_index(0) {}
+
+	ShaderStorageBuffer::ShaderStorageBuffer(const VoidSpan& span) : m_id(0), m_index(0) {
 		glCreateBuffers(1, &m_id);
+		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
 	}
 
-	ShaderStorageBuffer::ShaderStorageBuffer(const void* data, uint32_t size) : m_index(0) {
+	ShaderStorageBuffer::ShaderStorageBuffer(const void* data, uint32_t size) : m_id(0), m_index(0){
 		glCreateBuffers(1, &m_id);
 		glNamedBufferData(m_id, size, data, GL_STATIC_DRAW);
 	}
@@ -98,6 +115,10 @@ namespace zore {
 
 	uint32_t ShaderStorageBuffer::GetID() const {
 		return m_id;
+	}
+
+	void ShaderStorageBuffer::Set(const VoidSpan& span) {
+		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
 	}
 
 	void ShaderStorageBuffer::Set(const void* data, uint32_t size) {
@@ -123,11 +144,14 @@ namespace zore {
 	//	OpenGL Uniform Buffer Class
 	//========================================================================
 
-	UniformBuffer::UniformBuffer() : m_index(0) {
+	UniformBuffer::UniformBuffer() : m_id(INVALID_BUFFER_ID), m_index(0) {}
+
+	UniformBuffer::UniformBuffer(const VoidSpan& span) : m_id(0), m_index(0) {
 		glCreateBuffers(1, &m_id);
+		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
 	}
 
-	UniformBuffer::UniformBuffer(const void* data, uint32_t size) : m_index(0) {
+	UniformBuffer::UniformBuffer(const void* data, uint32_t size) : m_index(0), m_id(0) {
 		glCreateBuffers(1, &m_id);
 		glNamedBufferData(m_id, size, data, GL_STATIC_DRAW);
 	}
@@ -138,6 +162,10 @@ namespace zore {
 
 	uint32_t UniformBuffer::GetID() const {
 		return m_id;
+	}
+
+	void UniformBuffer::Set(const VoidSpan& span) {
+		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
 	}
 
 	void UniformBuffer::Set(const void* data, uint32_t size) {

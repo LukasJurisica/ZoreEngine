@@ -1,5 +1,6 @@
 #pragma once
 #include "zore/utils/DataTypes.hpp"
+#include "zore/utils/span.hpp"
 
 namespace zore {
 
@@ -9,7 +10,8 @@ namespace zore {
 
 	class VertexBuffer {
 	public:
-		VertexBuffer();
+		VertexBuffer(bool instanced = false);
+		VertexBuffer(const VoidSpan& span, bool instanced = false);
 		VertexBuffer(const void* data, uint32_t size, uint32_t stride, bool instanced = false);
 		VertexBuffer(const VertexBuffer&) = delete;
 		VertexBuffer(VertexBuffer&&) = delete;
@@ -18,10 +20,10 @@ namespace zore {
 		~VertexBuffer();
 
 		uint32_t GetID() const;
+		void Set(const VoidSpan& span);
 		void Set(const void* data, uint32_t size, uint32_t stride = 0u);
 		void Update(const void* data, uint32_t size, uint32_t offset = 0u);
 		void Bind() const;
-		void Bind(bool instanced);
 
 	private:
 		uint32_t m_id;
@@ -36,6 +38,7 @@ namespace zore {
 	class IndexBuffer {
 	public:
 		IndexBuffer();
+		IndexBuffer(const VoidSpan& span);
 		IndexBuffer(const void* data, uint32_t size);
 		IndexBuffer(const IndexBuffer&) = delete;
 		IndexBuffer(IndexBuffer&&) = delete;
@@ -44,6 +47,7 @@ namespace zore {
 		~IndexBuffer();
 
 		uint32_t GetID() const;
+		void Set(const VoidSpan& span);
 		void Set(const void* data, uint32_t size);
 		void Update(const void* data, uint32_t size, uint32_t offset = 0u);
 		void Bind() const;
@@ -59,6 +63,7 @@ namespace zore {
 	class ShaderStorageBuffer {
 	public:
 		ShaderStorageBuffer();
+		ShaderStorageBuffer(const VoidSpan& span);
 		ShaderStorageBuffer(const void* data, uint32_t size);
 		ShaderStorageBuffer(const ShaderStorageBuffer&) = delete;
 		ShaderStorageBuffer(ShaderStorageBuffer&&) = delete;
@@ -67,6 +72,7 @@ namespace zore {
 		~ShaderStorageBuffer();
 
 		uint32_t GetID() const;
+		void Set(const VoidSpan& span);
 		void Set(const void* data, uint32_t size);
 		void Update(const void* data, uint32_t size, uint32_t offset);
 		void Bind() const;
@@ -84,6 +90,7 @@ namespace zore {
 	class UniformBuffer {
 	public:
 		UniformBuffer();
+		UniformBuffer(const VoidSpan& span);
 		UniformBuffer(const void* data, uint32_t size);
 		UniformBuffer(const UniformBuffer&) = delete;
 		UniformBuffer(UniformBuffer&&) = delete;
@@ -92,6 +99,7 @@ namespace zore {
 		~UniformBuffer();
 
 		uint32_t GetID() const;
+		void Set(const VoidSpan& span);
 		void Set(const void* data, uint32_t size);
 		void Update(const void* data, uint32_t size, uint32_t offset = 0u);
 		void Bind() const;
