@@ -80,7 +80,7 @@ namespace zore {
 	}
 
 	std::string FileManager::GetAbsolutePath(const std::string& filename) {
-		return std::filesystem::current_path().u8string() + filename;
+		return std::filesystem::current_path().generic_string() + filename;
 	}
 
 	void FileManager::EnsureDir(const std::string& path) {

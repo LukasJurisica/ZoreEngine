@@ -12,7 +12,7 @@ namespace zore {
 
 	VertexBuffer::VertexBuffer(bool instanced) : m_id(INVALID_BUFFER_ID), m_stride(0), m_index(instanced ? 1 : 0) {}
 
-	VertexBuffer::VertexBuffer(const VoidSpan& span, bool instanced) : m_id(0), m_stride(span.ElementSize()), m_index(instanced ? 1 : 0) {
+	VertexBuffer::VertexBuffer(const VoidSpan& span, bool instanced) : m_id(0), m_stride(static_cast<uint32_t>(span.ElementSize())), m_index(instanced ? 1 : 0) {
 		glCreateBuffers(1, &m_id);
 		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
 	}
@@ -31,7 +31,7 @@ namespace zore {
 	}
 
 	void VertexBuffer::Set(const VoidSpan& span) {
-		m_stride = span.ElementSize();
+		m_stride = static_cast<uint32_t>(span.ElementSize());
 		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
 	}
 

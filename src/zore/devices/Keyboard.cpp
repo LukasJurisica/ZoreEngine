@@ -28,6 +28,8 @@ namespace zore {
 			return keyStates[KEY_L_ALT] || keyStates[KEY_R_ALT];
 		case zore::Keyboard::KeyMod::SHIFT:
 			return keyStates[KEY_L_SHIFT] || keyStates[KEY_R_SHIFT];
+		default:
+			return false;
 		}
 	}
 
