@@ -11,10 +11,8 @@ namespace zore {
 	//========================================================================
 
 	class Window {
+		friend class Application;
 	public:
-		static void Init(int width, int height);
-		static void Cleanup();
-
 		static void Update();
 		static bool ShouldClose();
 		static void SetTitle(const char* title);
@@ -38,6 +36,9 @@ namespace zore {
 		static glm::ivec2 GetNativeResolution(int monitorIndex = 0);
 
 	private:
+		static void Init(int width, int height);
+		static void Cleanup();
+
 		static void ErrorCallback(int error, const char* description);
 		static void ResizeCallback(GLFWwindow* windowHandle, int width, int height);
 		static void MoveCallback(GLFWwindow* windowHandle, int xpos, int ypos);

@@ -3,6 +3,7 @@
 #include "zore/devices/Mouse.hpp"
 #include "zore/graphics/RenderEngine.hpp"
 #include "zore/debug/Debug.hpp"
+#include "zore/debug/Profiler.hpp"
 
 #include <glfw/glfw3.h>
 
@@ -79,6 +80,7 @@ namespace zore {
 	void Window::Update() {
 		glfwPollEvents();
 		glfwSwapBuffers(windowHandle);
+		FrameMark;
 	}
 
 	bool Window::ShouldClose() {

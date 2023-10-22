@@ -4,6 +4,7 @@ project(ZoreEngine)
 
 option(ZORE_BUILD_TESTS OFF)
 option(ZORE_BUILD_EXAMPLES OFF)
+option(ZORE_BUILD_PROFILER ON)
 
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -22,8 +23,13 @@ include("cmake/glm.cmake")
 include("cmake/glfw.cmake")
 add_subdirectory("deps/glad")
 add_subdirectory("deps/imgui")
+set(ZORE_LIBRARIES glm glad imgui glfw)
+if (${ZORE_BUILD_PROFILER})
+	include ("cmake/tracy.cmake")
+	set(ZORE_LIBRARIES ${ZORE_LIBRARIES} TracyClient)
+endif()
 target_include_directories(${PROJECT_NAME} PUBLIC "src" "deps/include")
-target_link_libraries(${PROJECT_NAME} glm glad imgui glfw)
+target_link_libraries(${PROJECT_NAME} ${ZORE_LIBRARIES})
 
 if (${ZORE_BUILD_EXAMPLES})
 	if(WIN32)
