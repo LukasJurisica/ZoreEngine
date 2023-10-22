@@ -1,7 +1,4 @@
-# Define required cmake and c++ versions
 cmake_minimum_required(VERSION 3.8)
-set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard version")
-set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(ZoreEngine)
 
@@ -17,16 +14,15 @@ add_library(${PROJECT_NAME} ${ALL_FILES})
 
 configure_file("config/path_config.h.in" "config/path_config.h")
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/config")
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20)
 
 # Add dependencies
 include("cmake/CPM.cmake")
 include("cmake/glm.cmake")
 include("cmake/glfw.cmake")
-
 add_subdirectory("deps/glad")
 add_subdirectory("deps/imgui")
 target_include_directories(${PROJECT_NAME} PUBLIC "src" "deps/include")
-
 target_link_libraries(${PROJECT_NAME} glm glad imgui glfw)
 
 if (${ZORE_BUILD_EXAMPLES})

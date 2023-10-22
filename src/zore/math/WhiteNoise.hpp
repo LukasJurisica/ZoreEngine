@@ -92,21 +92,21 @@ namespace zm {
 		//  Utility Functions
 		//========================================================================
 
-		static inline void PrimeSquareLattice(int& x1, int& y1, int& x2, int& y2) {
-			x1 *= PrimeX;
-			y1 *= PrimeY;
-			x2 = x1 + PrimeX;
-			y2 = y1 + PrimeY;
-		}
+		//static inline void PrimeSquareLattice(int& x1, int& y1, int& x2, int& y2) {
+		//	x1 *= PrimeX;
+		//	y1 *= PrimeY;
+		//	x2 = x1 + PrimeX;
+		//	y2 = y1 + PrimeY;
+		//}
 
-		static inline void PrimeCubeLattice(int& x1, int& y1, int& z1, int& x2, int& y2, int& z2) {
-			x1 *= PrimeX;
-			y1 *= PrimeY;
-			z1 *= PrimeZ;
-			x2 = x1 + PrimeX;
-			y2 = y1 + PrimeY;
-			z2 = y1 + PrimeZ;
-		}
+		//static inline void PrimeCubeLattice(int& x1, int& y1, int& z1, int& x2, int& y2, int& z2) {
+		//	x1 *= PrimeX;
+		//	y1 *= PrimeY;
+		//	z1 *= PrimeZ;
+		//	x2 = x1 + PrimeX;
+		//	y2 = y1 + PrimeY;
+		//	z2 = y1 + PrimeZ;
+		//}
 
 		static inline uint32_t Hash(int xPrimed, int seed) {
 			return (xPrimed ^ seed) * 668265261;
@@ -142,8 +142,7 @@ namespace zm {
 		static inline float Eval1(float p) {
 			p = zm::Fract(p * .1031f);
 			p *= p + 33.33f;
-			p *= p + p;
-			return zm::Fract(p);
+			return zm::Fract((p + p) * p);
 		}
 
 		static inline float Eval1(glm::vec2 p) {

@@ -1,5 +1,4 @@
-bin/
+build/
 config/
-research/
 !config/path_config.h.in
 ZoreEngine.lnk

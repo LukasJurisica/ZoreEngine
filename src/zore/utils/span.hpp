@@ -17,14 +17,14 @@ namespace zore {
 		VoidSpan(std::vector<T>& data) : m_data(data.data()), m_count(data.size()), m_elementSize(sizeof(T)) {}
 		~VoidSpan() = default;
 
-		void* Data() const;
-		size_t Size() const;
-		size_t SizeBytes() const;
-		size_t ElementSize() const;
+		void* Data() const { return m_data; };
+		size_t Size() const { return m_count; };
+		size_t SizeBytes() const { return m_count * m_elementSize; };
+		size_t ElementSize() const { return m_elementSize; };
 
 	private:
 		void* m_data;
-		size_t m_elementSize;
 		size_t m_count;
+		size_t m_elementSize;
 	};
 }

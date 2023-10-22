@@ -3,6 +3,12 @@
 #include <zore/graphics/RenderEngine.hpp>
 #include <zore/ui/EditorUI.hpp>
 
+#include <zore/debug/Debug.hpp>
+
+#include <chrono>
+#include <random>
+#include <numeric>
+
 namespace zore {
 
 	class DemoApplication : public Application {
