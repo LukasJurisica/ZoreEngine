@@ -15,11 +15,12 @@ namespace zore {
 	class Keyboard {
 		friend class Window;
 	public:
-		enum class KeyMod { CTRL, ALT, SHIFT };
+		enum class KeyMod { SHIFT = 1, CTRL = 2, ALT = 4 };
 
 	public:
 		static bool GetKey(int key);
 		static bool GetKeyMod(KeyMod keymod);
+		static bool GetKeyMod(int mods, KeyMod keymod);
 		static void ClearState();
 
 	private:
