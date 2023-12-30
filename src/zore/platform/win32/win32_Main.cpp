@@ -7,10 +7,11 @@
 
 int WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
 	DEBUG_ONLY(zore::Console console);
+	int return_code = EXIT_FAILURE;
 
 	try {
 		zore::Application::Init();
-		return EXIT_SUCCESS;
+		return_code = EXIT_SUCCESS;
 	}
 	catch (const zore::Exception& e) {
 		MessageBox(nullptr, e.what(), e.GetType(), MB_OK | MB_ICONEXCLAMATION);
@@ -21,6 +22,7 @@ int WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPS
 	catch (...) {
 		MessageBox(nullptr, "No details available", "Unknown Exception", MB_OK | MB_ICONEXCLAMATION);
 	}
-	
-	return EXIT_FAILURE;
+
+	zore::Application::Cleanup();
+	return return_code;
 }

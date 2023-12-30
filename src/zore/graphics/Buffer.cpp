@@ -31,7 +31,7 @@ namespace zore {
 	}
 
 	void VertexBuffer::Set(const VoidSpan& span) {
-		Set(span.Data(), span.SizeBytes(), static_cast<uint32_t>(span.ElementSize()));
+		Set(span.Data(), static_cast<uint32_t>(span.SizeBytes()), static_cast<uint32_t>(span.ElementSize()));
 	}
 
 	void VertexBuffer::Set(const void* data, uint32_t size, uint32_t stride) {
@@ -78,7 +78,7 @@ namespace zore {
 	}
 
 	void IndexBuffer::Set(const VoidSpan& span) {
-		Set(span.Data(), span.SizeBytes());
+		Set(span.Data(), static_cast<uint32_t>(span.SizeBytes()));
 	}
 
 	void IndexBuffer::Set(const void* data, uint32_t size) {
@@ -123,7 +123,7 @@ namespace zore {
 	}
 
 	void ShaderStorageBuffer::Set(const VoidSpan& span) {
-		Set(span.Data(), span.SizeBytes());
+		Set(span.Data(), static_cast<uint32_t>(span.SizeBytes()));
 	}
 
 	void ShaderStorageBuffer::Set(const void* data, uint32_t size) {
@@ -173,7 +173,7 @@ namespace zore {
 	}
 
 	void UniformBuffer::Set(const VoidSpan& span) {
-		Set(span.Data(), span.SizeBytes());
+		Set(span.Data(), static_cast<uint32_t>(span.SizeBytes()));
 	}
 
 	void UniformBuffer::Set(const void* data, uint32_t size) {

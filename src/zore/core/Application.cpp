@@ -6,19 +6,23 @@
 
 namespace zore {
 
+	static bool initialized = false;
+
 	void Application::Init() {
-		static bool initialized = false;
-		ENSURE(!initialized, "The function Application::Init() should not be invoked by the client application");
+		if (!initialized) {
+			initialized = true;
+			FileManager::Init();
+			Window::Init(0, 0);
 
-		initialized = true;
-		FileManager::Init();
-		Window::Init(0, 0);
+			Application* app = Create();
+			app->Run();
+			delete app;
+		}
+	}
 
-		Application* app = Create();
-		app->Run();
-		delete app;
-
+	void Application::Cleanup() {
 		EditorUI::Cleanup();
 		Window::Cleanup();
+		initialized = false;
 	}
 }

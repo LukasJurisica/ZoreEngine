@@ -8,15 +8,14 @@ namespace zore {
 	//	Window Exception
 	//========================================================================
 
-	class WindowException : public Exception {
+	class WindowsException : public Exception {
 	public:
-		WindowException(int line, const char* file, DWORD dw);
-		~WindowException() = default;
+		WindowsException(int line, const char* file, DWORD error_code);
+		~WindowsException() = default;
 
-	private:
-		static std::string GetErrorString(DWORD dw);
+		static std::string GetErrorString(DWORD error_code);
 	};
 }
 
-#define WND_ERROR(dw) zore::WindowException(__LINE__, __FILE__, dw)
-#define WND_LAST_ERROR() zore::WindowException(__LINE__, __FILE__, GetLastError())
+#define WND_ERROR(error_code) zore::WindowsException(__LINE__, __FILE__, error_code)
+#define WND_LAST_ERROR() zore::WindowsException(__LINE__, __FILE__, GetLastError())

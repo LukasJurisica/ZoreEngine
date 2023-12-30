@@ -1,8 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <array>
-
 namespace zore {
 
 	class VoidSpan {
@@ -11,10 +8,17 @@ namespace zore {
 		VoidSpan(T(&data)[N]) : m_data(data), m_count(N), m_elementSize(sizeof(T)) {}
 		template<class T>
 		VoidSpan(T* data, size_t size) : m_data(data), m_count(size), m_elementSize(sizeof(T)) {}
+#if defined(_ARRAY_)
 		template<class T, size_t N>
 		VoidSpan(std::array<T, N>& data) : m_data(data.data()), m_count(N), m_elementSize(sizeof(T)) {}
+#endif
+#if defined(_VECTOR_)
 		template<class T>
 		VoidSpan(std::vector<T>& data) : m_data(data.data()), m_count(data.size()), m_elementSize(sizeof(T)) {}
+#endif
+#if defined(_STRING_)
+		VoidSpan(std::string& data) : m_data(data.data()), m_count(data.size()), m_elementSize(1) {}
+#endif
 		~VoidSpan() = default;
 
 		void* Data() const { return m_data; };

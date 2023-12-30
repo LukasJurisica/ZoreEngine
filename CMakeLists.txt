@@ -24,10 +24,18 @@ include("cmake/glfw.cmake")
 add_subdirectory("deps/glad")
 add_subdirectory("deps/imgui")
 set(ZORE_LIBRARIES glm glad imgui glfw)
+
+# Add Tracy as a dependency if the ZORE_BUILD_PROFILER option is set
 if (${ZORE_BUILD_PROFILER})
 	include ("cmake/tracy.cmake")
 	set(ZORE_LIBRARIES ${ZORE_LIBRARIES} TracyClient)
 endif()
+# Link the Winsock2 library if we are compiling for windows
+if (WIN32)
+	set(WS2_32_LIBRARY ws2_32)
+	set(ZORE_LIBRARIES ${ZORE_LIBRARIES} ${WS2_32_LIBRARY})
+endif()
+
 target_include_directories(${PROJECT_NAME} PUBLIC "src" "deps/include")
 target_link_libraries(${PROJECT_NAME} ${ZORE_LIBRARIES})
 

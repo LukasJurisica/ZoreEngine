@@ -12,7 +12,7 @@ namespace zore {
 	static uint32_t clearMode = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 	static uint32_t topology = GL_TRIANGLES;
 	static uint32_t indexType = GL_UNSIGNED_INT;
-	static uint32_t indexSize = sizeof(uint32_t);
+	static uint64_t indexSize = sizeof(uint32_t);
 
 	//========================================================================
 	//	Render Engine Interface
@@ -32,8 +32,8 @@ namespace zore {
 	}
 
 	void RenderEngine::SetIndexType(IndexType type) {
-		static const uint32_t IndexTypeToGLIndexType[] = { GL_UNSIGNED_SHORT, GL_UNSIGNED_INT };
-		static const uint32_t IndexTypeToIndexSize[] = { sizeof(uint16_t), sizeof(uint32_t) };
+		static const uint64_t IndexTypeToGLIndexType[] = { GL_UNSIGNED_SHORT, GL_UNSIGNED_INT };
+		static const uint64_t IndexTypeToIndexSize[] = { sizeof(uint16_t), sizeof(uint32_t) };
 		indexType = IndexTypeToGLIndexType[static_cast<uint32_t>(type)];
 		indexSize = IndexTypeToIndexSize[static_cast<uint32_t>(type)];
 	}

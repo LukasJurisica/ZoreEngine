@@ -16,6 +16,8 @@ namespace zore {
 		static void Update();
 		static bool ShouldClose();
 		static void SetTitle(const char* title);
+		static void PreSetTransparent(bool value);
+		static void SetResizable(bool value);
 		static void SetMaximized(bool value);
 		static void SetBorderless(bool value);
 		static void SetFullscreen(bool value);
@@ -37,6 +39,7 @@ namespace zore {
 
 	private:
 		static void Init(int width, int height);
+		static void Create();
 		static void Cleanup();
 
 		static void ErrorCallback(int error, const char* description);

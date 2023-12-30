@@ -29,6 +29,7 @@ namespace zore {
 		case zore::Keyboard::KeyMod::SHIFT:
 			return keyStates[KEY_L_SHIFT] || keyStates[KEY_R_SHIFT];
 		}
+		return false;
 	}
 
 	bool Keyboard::GetKeyMod(int mods, KeyMod keymod) {
