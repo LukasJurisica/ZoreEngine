@@ -24,22 +24,27 @@ namespace zore {
 		static void MoveCallback(GLFWwindow* windowHandle, double xpos, double ypos);
 		static void ButtonCallback(GLFWwindow* windowHandle, int button, int action, int mods);
 		static void ScrollCallback(GLFWwindow* windowHandle, double xoffset, double yoffset);
+
+		//========================================================================
+		//	Mouse Listener Class
+		//========================================================================
+
+	public:
+		class Listener {
+			friend class Mouse;
+		protected:
+			Listener(int priority = 0);
+			~Listener();
+
+		private:
+			virtual bool OnMouseMove(float nx, float ny, float dx, float dy) { return false; };
+			virtual bool OnMousePress(int button) { return false; };
+			virtual bool OnMouseRelease(int button) { return false; };
+			virtual bool OnMouseScroll(float dx, float dy) { return false; };
+
+		private:
+			int m_priority;
+		};
 	};
 
-	//========================================================================
-	//	Mouse Listener Class
-	//========================================================================
-
-	class MouseListener {
-		friend class Mouse;
-	protected:
-		MouseListener();
-		~MouseListener();
-
-	private:
-		virtual void OnMouseMove(float nx, float ny, float dx, float dy) {};
-		virtual void OnMousePress(int button) {};
-		virtual void OnMouseRelease(int button) {};
-		virtual void OnMouseScroll(float dx, float dy) {};
-	};
 }

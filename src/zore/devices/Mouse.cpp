@@ -25,24 +25,11 @@ namespace zore {
 		return buttonStates[button];
 	}
 
-	//========================================================================
-	//	Mouse Listener Class
-	//========================================================================
-
-	static std::vector<MouseListener*> listeners;
-
-	MouseListener::MouseListener() {
-		listeners.push_back(this);
-	}
-
-	MouseListener::~MouseListener() {
-		auto iter = find(listeners.begin(), listeners.end(), this);
-		listeners.erase(iter);
-	}
-
 	//------------------------------------------------------------------------
 	//	GLFW Mouse Callbacks
 	//------------------------------------------------------------------------
+
+	static std::vector<Mouse::Listener*> listeners;
 
 	void Mouse::MoveCallback(GLFWwindow* windowHandle, double xpos, double ypos) {
 		glm::vec2 oldPos = position;
@@ -51,8 +38,9 @@ namespace zore {
 		if (EditorUI::WantsMouse())
 			return;
 
-		for (MouseListener* listener : listeners)
-			listener->OnMouseMove(position.x, position.y, position.x - oldPos.x, position.y - oldPos.y);
+		auto iter = listeners.begin();
+		while (iter != listeners.end() && !(*iter)->OnMouseMove(position.x, position.y, position.x - oldPos.x, position.y - oldPos.y))
+			iter++;
 	}
 
 	void Mouse::ButtonCallback(GLFWwindow* windowHandle, int button, int action, int mods) {
@@ -60,19 +48,36 @@ namespace zore {
 		if (EditorUI::WantsMouse())
 			return;
 
+		auto iter = listeners.begin();
 		if (action == GLFW_PRESS)
-			for (MouseListener* listener : listeners)
-				listener->OnMousePress(button);
+			while (iter != listeners.end() && !(*iter)->OnMousePress(button))
+				iter++;
 		else
-			for (MouseListener* listener : listeners)
-				listener->OnMouseRelease(button);
+			while (iter != listeners.end() && !(*iter)->OnMouseRelease(button))
+				iter++;
 	}
 
 	void Mouse::ScrollCallback(GLFWwindow* windowHandle, double xOffset, double yOffset) {
 		if (EditorUI::WantsMouse())
 			return;
 
-		for (MouseListener* listener : listeners)
-			listener->OnMouseScroll(static_cast<float>(xOffset), static_cast<float>(yOffset));
+		auto iter = listeners.begin();
+		while (iter != listeners.end() && !(*iter)->OnMouseScroll(static_cast<float>(xOffset), static_cast<float>(yOffset)))
+			iter++;
+	}
+
+	//========================================================================
+	//	Mouse Listener Class
+	//========================================================================
+
+	Mouse::Listener::Listener(int priority) : m_priority(priority) {
+		auto iter = listeners.begin();
+		while (iter != listeners.end() && (*iter)->m_priority > m_priority)
+			iter++;
+		listeners.insert(iter, this);
+	}
+
+	Mouse::Listener::~Listener() {
+		listeners.erase(std::find(listeners.begin(), listeners.end(), this));
 	}
 }

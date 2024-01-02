@@ -1,6 +1,6 @@
 #pragma once
 
-#include "zore/utils/span.hpp"
+#include "zore/utils/Span.hpp"
 
 #include <string>
 #include <vector>

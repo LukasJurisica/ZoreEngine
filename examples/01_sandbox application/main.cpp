@@ -28,11 +28,11 @@ namespace zore {
 			Timer t;
 			int frame_count = 0;
 
-			Logger::Log("Hostname: " + Socket::GetHostName());
+			//Logger::Log("Hostname: " + Socket::GetHostName());
 			//PassiveSocket ps(3000, Protocol::TCP);
 
-			std::string html = Request::Make("https://info.cern.ch/", HTTPMethod::GET);
-			Logger::Log(html);
+			//std::string html = Request::Make("https://info.cern.ch/", HTTPMethod::GET);
+			//Logger::Log(html);
 
 			//ActiveSocket as("127.0.0.1", 3000, Protocol::TCP);
 			//std::vector<ActiveSocket> new_connections;

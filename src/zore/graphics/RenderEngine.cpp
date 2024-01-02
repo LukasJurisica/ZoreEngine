@@ -32,7 +32,7 @@ namespace zore {
 	}
 
 	void RenderEngine::SetIndexType(IndexType type) {
-		static const uint64_t IndexTypeToGLIndexType[] = { GL_UNSIGNED_SHORT, GL_UNSIGNED_INT };
+		static const uint32_t IndexTypeToGLIndexType[] = { GL_UNSIGNED_SHORT, GL_UNSIGNED_INT };
 		static const uint64_t IndexTypeToIndexSize[] = { sizeof(uint16_t), sizeof(uint32_t) };
 		indexType = IndexTypeToGLIndexType[static_cast<uint32_t>(type)];
 		indexSize = IndexTypeToIndexSize[static_cast<uint32_t>(type)];

@@ -26,21 +26,25 @@ namespace zore {
 	private:
 		static void KeyCallback(GLFWwindow* windowHandle, int key, int scancode, int action, int mods);
 		static void CharCallback(GLFWwindow* windowHandle, unsigned int code);
-	};
 
-	//========================================================================
-	//	Keyboard Listener Class
-	//========================================================================
+		//========================================================================
+		//	Keyboard Listener Class
+		//========================================================================
 
-	class KeyListener {
-		friend class Keyboard;
-	protected:
-		KeyListener();
-		~KeyListener();
+	public:
+		class Listener {
+			friend class Keyboard;
+		protected:
+			Listener(int priority = 0);
+			~Listener();
 
-	private:
-		virtual void OnKeyPress(int key, int mods) {};
-		virtual void OnKeyRelease(int key) {};
-		virtual void OnChar(char code) {};
+		private:
+			virtual bool OnKeyPress(int key, int mods) { return false; };
+			virtual bool OnKeyRelease(int key) { return false; };
+			virtual bool OnChar(char code) { return false; };
+
+		private:
+			int m_priority;
+		};
 	};
 }

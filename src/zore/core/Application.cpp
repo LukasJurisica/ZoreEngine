@@ -1,5 +1,5 @@
 #include "zore/core/Application.hpp"
-#include "zore/utils/FileManager.hpp"
+#include "zore/core/FileManager.hpp"
 #include "zore/devices/Window.hpp"
 #include "zore/ui/EditorUI.hpp"
 #include "zore/debug/Debug.hpp"

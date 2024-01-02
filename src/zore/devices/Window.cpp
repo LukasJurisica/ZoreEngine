@@ -199,7 +199,7 @@ namespace zore {
 	//	Window Callback Functions
 	//------------------------------------------------------------------------
 
-	std::vector<WindowListener*> listeners;
+	std::vector<Window::Listener*> listeners;
 
 	void Window::ErrorCallback(int error, const char* description) {
 		Logger::Error("GLFW Error: (" + std::to_string(error) + "): " + description);
@@ -207,19 +207,19 @@ namespace zore {
 
 	void Window::ResizeCallback(GLFWwindow* window_handle, int width, int height) {
 		s_size = { width, height };
-		for (WindowListener* listener : listeners)
+		for (Listener* listener : listeners)
 			listener->OnWindowResize(width, height, GetAspectRatio());
 	}
 	void Window::MoveCallback(GLFWwindow* window_handle, int xpos, int ypos) {
 		//if (!window->fullscreen)
 		s_position = { xpos, ypos };
-		for (WindowListener* listener : listeners)
+		for (Listener* listener : listeners)
 			listener->OnWindowMove(xpos, ypos);
 	}
 
 	void Window::FocusCallback(GLFWwindow* window_handle, int focused) {
 		// focused = true means window gained focus
-		for (WindowListener* listener : listeners)
+		for (Listener* listener : listeners)
 			listener->OnWindowFocus(focused);
 	}
 
@@ -227,11 +227,11 @@ namespace zore {
 	//	Window Listener Class
 	//========================================================================
 
-	WindowListener::WindowListener() {
+	Window::Listener::Listener() {
 		listeners.push_back(this);
 	}
 
-	WindowListener::~WindowListener() {
+	Window::Listener::~Listener() {
 		auto iter = find(listeners.begin(), listeners.end(), this);
 		listeners.erase(iter);
 	}
