@@ -84,6 +84,9 @@ namespace zore {
 		Texture2D& SetSize(uint32_t width, uint32_t height);
 		Texture2D& SetSize(uint32_t width, uint32_t height, Texture::Format format);
 		void Set(const std::string& filename, Texture::Format format = Texture::Format::RGBA);
+
+		uint32_t GetWidth() { return m_width; }
+		uint32_t GetHeight() { return m_height; }
 	
 	private:
 		void Init(uint32_t width, uint32_t height);
@@ -112,6 +115,10 @@ namespace zore {
 		Texture2DArray& SetSize(uint32_t width, uint32_t height, uint32_t layers);
 		Texture2DArray& SetSize(uint32_t width, uint32_t height, uint32_t layers, Texture::Format format);
 		void Set(const std::vector<std::string>& filenames, const std::string& root = "assets/", Texture::Format format = Texture::Format::RGBA);
+
+		uint32_t GetWidth() { return m_width; }
+		uint32_t GetHeight() { return m_height; }
+		uint32_t GetCount() { return m_layers; }
 
 	private:
 		void Init(uint32_t width, uint32_t height, uint32_t layers);

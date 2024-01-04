@@ -10,11 +10,11 @@ namespace zore {
 		Logger::Log("HTTP GET request made to: " + url);
 
 		// Determine if http(s):// is included in the url
-		int offset = url.find_first_of("://");
+		int offset = static_cast<int>(url.find_first_of("://"));
 		offset = (offset == url.npos) ? 0 : offset + 3;
 
 		// Split the url into a domain and page
-		int page_index = url.find_first_of("/", offset);
+		int page_index = static_cast<int>(url.find_first_of("/", offset));
 		std::string domain = url.substr(offset, page_index - offset);
 		std::string page = (page_index == url.npos) ? "/" : url.substr(page_index);
 
@@ -52,5 +52,6 @@ namespace zore {
 
 			return result;
 		}
+		return "";
 	}
 }
