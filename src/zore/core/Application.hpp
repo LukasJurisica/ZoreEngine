@@ -9,7 +9,7 @@ namespace zore {
 		static void Cleanup();
 
 	protected:
-		Application() = default;
+		Application(bool transparent_window = false);
 		virtual ~Application() = default;
 
 	private:

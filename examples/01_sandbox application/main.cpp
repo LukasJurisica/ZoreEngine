@@ -13,17 +13,19 @@
 #include <random>
 #include <numeric>
 
+#include <zore/structures/CirclularBuffer.hpp>
+
 namespace zore {
 
 	class DemoApplication : public Application {
 	public:
 		DemoApplication() {
-			EditorUI::Init(false);
+			EditorUI::Init();
 			RenderEngine::SetVSync(false);
 		}
 
 		void Run() {
-			RenderEngine::SetClearColour(1.0, 0.0, 0.0, 0.0);
+			RenderEngine::SetClearColour(1.f, 0.f, 0.f, 1.f);
 
 			Timer t;
 			int frame_count = 0;
@@ -42,10 +44,9 @@ namespace zore {
 			while (!Window::ShouldClose()) {
 				RenderEngine::Clear();
 
-				if (t.DeltaTime(false) > 1.f) {
-					//Logger::Log(frame_count);
+				if (t.TimeHasElapsed(1.f, true)) {
+					Logger::Log(frame_count);
 					frame_count = 0;
-					t.DeltaTime(true);
 				}
 				frame_count++;
 
@@ -61,7 +62,6 @@ namespace zore {
 	};
 
 	Application* Application::Create() {
-		Window::PreSetTransparent(true);
 		return new DemoApplication;
 	}
 }

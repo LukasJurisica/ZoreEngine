@@ -16,7 +16,6 @@ namespace zore {
 		static void Update();
 		static bool ShouldClose();
 		static void SetTitle(const char* title);
-		static void PreSetTransparent(bool value);
 		static void SetResizable(bool value);
 		static void SetMaximized(bool value);
 		static void SetBorderless(bool value);
@@ -38,7 +37,7 @@ namespace zore {
 		static glm::ivec2 GetNativeResolution(int monitorIndex = 0);
 
 	private:
-		static void Init(int width, int height);
+		static void Init(bool transparent);
 		static void Create();
 		static void Cleanup();
 

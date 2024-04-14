@@ -6,6 +6,14 @@ option(ZORE_BUILD_TESTS OFF)
 option(ZORE_BUILD_EXAMPLES OFF)
 option(ZORE_BUILD_PROFILER ON)
 
+# Detects whether this is a top-level project
+get_directory_property(HAS_PARENT PARENT_DIRECTORY)
+if(HAS_PARENT)
+    set(TOPLEVEL_PROJECT OFF)
+else()
+    set(TOPLEVEL_PROJECT ON)
+endif()
+
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # Specify project files
@@ -39,7 +47,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC "src" "deps/include")
 target_link_libraries(${PROJECT_NAME} ${ZORE_LIBRARIES})
 
-if (${ZORE_BUILD_EXAMPLES})
+if (${ZORE_BUILD_EXAMPLES} OR TOPLEVEL_PROJECT)
 	if(WIN32)
 		add_executable(ZoreEngineDemoProject WIN32 "examples/01_sandbox application/main.cpp")
 	else()

@@ -8,12 +8,15 @@ namespace zore {
 
 	static bool initialized = false;
 
+	Application::Application(bool transparent_window) {
+		Window::Init(transparent_window);
+	}
+
 	void Application::Init() {
 		if (!initialized) {
 			initialized = true;
 			FileManager::Init();
-			Window::Init(0, 0);
-
+			
 			Application* app = Create();
 			app->Run();
 			delete app;

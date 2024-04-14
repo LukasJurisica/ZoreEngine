@@ -9,8 +9,6 @@ namespace zore {
 	//  Platform Agnostic Font Class
 	//========================================================================
 
-	class Texture2DArray;
-
 	class Font {
 	public:
 		Font(const std::string& name);

@@ -18,22 +18,18 @@ namespace zore {
 	static GLFWwindow* s_window_handle = nullptr;
 	static bool s_fullscreen = false;
 	static bool s_cursor_hidden = false;
-
 	static bool s_transparent = false;
 
-	void Window::Init(int width, int height) {
+	void Window::Init(bool transparent) {
 		ENSURE(!s_window_handle, "The function Window::Init() should not be invoked by the client application.");
 		// Initialize GLFW
 		ENSURE(glfwInit(), "Failed to initialize GLFW.");
 		glfwSetErrorCallback(ErrorCallback);
 		Logger::Info("Window Initialization Complete.");
 
-		if (width * height == 0) {
-			glm::ivec2 native_resolution = Window::GetNativeResolution();
-			width = static_cast<int>(native_resolution.x * 0.75f);
-			height = static_cast<int>(native_resolution.y * 0.75f);
-		}
-		s_size = { width, height };
+		glm::ivec2 native_resolution = Window::GetNativeResolution();
+		s_size = { static_cast<int>(native_resolution.x * 0.75f), static_cast<int>(native_resolution.y * 0.75f) };
+		s_transparent = transparent;
 
 		Create();
 		Logger::Info("Window Creation Complete.");
@@ -48,7 +44,6 @@ namespace zore {
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-
 		glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, s_transparent); // Set Transparent Framebuffer
 
 		// Create GLFW window
@@ -95,10 +90,6 @@ namespace zore {
 
 	void Window::SetTitle(const char* title) {
 		glfwSetWindowTitle(s_window_handle, title);
-	}
-
-	void Window::PreSetTransparent(bool value) {
-		s_transparent = value;
 	}
 
 	void Window::SetResizable(bool value) {
