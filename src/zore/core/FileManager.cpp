@@ -8,46 +8,46 @@
 
 namespace zore {
 
-	void FileManager::Init() {
+	void FileManager::Init(const std::string& path) {
 		// Get the current working file directory
 		//std::filesystem::current_path();
 		
 #if IS_DEBUG
-		std::filesystem::current_path(std::string(BASE_DIRECTORY) + "/");
+		std::filesystem::current_path(std::string(BASE_DIRECTORY) + path);
 #else
-		std::filesystem::current_path("./");
+		std::filesystem::current_path("." + path);
 #endif
 	}
 
-	void FileManager::ReadContent(std::string& result, const std::string& filename, bool mustExist, bool includeEmptyLines) {
+	void FileManager::ReadContent(std::string& result, const std::string& filename, bool include_empty_lines, bool must_exist) {
 		// Open file
 		std::ifstream f(filename);
 		if (f.is_open()) {
 			// Read file
 			std::string line;
 			while (std::getline(f, line))
-				if (line != "" || includeEmptyLines)
+				if (line != "" || include_empty_lines)
 					result += line + "\n";
 		}
-		else if (mustExist)
+		else if (must_exist)
 			throw ZORE_EXCEPTION("Error opening file: " + filename);
 	}
 
-	void FileManager::ReadLines(std::vector<std::string>& result, const std::string& filename, bool mustExist, bool includeEmptyLines) {
+	void FileManager::ReadLines(std::vector<std::string>& result, const std::string& filename, bool include_empty_lines, bool must_exist) {
 		// Open file
 		std::ifstream f(filename);
 		if (f.is_open()) {
 			// Read file
 			std::string line;
 			while (std::getline(f, line))
-				if (line != "" || includeEmptyLines)
+				if (line != "" || include_empty_lines)
 					result.emplace_back(line);
 		}
-		else if (mustExist)
+		else if (must_exist)
 			throw ZORE_EXCEPTION("Error opening file: " + filename);
 	}
 
-	void FileManager::ReadChunks(std::vector<std::string>& result, const std::string& filename, const std::string& delimiter, bool includeEmptyLines) {
+	void FileManager::ReadChunks(std::vector<std::string>& result, const std::string& filename, const std::string& delimiter, bool include_empty_lines, bool must_exist) {
 
 	}
 

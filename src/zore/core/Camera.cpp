@@ -7,175 +7,217 @@
 namespace zore {
 
 	//========================================================================
-	//	Camera Base Class
+	//	2D Camera Class
 	//========================================================================
 
-	Camera::Camera(float aspectRatio, float nearDist, float farDist) :
-		aspectRatio(aspectRatio), nearDist(nearDist), farDist(farDist),
-		frustumWidth(0), frustumHeight(0), viewMatrix(0), projectionMatrix(0),
-		position({ 0, 0, 0 }), forward({ 0, 0, -1 }), right({ 1, 0, 0 }) {
-
-		up = glm::normalize(glm::cross(right, forward));
-		front = glm::normalize(glm::vec3(forward.x, 0, forward.z));
+	Camera2D::Camera2D(float aspect_ratio, float height) : m_aspect_ratio(aspect_ratio), m_position(0, 0) {
+		SetHeight(height);
 	}
 
-	void Camera::UpdateViewMatrix() {
-		viewMatrix = glm::lookAt(position, position + forward, up);
+	void Camera2D::UpdateProjection() {
+		m_width = m_height * m_aspect_ratio;
+		m_scale = { 2.f / m_width, 2.f / m_height };
+	}
+
+	void Camera2D::SetPosition(const glm::vec2& position) {
+		m_position = position;
+	}
+
+	void Camera2D::Translate(const glm::vec2& offset) {
+		m_position += offset;
+	}
+
+	void Camera2D::SetAspectRatio(float aspect_ratio) {
+		m_aspect_ratio = aspect_ratio;
+		UpdateProjection();
+	}
+
+	void Camera2D::SetHeight(float height) {
+		m_height = height;
+		UpdateProjection();
+	}
+
+	bool Camera2D::TestPoint(glm::vec2 point) const {
+		point -= m_position;
+		return (point.x >= -m_width && point.x <= m_width && point.y >= -m_height && point.y <= m_height);
+	}
+
+	bool Camera2D::TestAABB(glm::vec2 min, const glm::vec2& size) const {
+		min -= m_position;
+		const glm::vec2 max = min + size;
+		return (min.x <= m_width && -m_width <= max.x && min.y <= m_height && -m_height <= max.y);
+	}
+
+	const glm::vec2& Camera2D::GetPosition() const {
+		return m_position;
+	}
+
+	const glm::vec2& Camera2D::GetScale() const {
+		return m_scale;
+	}
+
+	//========================================================================
+	//	Camera3D Base Class
+	//========================================================================
+
+	Camera3D::Camera3D(float aspect_ratio, float near_dist, float far_dist) :
+		m_aspect_ratio(aspect_ratio), m_near_dist(near_dist), m_far_dist(far_dist),
+		m_view_matrix(0), m_projection_matrix(0), m_position(0, 0, 0), m_forward(0, 0, -1), m_right(1, 0, 0) {
+
+		m_up = glm::normalize(glm::cross(m_right, m_forward));
+		m_front = glm::normalize(glm::vec3(m_forward.x, 0, m_forward.z));
+	}
+
+	void Camera3D::UpdateViewMatrix() {
+		m_view_matrix = glm::lookAt(m_position, m_position + m_forward, m_up);
 		UpdateFrustum();
 	}
 
-	void Camera::SetPosition(const glm::vec3& pos) {
-		position = pos;
+	void Camera3D::SetPosition(const glm::vec3& position) {
+		m_position = position;
 		UpdateViewMatrix();
 	}
 
-	void Camera::Translate(glm::vec3& offset) {
-		position += offset;
+	void Camera3D::Translate(const glm::vec3& offset) {
+		m_position += offset;
 		UpdateViewMatrix();
 	}
 
-	void Camera::SetYawPitch(float yaw, float pitch) {
+	void Camera3D::SetYawPitch(float yaw, float pitch) {
 		yaw = glm::radians(yaw);
 		pitch = glm::radians(pitch);
 
-		float cosYaw = cos(yaw);
-		float sinYaw = sin(yaw);
-		float cosPit = cos(pitch);
-		float sinPit = sin(pitch);
+		float cos_yaw = cos(yaw);
+		float sin_yaw = sin(yaw);
+		float cos_pitch = cos(pitch);
+		float sin_pitch = sin(pitch);
 
-		front = glm::vec3(cosYaw, 0, sinYaw);
-		forward = glm::vec3(cosYaw * cosPit, sinPit, sinYaw * cosPit);
-		right = glm::cross(front, { 0.f, 1.f, 0.f });
-		up = glm::normalize(glm::cross(right, forward));
+		m_front = glm::vec3(cos_yaw, 0, sin_yaw);
+		m_forward = glm::vec3(cos_yaw * cos_pitch, sin_pitch, sin_yaw * cos_pitch);
+		m_right = glm::cross(m_front, { 0.f, 1.f, 0.f });
+		m_up = glm::normalize(glm::cross(m_right, m_forward));
 		UpdateViewMatrix();
 	}
 
-	void Camera::SetViewVectors(const glm::vec3& f, const glm::vec3& r) {
-		forward = f;
-		right = r;
-		up = glm::normalize(glm::cross(r, f));
-		front = glm::normalize(glm::vec3(forward.x, 0, forward.z));
+	void Camera3D::SetViewVectors(const glm::vec3& forward, const glm::vec3& right) {
+		m_forward = forward;
+		m_right = right;
+		m_up = glm::normalize(glm::cross(right, forward));
+		m_front = glm::normalize(glm::vec3(m_forward.x, 0, m_forward.z));
 		UpdateViewMatrix();
 	}
 
-	void Camera::SetAspectRatio(float ar) {
-		aspectRatio = ar;
+	void Camera3D::SetAspectRatio(float aspect_ratio) {
+		m_aspect_ratio = aspect_ratio;
 		UpdateProjectionMatrix();
 	}
 
-	void Camera::SetNearFarPlanes(float _nearDist, float _farDist) {
-		nearDist = _nearDist;
-		farDist = _farDist;
+	void Camera3D::SetNearFarPlanes(float near_dist, float far_dist) {
+		m_near_dist = near_dist;
+		m_far_dist = far_dist;
 		UpdateProjectionMatrix();
 	}
 
-	const glm::mat4& Camera::GetProjection() const {
-		return projectionMatrix;
+	const glm::mat4& Camera3D::GetProjection() const {
+		return m_projection_matrix;
 	}
 
-	const glm::mat4& Camera::GetView() const {
-		return viewMatrix;
+	const glm::mat4& Camera3D::GetView() const {
+		return m_view_matrix;
 	}
 
-	const glm::vec3& Camera::GetPosition() const {
-		return position;
+	const glm::vec3& Camera3D::GetPosition() const {
+		return m_position;
 	}
 
-	const glm::vec3& Camera::GetFront() const {
-		return front;
+	const glm::vec3& Camera3D::GetFront() const {
+		return m_front;
 	}
 
-	const glm::vec3& Camera::GetForward() const {
-		return forward;
+	const glm::vec3& Camera3D::GetForward() const {
+		return m_forward;
 	}
 
-	const glm::vec3& Camera::GetRight() const {
-		return right;
+	const glm::vec3& Camera3D::GetRight() const {
+		return m_right;
 	}
 
-	const glm::vec3& Camera::GetUp() const {
-		return up;
-	}
-
-	const float Camera::GetNearDist() const {
-		return nearDist;
-	}
-
-	const float Camera::GetFarDist() const {
-		return farDist;
+	const glm::vec3& Camera3D::GetUp() const {
+		return m_up;
 	}
 
 	//========================================================================
 	//	Perspective Projection Camera
 	//========================================================================
 
-	PerspectiveCamera::PerspectiveCamera(float fov, float aspectRatio, float nearDist, float farDist)
-		: Camera(aspectRatio, nearDist, farDist) {
+	PerspectiveCamera::PerspectiveCamera(float fov, float aspect_ratio, float near_dist, float far_dist)
+		: Camera3D(aspect_ratio, near_dist, far_dist) {
 		SetFOV(fov);
 		UpdateViewMatrix();
 	}
 
-	void PerspectiveCamera::SetFOV(float _fov) {
-		fov = glm::radians(_fov);
+	void PerspectiveCamera::SetFOV(float fov) {
+		m_fov = glm::radians(fov);
 		UpdateProjectionMatrix();
 	}
 
 	bool PerspectiveCamera::TestPoint(const glm::vec3& point) const {
-		glm::vec3 vector = point - position;
+		glm::vec3 vector = point - m_position;
 		for (int i = 0; i < 4; i++) {
-			if (glm::dot(vector, frustumPlaneNormals[i]) < 0)
+			if (glm::dot(vector, m_frustum_plane_normals[i]) < 0)
 				return false;
 		}
 		return true;
 	}
 
 	bool PerspectiveCamera::TestAABB(const glm::vec3& min, const glm::vec3& size) const {
-		for (int i = 0; i < 4; i++) {
-			glm::vec3 vector = min; // vector = min?
+		for (const glm::vec3& frustum_plane : m_frustum_plane_normals) {
+			glm::vec3 vector = min;
 			for (int j = 0; j < 3; j++) {
-				if (frustumPlaneNormals[i][j] > 0)
+				if (frustum_plane[j] > 0)
 					vector[j] += size[j];
 			}
-			if (glm::dot(vector - position, frustumPlaneNormals[i]) < 0)
+			if (glm::dot(vector - m_position, frustum_plane) < 0)
 				return false;
 		}
 		return true;
 	}
 
 	void PerspectiveCamera::UpdateProjectionMatrix() {
-		projectionMatrix = glm::perspective(fov, aspectRatio, nearDist, farDist);
-		frustumHeight = farDist * tan(fov * 0.5f);
-		frustumWidth = frustumHeight * aspectRatio;
+		m_projection_matrix = glm::perspective(m_fov, m_aspect_ratio, m_near_dist, m_far_dist);
 		UpdateFrustum();
 	}
 
 	void PerspectiveCamera::UpdateFrustum() {
-		glm::vec3 lForward = forward * farDist;
-		glm::vec3 lRight = right * frustumWidth;
-		glm::vec3 lUp = up * frustumHeight;
+		float frustum_height = m_far_dist * tan(m_fov * 0.5f);
+		float frustum_width = frustum_height * m_aspect_ratio;
+
+		glm::vec3 l_forward = m_forward * m_far_dist;
+		glm::vec3 l_right = m_right * frustum_width;
+		glm::vec3 l_up = m_up * frustum_height;
 
 		// Left Plane
-		frustumPlaneNormals[0] = glm::cross((lForward - lRight), up);
+		m_frustum_plane_normals[0] = glm::cross((l_forward - l_right), m_up);
 		// Right Plane
-		frustumPlaneNormals[1] = glm::cross(up, (lForward + lRight));
+		m_frustum_plane_normals[1] = glm::cross(m_up, (l_forward + l_right));
 		// Top Plane
-		frustumPlaneNormals[2] = glm::cross((lForward + lUp), right);
+		m_frustum_plane_normals[2] = glm::cross((l_forward + l_up), m_right);
 		// Bottom Plane
-		frustumPlaneNormals[3] = glm::cross(right, (lForward - lUp));
+		m_frustum_plane_normals[3] = glm::cross(m_right, (l_forward - l_up));
 	}
 
 	//========================================================================
 	//	Orthographic Projection Camera
 	//========================================================================
 
-	OrthographicCamera::OrthographicCamera(float height, float aspectRatio, float nearDist, float farDist)
-		: Camera(aspectRatio, nearDist, farDist) {
+	OrthographicCamera::OrthographicCamera(float height, float aspect_ratio, float near_dist, float far_dist)
+		: Camera3D(aspect_ratio, near_dist, far_dist) {
 		SetHeight(height);
 		UpdateViewMatrix();
 	}
 
 	void OrthographicCamera::SetHeight(float height) {
-		frustumHeight = height / 2.f;
+		m_frustum_height = height * 0.5f;
 		UpdateProjectionMatrix();
 	}
 
@@ -188,8 +230,8 @@ namespace zore {
 	}
 
 	void OrthographicCamera::UpdateProjectionMatrix() {
-		frustumWidth = frustumHeight * aspectRatio;
-		projectionMatrix = glm::ortho(-frustumWidth, frustumWidth, -frustumHeight, frustumHeight, nearDist, farDist);
+		m_frustum_width = m_frustum_height * m_aspect_ratio;
+		m_projection_matrix = glm::ortho(-m_frustum_width, m_frustum_width, -m_frustum_height, m_frustum_height, m_near_dist, m_far_dist);
 		UpdateFrustum();
 	}
 

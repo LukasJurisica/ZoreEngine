@@ -1,10 +1,11 @@
 #include <zore/core/Application.hpp>
+#include <zore/core/FileManager.hpp>
+#include <zore/core/Camera.hpp>
 #include <zore/devices/Window.hpp>
 #include <zore/graphics/RenderEngine.hpp>
+#include <zore/graphics/VertexLayout.hpp>
+#include <zore/graphics/Shader.hpp>
 #include <zore/ui/EditorUI.hpp>
-
-#include <zore/networking/Socket.hpp>
-#include <zore/networking/Request.hpp>
 
 #include <zore/debug/Debug.hpp>
 #include <zore/utils/Timer.hpp>
@@ -13,13 +14,12 @@
 #include <random>
 #include <numeric>
 
-#include <zore/structures/CirclularBuffer.hpp>
-
 namespace zore {
 
 	class DemoApplication : public Application {
-	public:
+	public:	
 		DemoApplication() {
+			FileManager::Init("/examples/01_sandbox application/");
 			EditorUI::Init();
 			RenderEngine::SetVSync(false);
 		}
@@ -41,6 +41,23 @@ namespace zore {
 			//ps.AcceptConnections(new_connections);
 			//Logger::Log(new_connections.size());
 
+			//SoLoud::Wav gWave;
+			//gWave.load("examples/01_sandbox application/assets/shall_not_cast.ogg");
+			//int x = gSoloud->play(gWave);
+			//gSoloud->setPan(x, -0.2f);
+			
+			Camera2D camera(Window::GetAspectRatio(), 2.f);
+
+			Shader shader("example.glsl");
+			VertexLayout layout(shader, {});
+
+			shader.Bind();
+			layout.Bind();
+
+			shader.SetFloat4("camera", { camera.GetScale(), camera.GetPosition() });
+
+			RenderEngine::SetTopology(MeshTopology::TRIANGLE_STRIP);
+
 			while (!Window::ShouldClose()) {
 				RenderEngine::Clear();
 
@@ -50,9 +67,11 @@ namespace zore {
 				}
 				frame_count++;
 
-				EditorUI::BeginFrame();
-				EditorUI::ShowDemoWindow();
-				EditorUI::EndFrame();
+				RenderEngine::DrawLinear(4);
+
+				//EditorUI::BeginFrame();
+				//EditorUI::ShowDemoWindow();
+				//EditorUI::EndFrame();
 				Window::Update();
 			}
 		}

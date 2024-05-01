@@ -35,6 +35,7 @@ namespace zore {
 		~Shader();
 
 		static void SetShaderVersion(const std::string& version);
+		static void SetShaderFolder(const std::string& path);
 
 		uint32_t GetID() const;
 		Shader& SetSource(const std::string& filename);
@@ -55,6 +56,7 @@ namespace zore {
 		void SetFloat2(const std::string& name, const glm::vec2& data);
 		void SetFloat3(const std::string& name, const glm::vec3& data);
 		void SetFloat4(const std::string& name, const glm::vec4& data);
+		void SetMat2(const std::string& name, const glm::mat2& data);
 		void SetMat3(const std::string& name, const glm::mat3& data);
 		void SetMat4(const std::string& name, const glm::mat4& data);
 		void SetTextureSlot(const std::string& name, uint32_t slot);

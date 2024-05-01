@@ -14,6 +14,7 @@ namespace zore {
 
 	const static Shader* s_active = nullptr;
 	static std::string s_version = "";
+	static std::string s_shader_folder = "assets/shaders/";
 
 	Shader::Shader() : m_id(0) {}
 
@@ -28,6 +29,10 @@ namespace zore {
 
 	void Shader::SetShaderVersion(const std::string& version) {
 		s_version = version + "\n";
+	}
+
+	void Shader::SetShaderFolder(const std::string& path) {
+		s_shader_folder = path;
 	}
 
 	uint32_t Shader::GetID() const {
@@ -59,7 +64,7 @@ namespace zore {
 
 		std::vector<StageData> stages;
 		std::string source;
-		FileManager::ReadContent(source, "assets/shaders/" + m_filename, true, IS_DEBUG);
+		FileManager::ReadContent(source, s_shader_folder + m_filename, IS_DEBUG);
 		size_t left = 0;
 		size_t right = std::string::npos;
 
@@ -208,6 +213,10 @@ namespace zore {
 		glUniform4f(GetUniformLocation(name), data.x, data.y, data.z, data.w);
 	}
 	// glUniformMatrix{2|3|4|2x3|3x2|2x4|4x2|3x4|4x3}fv
+	void Shader::SetMat2(const std::string& name, const glm::mat2& data) {
+		glUniformMatrix2fv(GetUniformLocation(name), 1, GL_FALSE, &(data[0].x));
+	}
+
 	void Shader::SetMat3(const std::string& name, const glm::mat3& data) {
 		glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &(data[0].x));
 	}
