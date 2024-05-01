@@ -1,5 +1,4 @@
 #include "zore/core/Camera.hpp"
-#include "zore/math/MathUtils.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
