@@ -40,7 +40,7 @@ namespace zore {
 		uint32_t GetID() const;
 		Shader& SetSource(const std::string& filename);
 		Shader& SetDefines(const std::vector<DefineItem>& defines);
-		void Compile();
+		Shader& Compile();
 		void Bind() const;
 
 		void SetBool(const std::string& name, int32_t data);

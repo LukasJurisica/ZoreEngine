@@ -53,7 +53,7 @@ namespace zore {
 		return *this;
 	}
 
-	void Shader::Compile() {
+	Shader& Shader::Compile() {
 		// Cleanup from previous compilation
 		if (m_id) {
 			glDeleteProgram(m_id);
@@ -81,6 +81,7 @@ namespace zore {
 		} while (left > 0);
 
 		Link(stages);
+		return *this;
 	}
 
 	void Shader::Bind() const {
