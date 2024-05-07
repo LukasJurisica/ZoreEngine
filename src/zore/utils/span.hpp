@@ -4,9 +4,6 @@ namespace zore {
 
 	class VoidSpan {
 	public:
-		template<class T>
-		VoidSpan(T* data, size_t size) : m_data(data), m_count(size), m_element_size(sizeof(T)) {}
-
 		template<class T, size_t N>
 		VoidSpan(T(&data)[N]) : VoidSpan(data, N) {}
 
@@ -19,6 +16,10 @@ namespace zore {
 		size_t Size() const { return m_count; };
 		size_t SizeBytes() const { return m_count * m_element_size; };
 		size_t ElementSize() const { return m_element_size; };
+
+	private:
+		template<class T>
+		VoidSpan(T* data, size_t size) : m_data(data), m_count(size), m_element_size(sizeof(T)) {}
 
 	private:
 		void* m_data;
