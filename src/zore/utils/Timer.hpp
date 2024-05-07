@@ -20,7 +20,7 @@ namespace zore {
 
 		float DeltaTime() {
 			std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
-			std::chrono::duration<float> elapsed_time = current_time - start_time;
+			std::chrono::duration<float> elapsed_time = current_time - last_time;
 			last_time = current_time;
 			return elapsed_time.count();
 		}
