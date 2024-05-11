@@ -1,6 +1,7 @@
 #include "zore/devices/Mouse.hpp"
 #include "zore/ui/EditorUI.hpp"
 #include "zore/debug/debug.hpp"
+
 #include <glfw/glfw3.h>
 
 namespace zore {
@@ -9,20 +10,20 @@ namespace zore {
 	//	Mouse Class
 	//========================================================================
 
-	static glm::vec2 position = { 0, 0 };
-	static bool buttonStates[MOUSE_BUTTON_COUNT];
+	static glm::vec2 s_position = { 0, 0 };
+	static bool s_button_states[MOUSE_BUTTON_COUNT];
 
 	void Mouse::ClearState(float x, float y) {
-		memset(&buttonStates, 0, MOUSE_BUTTON_COUNT);
-		position = { x, y };
+		memset(&s_button_states, 0, MOUSE_BUTTON_COUNT);
+		s_position = { x, y };
 	}
 
 	const glm::vec2& Mouse::GetPosition() {
-		return position;
+		return s_position;
 	}
 
 	bool Mouse::GetButton(int button) {
-		return buttonStates[button];
+		return s_button_states[button];
 	}
 
 	//------------------------------------------------------------------------
@@ -32,22 +33,23 @@ namespace zore {
 	static std::vector<Mouse::Listener*> listeners;
 
 	void Mouse::MoveCallback(GLFWwindow* windowHandle, double xpos, double ypos) {
-		glm::vec2 oldPos = position;
-		position = { xpos, ypos };
+		glm::vec2 delta = s_position;
+		s_position = { xpos, ypos };
+		delta = s_position - delta;
 
 		if (EditorUI::WantsMouse())
 			return;
 
 		auto iter = listeners.begin();
-		while (iter != listeners.end() && !(*iter)->OnMouseMove(position.x, position.y, position.x - oldPos.x, position.y - oldPos.y))
+		while (iter != listeners.end() && !(*iter)->OnMouseMove(s_position.x, s_position.y, delta.x, delta.y))
 			iter++;
 	}
 
 	void Mouse::ButtonCallback(GLFWwindow* windowHandle, int button, int action, int mods) {
-		buttonStates[button] = action;
 		if (EditorUI::WantsMouse())
 			return;
 
+		s_button_states[button] = action;
 		auto iter = listeners.begin();
 		if (action == GLFW_PRESS)
 			while (iter != listeners.end() && !(*iter)->OnMousePress(button))

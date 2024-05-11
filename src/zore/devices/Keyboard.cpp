@@ -1,8 +1,10 @@
 #include "zore/devices/Keyboard.hpp"
 #include "zore/ui/EditorUI.hpp"
 #include "zore/debug/debug.hpp"
+
 #include <glfw/glfw3.h>
-#include <algorithm>
+#include <bitset>
+#include <vector>
 
 namespace zore {
 
@@ -10,31 +12,46 @@ namespace zore {
 	//	Keyboard class
 	//========================================================================
 
-	static std::bitset<KEY_LAST> keyStates;
-
-	void Keyboard::ClearState() {
-		keyStates.reset();
-	}
+	static std::bitset<KEY_COUNT> s_key_held_states;
+	static std::bitset<KEY_COUNT> s_key_down_states;
+	static std::bitset<KEY_COUNT> s_key_up_states;
 
 	bool Keyboard::GetKey(int key) {
-		DEBUG_ENSURE(key < KEY_LAST, "Attempted to access a key outside of the allowed range.");
-		return keyStates[key];
+		DEBUG_ENSURE(key < KEY_COUNT, "Attempted to access a key outside of the allowed range.");
+		return s_key_held_states[key];
+	}
+
+	bool Keyboard::GetKeyUp(int key) {
+		DEBUG_ENSURE(key < KEY_COUNT, "Attempted to access a key outside of the allowed range.");
+		return s_key_up_states[key];
+	}
+
+	bool Keyboard::GetKeyDown(int key) {
+		DEBUG_ENSURE(key < KEY_COUNT, "Attempted to access a key outside of the allowed range.");
+		return s_key_down_states[key];
 	}
 
 	bool Keyboard::GetKeyMod(KeyMod keymod) {
 		switch (keymod) {
-		case zore::Keyboard::KeyMod::CTRL:
-			return keyStates[KEY_L_CTRL] || keyStates[KEY_R_CTRL];
-		case zore::Keyboard::KeyMod::ALT:
-			return keyStates[KEY_L_ALT] || keyStates[KEY_R_ALT];
 		case zore::Keyboard::KeyMod::SHIFT:
-			return keyStates[KEY_L_SHIFT] || keyStates[KEY_R_SHIFT];
+			return s_key_held_states[KEY_L_SHIFT] || s_key_held_states[KEY_R_SHIFT];
+		case zore::Keyboard::KeyMod::CTRL:
+			return s_key_held_states[KEY_L_CTRL] || s_key_held_states[KEY_R_CTRL];
+		case zore::Keyboard::KeyMod::ALT:
+			return s_key_held_states[KEY_L_ALT] || s_key_held_states[KEY_R_ALT];
 		}
 		return false;
 	}
 
 	bool Keyboard::GetKeyMod(int mods, KeyMod keymod) {
 		return mods & static_cast<int>(keymod);
+	}
+
+	void Keyboard::ClearState(bool clear_held_state) {
+		if (clear_held_state)
+			s_key_held_states.reset();
+		s_key_down_states.reset();
+		s_key_up_states.reset();
 	}
 
 	//------------------------------------------------------------------------
@@ -44,21 +61,30 @@ namespace zore {
 	static std::vector<Keyboard::Listener*> listeners;
 
 	void Keyboard::KeyCallback(GLFWwindow* windowHandle, int key, int scancode, int action, int mods) {
-		if (action != KEY_REPEAT) {
-			if (key > 0 && key < KEY_LAST)
-				keyStates[key] = action;
+		if (EditorUI::WantsKeyboard())
+			return;
+
+		if (action != KEY_REPEAT && key > 0 && key < KEY_COUNT) {
+			s_key_held_states[key] = action;
 
 			auto iter = listeners.begin();
-			if (action == GLFW_PRESS)
+			if (action == GLFW_PRESS) {
+				s_key_down_states[key] = 1;
 				while (iter != listeners.end() && !(*iter)->OnKeyPress(key, mods))
 					iter++;
-			else
+			}
+			else {
+				s_key_up_states[key] = 1;
 				while (iter != listeners.end() && !(*iter)->OnKeyRelease(key))
 					iter++;
+			}
 		}
 	}
 
 	void Keyboard::CharCallback(GLFWwindow* windowHandle, unsigned int code) {
+		if (EditorUI::WantsKeyboard())
+			return; 
+		
 		auto iter = listeners.begin();
 		while (iter != listeners.end() && !(*iter)->OnChar(code))
 			iter++;

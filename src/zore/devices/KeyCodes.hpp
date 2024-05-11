@@ -252,4 +252,4 @@
 #define KEY_R_SUPER            347
 #define KEY_MENU               348
 
-#define KEY_LAST               KEY_MENU
+#define KEY_COUNT              349

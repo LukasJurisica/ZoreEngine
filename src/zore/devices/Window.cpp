@@ -79,6 +79,7 @@ namespace zore {
 	}
 
 	void Window::Update() {
+		Keyboard::ClearState(false);
 		glfwPollEvents();
 		glfwSwapBuffers(s_window_handle);
 		FrameMark;
