@@ -8,7 +8,7 @@
 #include <zore/ui/EditorUI.hpp>
 
 #include <zore/debug/Debug.hpp>
-#include <zore/utils/Timer.hpp>
+#include <zore/utils/Time.hpp>
 
 #include <chrono>
 #include <random>

@@ -2,12 +2,20 @@
 #include "zore/devices/Keyboard.hpp"
 #include "zore/devices/Mouse.hpp"
 #include "zore/graphics/RenderEngine.hpp"
+#include "zore/utils/Time.hpp"
 #include "zore/debug/Debug.hpp"
 #include "zore/debug/Profiler.hpp"
 
 #include <glfw/glfw3.h>
 
 namespace zore {
+
+	//========================================================================
+	//	Static defines for Time class
+	//========================================================================
+
+	float Time::s_delta_time = 0.f;
+	TimePoint Time::s_last_time = Time::CurrentTime();
 
 	//========================================================================
 	//	Window Class
@@ -79,9 +87,10 @@ namespace zore {
 	}
 
 	void Window::Update() {
+		glfwSwapBuffers(s_window_handle);
+		Time::NewFrame();
 		Keyboard::ClearState(false);
 		glfwPollEvents();
-		glfwSwapBuffers(s_window_handle);
 		FrameMark;
 	}
 
