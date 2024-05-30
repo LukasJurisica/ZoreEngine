@@ -44,6 +44,16 @@ namespace zore {
 		static inline TimePoint CurrentTime() {
 			return std::chrono::steady_clock::now();
 		}
+		
+		static inline float Duration(TimePoint start, TimePoint end) {
+			std::chrono::duration<float> elapsed_time = end - start;
+			return elapsed_time.count();
+		}
+				
+		static inline float Elapsed(TimePoint time) {
+			std::chrono::duration<float> elapsed_time = CurrentTime() - time;
+			return elapsed_time.count();
+		}
 
 	private:
 		static void NewFrame() {

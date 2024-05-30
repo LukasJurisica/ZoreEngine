@@ -14,6 +14,10 @@
 #include <random>
 #include <numeric>
 
+#include "soloud.h"
+#include "soloud_audiosource.h"
+#include "soloud_wav.h"
+
 namespace zore {
 
 	class DemoApplication : public Application {
@@ -41,10 +45,20 @@ namespace zore {
 			//ps.AcceptConnections(new_connections);
 			//Logger::Log(new_connections.size());
 
-			//SoLoud::Wav gWave;
-			//gWave.load("examples/01_sandbox application/assets/shall_not_cast.ogg");
-			//int x = gSoloud->play(gWave);
-			//gSoloud->setPan(x, -0.2f);
+
+			SoLoud::Soloud* s_soloud_engine = new SoLoud::Soloud();
+			SoLoud::Wav gWave;
+
+			s_soloud_engine->init();
+
+			gWave.load("examples/01_sandbox application/assets/shall_not_cast.ogg");
+			int x = s_soloud_engine->play(gWave);
+			s_soloud_engine->setPan(x, -0.2f);
+
+
+
+
+
 			
 			Camera2D camera(Window::GetAspectRatio(), 2.f);
 
