@@ -6,6 +6,7 @@
 #include <zore/graphics/VertexLayout.hpp>
 #include <zore/graphics/Shader.hpp>
 #include <zore/ui/EditorUI.hpp>
+#include <zore/devices/Mouse.hpp>
 
 #include <zore/debug/Debug.hpp>
 #include <zore/utils/Time.hpp>
@@ -15,17 +16,17 @@
 #include <numeric>
 
 #include "soloud.h"
-#include "soloud_audiosource.h"
 #include "soloud_wav.h"
 
 namespace zore {
 
-	class DemoApplication : public Application {
+	class DemoApplication : public Application, Mouse::Listener {
 	public:	
-		DemoApplication() {
+		DemoApplication() : m_camera(Window::GetAspectRatio(), 4.f) {
 			FileManager::Init("/examples/01_sandbox application/");
 			EditorUI::Init();
 			RenderEngine::SetVSync(false);
+			m_camera.SetHeight(m_scale);
 		}
 
 		void Run() {
@@ -45,30 +46,13 @@ namespace zore {
 			//ps.AcceptConnections(new_connections);
 			//Logger::Log(new_connections.size());
 
+			m_shader.SetSource("example.glsl").Compile();
+			VertexLayout layout(m_shader, {});
 
-			SoLoud::Soloud* s_soloud_engine = new SoLoud::Soloud();
-			SoLoud::Wav gWave;
-
-			s_soloud_engine->init();
-
-			gWave.load("examples/01_sandbox application/assets/shall_not_cast.ogg");
-			int x = s_soloud_engine->play(gWave);
-			s_soloud_engine->setPan(x, -0.2f);
-
-
-
-
-
-			
-			Camera2D camera(Window::GetAspectRatio(), 2.f);
-
-			Shader shader("example.glsl");
-			VertexLayout layout(shader, {});
-
-			shader.Bind();
+			m_shader.Bind();
 			layout.Bind();
 
-			shader.SetFloat4("camera", { camera.GetScale(), camera.GetPosition() });
+			m_shader.SetFloat4("camera", { m_camera.GetScale(), m_camera.GetPosition() });
 
 			RenderEngine::SetTopology(MeshTopology::TRIANGLE_STRIP);
 
@@ -90,8 +74,25 @@ namespace zore {
 			}
 		}
 
-	private:
+		bool OnMouseMove(float nx, float ny, float dx, float dy) override {
+			if (Mouse::GetButton(MOUSE_BUTTON_LEFT)) {
+				m_camera.TranslatePixels({ -dx, dy });
+				m_shader.SetFloat4("camera", { m_camera.GetScale(), m_camera.GetPosition() });
+			}
+			return true;
+		}
 
+		bool OnMouseScroll(float dx, float dy) override {
+			m_scale -= dy * 0.1f * m_scale;
+			m_camera.SetHeight(m_scale);
+			m_shader.SetFloat4("camera", { m_camera.GetScale(), m_camera.GetPosition() });
+			return true;
+		}
+
+	private:
+		Camera2D m_camera;
+		Shader m_shader;
+		float m_scale = 4.f;
 	};
 
 	Application* Application::Create() {

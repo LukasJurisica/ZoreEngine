@@ -15,6 +15,7 @@ namespace zore {
 
 		void SetPosition(const glm::vec2& position);
 		void Translate(const glm::vec2& offset);
+		void TranslatePixels(const glm::vec2& offset);
 		void SetAspectRatio(float aspect_ratio);
 		void SetHeight(float height);
 

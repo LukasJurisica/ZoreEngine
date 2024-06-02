@@ -1,5 +1,5 @@
 #include "zore/core/Camera.hpp"
-
+#include "zore/devices/Window.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
@@ -24,6 +24,10 @@ namespace zore {
 
 	void Camera2D::Translate(const glm::vec2& offset) {
 		m_position += offset;
+	}
+
+	void Camera2D::TranslatePixels(const glm::vec2& offset) {
+		m_position += (offset / static_cast<float>(Window::GetSize().y)) * m_height;
 	}
 
 	void Camera2D::SetAspectRatio(float aspect_ratio) {

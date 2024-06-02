@@ -31,6 +31,7 @@ namespace zore {
 		static bool GetMaximized();
 		static float GetAspectRatio();		
 		static const glm::ivec2& GetSize();
+		static const glm::ivec2& GetFrameBufferSize();
 		static const glm::ivec2& GetPosition();
 		static GLFWwindow* GetWindowHandle();
 		static void GetNativeHandle(void* result);

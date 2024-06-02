@@ -22,6 +22,7 @@ namespace zore {
 	//========================================================================
 
 	static glm::ivec2 s_size = { 0, 0 };
+	static glm::ivec2 s_frame_buffer_size = { 0, 0 };
 	static glm::ivec2 s_position = { 0, 0 };
 	static GLFWwindow* s_window_handle = nullptr;
 	static bool s_fullscreen = false;
@@ -58,6 +59,7 @@ namespace zore {
 		s_window_handle = glfwCreateWindow(s_size.x, s_size.y, "Zore Engine Window", nullptr, nullptr);
 		ENSURE(s_window_handle, "Failed to create GLFW window.");
 		glfwMakeContextCurrent(s_window_handle);
+		glfwGetFramebufferSize(s_window_handle, &s_frame_buffer_size.x, &s_frame_buffer_size.y);
 		Centre();
 
 		// Enable Various features
@@ -71,7 +73,7 @@ namespace zore {
 
 		// Set GLFW event callbacks
 		glfwSetWindowPosCallback(s_window_handle, MoveCallback);
-		glfwSetWindowSizeCallback(s_window_handle, ResizeCallback);
+		glfwSetFramebufferSizeCallback(s_window_handle, ResizeCallback);
 		glfwSetWindowFocusCallback(s_window_handle, FocusCallback);
 		glfwSetKeyCallback(s_window_handle, Keyboard::KeyCallback);
 		glfwSetCharCallback(s_window_handle, Keyboard::CharCallback);
@@ -177,6 +179,10 @@ namespace zore {
 		return s_size;
 	}
 
+	const glm::ivec2& GetFrameBufferSize() {
+		return s_frame_buffer_size;
+	}
+
 	const glm::ivec2& Window::GetPosition() {
 		return s_position;
 	}
@@ -207,10 +213,13 @@ namespace zore {
 	}
 
 	void Window::ResizeCallback(GLFWwindow* window_handle, int width, int height) {
-		s_size = { width, height };
+		s_frame_buffer_size = { width, height };
+		RenderEngine::SetViewport(width, height);
+		glfwGetWindowSize(window_handle, &s_size.x, &s_size.y);
 		for (Listener* listener : listeners)
 			listener->OnWindowResize(width, height, GetAspectRatio());
 	}
+
 	void Window::MoveCallback(GLFWwindow* window_handle, int xpos, int ypos) {
 		//if (!window->fullscreen)
 		s_position = { xpos, ypos };
