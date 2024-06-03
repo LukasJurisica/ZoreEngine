@@ -22,6 +22,7 @@ namespace zore {
 		bool TestPoint(glm::vec2 point) const;
 		bool TestAABB(glm::vec2 min, const glm::vec2& size) const;
 
+		const float GetHeight() const;
 		const glm::vec2& GetPosition() const;
 		const glm::vec2& GetScale() const;
 
