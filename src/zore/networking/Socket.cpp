@@ -1,6 +1,6 @@
-#include "zore/platform/platform.hpp"
 #include "zore/networking/Socket.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Platform.hpp"
+#include "zore/Debug.hpp"
 
 #if defined(PLATFORM_WINDOWS)
 #include "zore/platform/win32/win32_Exception.hpp"

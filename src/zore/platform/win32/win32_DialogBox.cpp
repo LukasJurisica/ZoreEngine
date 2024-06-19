@@ -2,7 +2,7 @@
 #define WIN32_NOT_LEAN
 #include "zore/platform/win32/win32_Core.hpp"
 #include "zore/devices/Window.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
 
 #define CHAR_BUFFER_SIZE 256
 

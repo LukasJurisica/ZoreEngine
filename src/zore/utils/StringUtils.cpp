@@ -8,7 +8,7 @@ namespace zore {
 			end = str.find_first_of(delimiter, start);
 			result.emplace_back(str.substr(start, end - start));
 			start = str.find_first_not_of(delimiter, end);
-		} while (end != std::string::npos);
+		} while (start != std::string::npos);
 	}
 
 	void StringUtils::SplitOnStr(std::vector<std::string>& result, const std::string& str, const std::string& delimiter, bool inclusive) {

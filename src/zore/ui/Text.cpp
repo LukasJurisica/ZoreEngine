@@ -1,7 +1,8 @@
 #include "zore/ui/Text.hpp"
 #include "zore/graphics/Buffer.hpp"
 #include "zore/graphics/Texture.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
+
 #include <vector>
 
 namespace zore {

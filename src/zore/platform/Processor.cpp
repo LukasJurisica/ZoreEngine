@@ -1,8 +1,6 @@
-#pragma once
-
 #include "zore/platform/Processor.hpp"
-#include "zore/platform/Platform.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Platform.hpp"
+#include "zore/Debug.hpp"
 
 #if defined(PLATFORM_WINDOWS)
 #include <intrin.h>
@@ -53,7 +51,7 @@ namespace zore {
 		int data[4];
 		uint32_t function_count = getCpuIdMax();
 
-		for (int i = 0; i < function_count; i++) {
+		for (uint32_t i = 0; i < function_count; i++) {
 			getCpuId(i, data);
 			m_data.emplace_back(std::to_array(data));
 		}

@@ -1,7 +1,7 @@
 #include "zore/platform/win32/win32_Core.hpp"
 #include "zore/core/Application.hpp"
 #include "zore/debug/Console.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
 
 #include <WinDef.h>
 

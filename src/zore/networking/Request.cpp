@@ -1,6 +1,6 @@
 #include "zore/networking/Request.hpp"
 #include "zore/networking/Socket.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
 
 #define MAX_RESPONSE_SIZE 1024
 

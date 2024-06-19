@@ -1,10 +1,8 @@
-#include "zore/devices/Window.hpp"
-#include "zore/devices/Keyboard.hpp"
-#include "zore/devices/Mouse.hpp"
+#include "zore/Devices.hpp"
 #include "zore/graphics/RenderEngine.hpp"
 #include "zore/utils/Time.hpp"
-#include "zore/debug/Debug.hpp"
 #include "zore/debug/Profiler.hpp"
+#include "zore/Debug.hpp"
 
 #include <glfw/glfw3.h>
 
@@ -22,7 +20,6 @@ namespace zore {
 	//========================================================================
 
 	static glm::ivec2 s_size = { 0, 0 };
-	static glm::ivec2 s_frame_buffer_size = { 0, 0 };
 	static glm::ivec2 s_position = { 0, 0 };
 	static GLFWwindow* s_window_handle = nullptr;
 	static bool s_fullscreen = false;
@@ -59,7 +56,6 @@ namespace zore {
 		s_window_handle = glfwCreateWindow(s_size.x, s_size.y, "Zore Engine Window", nullptr, nullptr);
 		ENSURE(s_window_handle, "Failed to create GLFW window.");
 		glfwMakeContextCurrent(s_window_handle);
-		glfwGetFramebufferSize(s_window_handle, &s_frame_buffer_size.x, &s_frame_buffer_size.y);
 		Centre();
 
 		// Enable Various features
@@ -73,7 +69,7 @@ namespace zore {
 
 		// Set GLFW event callbacks
 		glfwSetWindowPosCallback(s_window_handle, MoveCallback);
-		glfwSetFramebufferSizeCallback(s_window_handle, ResizeCallback);
+		glfwSetWindowSizeCallback(s_window_handle, ResizeCallback);
 		glfwSetWindowFocusCallback(s_window_handle, FocusCallback);
 		glfwSetKeyCallback(s_window_handle, Keyboard::KeyCallback);
 		glfwSetCharCallback(s_window_handle, Keyboard::CharCallback);
@@ -179,8 +175,10 @@ namespace zore {
 		return s_size;
 	}
 
-	const glm::ivec2& GetFrameBufferSize() {
-		return s_frame_buffer_size;
+	const glm::ivec2 Window::GetFrameBufferSize() {
+		glm::ivec2 frame_buffer_size;
+		glfwGetFramebufferSize(s_window_handle, &frame_buffer_size.x, &frame_buffer_size.y);
+		return frame_buffer_size;
 	}
 
 	const glm::ivec2& Window::GetPosition() {
@@ -213,7 +211,6 @@ namespace zore {
 	}
 
 	void Window::ResizeCallback(GLFWwindow* window_handle, int width, int height) {
-		s_frame_buffer_size = { width, height };
 		RenderEngine::SetViewport(width, height);
 		glfwGetWindowSize(window_handle, &s_size.x, &s_size.y);
 		for (Listener* listener : listeners)

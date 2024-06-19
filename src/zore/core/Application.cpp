@@ -2,7 +2,7 @@
 #include "zore/core/FileManager.hpp"
 #include "zore/devices/Window.hpp"
 #include "zore/ui/EditorUI.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
 
 namespace zore {
 

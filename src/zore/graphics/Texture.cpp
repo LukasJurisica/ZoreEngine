@@ -1,5 +1,6 @@
 #include "zore/graphics/Texture.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
+
 #include <stb/stb_image.h>
 #include <unordered_map>
 #include <glad/glad.h>

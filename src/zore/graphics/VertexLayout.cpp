@@ -1,6 +1,7 @@
 #include "zore/graphics/VertexLayout.hpp"
 #include "zore/graphics/Shader.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
+
 #include <glad/glad.h>
 
 namespace zore {

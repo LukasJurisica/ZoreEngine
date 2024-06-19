@@ -9,8 +9,10 @@
 #define DEBUG_ENSURE(expr, msg) ENSURE(expr, msg)
 #define DEBUG_ONLY(call) call
 #define IS_DEBUG 1
+#define IS_RELEASE 0
 #else
 #define DEBUG_ENSURE(expr, msg)
 #define DEBUG_ONLY(call)
 #define IS_DEBUG 0
+#define IS_RELEASE 1
 #endif

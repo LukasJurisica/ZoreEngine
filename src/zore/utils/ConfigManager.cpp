@@ -1,7 +1,8 @@
 #include "zore/core/FileManager.hpp"
 #include "zore/utils/ConfigManager.hpp"
 #include "zore/utils/StringUtils.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
+
 #include <vector>
 
 namespace zore {

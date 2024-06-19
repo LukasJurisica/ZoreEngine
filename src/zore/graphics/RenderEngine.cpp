@@ -1,7 +1,7 @@
 #include "zore/graphics/RenderEngine.hpp"
 #include "zore/graphics/Shader.hpp"
 #include "zore/devices/Window.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include <glad/glad.h>
@@ -9,10 +9,10 @@
 
 namespace zore {
 
-	static uint32_t clearMode = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
-	static uint32_t topology = GL_TRIANGLES;
-	static uint32_t indexType = GL_UNSIGNED_INT;
-	static uint64_t indexSize = sizeof(uint32_t);
+	static uint32_t s_clear_mode = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
+	static uint32_t s_topology = GL_TRIANGLES;
+	static uint32_t s_index_type = GL_UNSIGNED_INT;
+	static uint64_t s_index_size = sizeof(uint32_t);
 
 	//========================================================================
 	//	Render Engine Interface
@@ -21,10 +21,9 @@ namespace zore {
 	void RenderEngine::Init() {
 		int version = gladLoadGL(glfwGetProcAddress);
 		ENSURE(version, "Failed to initialize GLAD");
-		version = (GLAD_VERSION_MAJOR(version) * 10) + GLAD_VERSION_MINOR(version);
 		int context;
 		glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &context);
-		Shader::SetShaderVersion("#version " + TOSTR(version * 10) + ((context & GL_CONTEXT_CORE_PROFILE_BIT) ? " core" : " compatibility"));
+		Shader::SetShaderVersion(GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version), context & GL_CONTEXT_CORE_PROFILE_BIT);
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -32,10 +31,10 @@ namespace zore {
 	}
 
 	void RenderEngine::SetIndexType(IndexType type) {
-		static const uint32_t IndexTypeToGLIndexType[] = { GL_UNSIGNED_SHORT, GL_UNSIGNED_INT };
-		static const uint64_t IndexTypeToIndexSize[] = { sizeof(uint16_t), sizeof(uint32_t) };
-		indexType = IndexTypeToGLIndexType[static_cast<uint32_t>(type)];
-		indexSize = IndexTypeToIndexSize[static_cast<uint32_t>(type)];
+		static const uint32_t s_index_type_to_gl_index_type[] = { GL_UNSIGNED_SHORT, GL_UNSIGNED_INT };
+		static const uint64_t s_index_type_to_index_size[] = { sizeof(uint16_t), sizeof(uint32_t) };
+		s_index_type = s_index_type_to_gl_index_type[static_cast<uint32_t>(type)];
+		s_index_size = s_index_type_to_index_size[static_cast<uint32_t>(type)];
 	}
 
 	void RenderEngine::ResetViewport() {
@@ -48,11 +47,8 @@ namespace zore {
 	}
 
 	void RenderEngine::SetBlending(bool value) {
-		static bool blendingEnabled = false;
-		if (blendingEnabled != value) {
-			value ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
-			blendingEnabled = value;
-		}
+		static bool s_blending_enabled = false;
+		SetGLFeature(GL_BLEND, s_blending_enabled, value);
 	}
 
 	void RenderEngine::SetDepthWrite(bool value) {
@@ -60,51 +56,40 @@ namespace zore {
 	}
 
 	void RenderEngine::SetFaceCulling(bool value) {
-		static bool faceCullingEnabled = false;
-		if (faceCullingEnabled != value) {
-			value ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
-			faceCullingEnabled = value;
-		}
+		static bool s_face_culling_enabled = false;
+		SetGLFeature(GL_CULL_FACE, s_face_culling_enabled, value);
 	}
 
 	void RenderEngine::SetFaceCulling(CullingMode mode) {
-		static const uint32_t CullingModeToGLCullingMode[] = { GL_NONE, GL_FRONT, GL_BACK, GL_FRONT_AND_BACK };
-		static CullingMode faceCullingMode = CullingMode::BACK;
+		static const uint32_t s_culling_mode_to_gl_culling_mode[] = { GL_NONE, GL_FRONT, GL_BACK, GL_FRONT_AND_BACK };
+		static CullingMode s_face_culling_mode = CullingMode::BACK;
 
 		SetFaceCulling(mode != CullingMode::NONE);
-		if (mode != faceCullingMode) {
-			glCullFace(CullingModeToGLCullingMode[static_cast<uint32_t>(mode)]);
-			faceCullingMode = mode;
+		if (mode != s_face_culling_mode) {
+			glCullFace(s_culling_mode_to_gl_culling_mode[static_cast<uint32_t>(mode)]);
+			s_face_culling_mode = mode;
 		}
 	}
 
 	void RenderEngine::SetDepthTest(bool value) {
-		static bool depthTestEnabled = false;
-		if (depthTestEnabled != value) {
-			value ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
-			depthTestEnabled = value;
-		}
+		static bool s_depth_test_enabled = false;
+		SetGLFeature(GL_DEPTH_TEST, s_depth_test_enabled, value);
 	}
 
 	void RenderEngine::SetDepthTest(DepthTest mode) {
-		static const uint32_t DepthModeToGLDepthMode[] = { GL_NEVER, GL_LESS, GL_LEQUAL, GL_EQUAL, GL_GEQUAL, GL_GREATER, GL_NOTEQUAL, GL_ALWAYS };
-		static DepthTest depthTest = DepthTest::LESS;
+		static const uint32_t s_depth_mode_to_gl_depth_mode[] = { GL_NEVER, GL_LESS, GL_LEQUAL, GL_EQUAL, GL_GEQUAL, GL_GREATER, GL_NOTEQUAL, GL_ALWAYS };
+		static DepthTest s_depth_test = DepthTest::LESS;
 
-		SetDepthTest(depthTest != DepthTest::ALWAYS);
-		if (mode != depthTest) {
-			glDepthFunc(DepthModeToGLDepthMode[static_cast<uint32_t>(mode)]);
-			depthTest = mode;
+		SetDepthTest(s_depth_test != DepthTest::ALWAYS);
+		if (mode != s_depth_test) {
+			glDepthFunc(s_depth_mode_to_gl_depth_mode[static_cast<uint32_t>(mode)]);
+			s_depth_test = mode;
 		}
 	}
 
 	void RenderEngine::SetStencilTest(bool value) {
-		static bool stencilTestEnabled = false;
-		if (stencilTestEnabled != value) {
-			value ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
-			stencilTestEnabled = value;
-		}
-
-		MultidrawCommand temp{ 1 };
+		static bool s_stencil_test_enabled = false;
+		SetGLFeature(GL_STENCIL_TEST, s_stencil_test_enabled, value);
 	}
 
 	void RenderEngine::SetWireframe(bool value) {
@@ -115,15 +100,23 @@ namespace zore {
 		glfwSwapInterval(value);
 	}
 
+	void RenderEngine::SetClearDepthValue(float depth) {
+		glClearDepth(depth);
+	}
+
+	void RenderEngine::SetClearStencilValue(int32_t stencil) {
+		glClearStencil(stencil);
+	}
+
 	void RenderEngine::SetClearColour(float r, float g, float b, float a) {
 		glClearColor(r, g, b, a);
 	}
 
 	void RenderEngine::SetClearMode(const std::vector<BufferType>& buffers) {
-		static const uint32_t BufferTypeToGLBufferType[] = { GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT };
-		clearMode = 0u;
+		static const uint32_t s_buffer_type_to_gl_buffer_type[] = { GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT };
+		s_clear_mode = 0u;
 		for (const BufferType& b : buffers)
-			clearMode |= BufferTypeToGLBufferType[static_cast<int>(b)];
+			s_clear_mode |= s_buffer_type_to_gl_buffer_type[static_cast<int>(b)];
 	}
 
 	void RenderEngine::EnableColourChannels(bool r, bool g, bool b, bool a) {
@@ -131,44 +124,51 @@ namespace zore {
 	}
 
 	void RenderEngine::SetTopology(MeshTopology t) {
-		static const uint32_t MeshTopologyToGLMeshTopology[] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN };
-		topology = MeshTopologyToGLMeshTopology[static_cast<int>(t)];
+		static const uint32_t s_mesh_topology_to_gl_mesh_topology[] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN };
+		s_topology = s_mesh_topology_to_gl_mesh_topology[static_cast<int>(t)];
 	}
 
 	void RenderEngine::Clear() {
-		glClear(clearMode);
+		glClear(s_clear_mode);
 	}
 
-	void RenderEngine::DrawLinear(uint32_t count, uint32_t offset) {
-		if (count > 0)
-			glDrawArrays(topology, offset, count);
+	void RenderEngine::DrawLinear(uint32_t vertex_count, uint32_t offset) {
+		if (vertex_count > 0)
+			glDrawArrays(s_topology, offset, vertex_count);
 	}
 
-	void RenderEngine::DrawIndexed(uint32_t count, uint32_t offset) {
-		if (count > 0)
-			glDrawElements(topology, count, indexType, reinterpret_cast<void*>(offset * indexSize));
+	void RenderEngine::DrawIndexed(uint32_t index_count, uint32_t offset) {
+		if (index_count > 0)
+			glDrawElements(s_topology, index_count, s_index_type, reinterpret_cast<void*>(offset * s_index_size));
 	}
 
-	void RenderEngine::DrawLinearInstanced(uint32_t vertexCount, uint32_t modelCount, uint32_t offset) {
-		if (vertexCount > 0 && modelCount > 0)
-			glDrawArraysInstanced(topology, offset, vertexCount, modelCount);
+	void RenderEngine::DrawLinearInstanced(uint32_t vertex_count, uint32_t model_count, uint32_t offset) {
+		if (vertex_count > 0 && model_count > 0)
+			glDrawArraysInstanced(s_topology, offset, vertex_count, model_count);
 	}
 
-	void RenderEngine::DrawIndexedInstanced(uint32_t indexCount, uint32_t modelCount, uint32_t offset) {
-		if (indexCount > 0 && modelCount > 0)
-			glDrawElementsInstanced(topology, indexCount, indexType, reinterpret_cast<void*>(offset * indexSize), modelCount);
+	void RenderEngine::DrawIndexedInstanced(uint32_t index_count, uint32_t model_count, uint32_t offset) {
+		if (index_count > 0 && model_count > 0)
+			glDrawElementsInstanced(s_topology, index_count, s_index_type, reinterpret_cast<void*>(offset * s_index_size), model_count);
+	}
+
+	void RenderEngine::SetGLFeature(uint32_t feature, bool& current, bool value) {
+		if (current != value) {
+			value ? glEnable(feature) : glDisable(feature);
+			current = value;
+		}
 	}
 
 	//========================================================================
 	//	Multidraw Command Buffer Class
 	//========================================================================
 
-	MultidrawCommand::MultidrawCommand(uint32_t vertexCount, uint32_t vertexOffset, uint32_t instanceCount, uint32_t instanceOffset)
-		: m_vertexCount(vertexCount), m_vertexOffset(vertexOffset), m_instanceCount(instanceCount), m_instanceOffset(instanceOffset) {}
+	MultidrawCommand::MultidrawCommand(uint32_t vertex_count, uint32_t vertex_offset, uint32_t instance_count, uint32_t instance_offset)
+		: m_vertex_count(vertex_count), m_vertex_offset(vertex_offset), m_instance_count(instance_count), m_instance_offset(instance_offset) {}
 
-	MultidrawCommandBuffer::MultidrawCommandBuffer(MultidrawCommand* data, uint32_t count, bool calculateInstanceOffsets) {
+	MultidrawCommandBuffer::MultidrawCommandBuffer(MultidrawCommand* data, uint32_t count, bool calculate_instance_offsets) {
 		glCreateBuffers(1, &m_id);
-		Set(data, count, calculateInstanceOffsets);
+		Set(data, count, calculate_instance_offsets);
 	}
 
 	MultidrawCommandBuffer::~MultidrawCommandBuffer() {
@@ -179,8 +179,8 @@ namespace zore {
 		return m_id;
 	}
 
-	void MultidrawCommandBuffer::Set(MultidrawCommand* data, uint32_t count, bool calculateInstanceOffsets) {
-		if (calculateInstanceOffsets)
+	void MultidrawCommandBuffer::Set(MultidrawCommand* data, uint32_t count, bool calculate_instance_offsets) {
+		if (calculate_instance_offsets)
 			CalculateInstanceOffsets(data, count, 0);
 		glNamedBufferData(m_id, sizeof(MultidrawCommand) * count, data, GL_STATIC_DRAW);
 	}
@@ -195,11 +195,11 @@ namespace zore {
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_id);
 	}
 
-	void MultidrawCommandBuffer::CalculateInstanceOffsets(MultidrawCommand* data, uint32_t count, uint32_t baseOffset) {
-		uint32_t offset = baseOffset;
+	void MultidrawCommandBuffer::CalculateInstanceOffsets(MultidrawCommand* data, uint32_t count, uint32_t base_offset) {
+		uint32_t offset = base_offset;
 		for (uint32_t i = 0; i < count; i++) {
-			data[i].m_instanceOffset = offset;
-			offset += data[i].m_instanceCount;
+			data[i].m_instance_offset = offset;
+			offset += data[i].m_instance_count;
 		}
 	}
 }

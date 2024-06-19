@@ -34,7 +34,7 @@ namespace zore {
 		Shader& operator=(Shader&&) = delete;
 		~Shader();
 
-		static void SetShaderVersion(const std::string& version);
+		static void SetShaderVersion(int major, int minor, bool core);
 		static void SetShaderFolder(const std::string& path);
 
 		uint32_t GetID() const;

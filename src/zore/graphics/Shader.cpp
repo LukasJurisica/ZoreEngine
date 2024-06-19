@@ -1,7 +1,7 @@
 #include "zore/graphics/Shader.hpp"
 #include "zore/core/FileManager.hpp"
 #include "zore/utils/StringUtils.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
 #include <glad/glad.h>
 
 #define SHADER_ERROR_BUFFER_LENGTH 256
@@ -27,8 +27,9 @@ namespace zore {
 		glDeleteProgram(m_id);
 	}
 
-	void Shader::SetShaderVersion(const std::string& version) {
-		s_version = version + "\n";
+	void Shader::SetShaderVersion(int major, int minor, bool core) {
+		int version = ((major * 10) + minor) * 10;
+		s_version = "#version " + TOSTR(version) + (core ? " core\n" : " compatibility\n");
 	}
 
 	void Shader::SetShaderFolder(const std::string& path) {

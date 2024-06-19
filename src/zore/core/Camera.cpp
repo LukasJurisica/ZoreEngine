@@ -51,10 +51,6 @@ namespace zore {
 		return (min.x <= m_width && -m_width <= max.x && min.y <= m_height && -m_height <= max.y);
 	}
 
-	const float Camera2D::GetHeight() const {
-		return m_height;
-	}
-
 	const glm::vec2& Camera2D::GetPosition() const {
 		return m_position;
 	}

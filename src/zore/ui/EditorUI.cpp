@@ -11,22 +11,23 @@ namespace zore {
 
 	static ImGuiIO* io = nullptr;
 
-	void EditorUI::Init(bool multiViewports, bool enableDocking) {
+	void EditorUI::Init(const EditorUIParams& params) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		io = &ImGui::GetIO();
 
 		io->IniFilename = "config/imgui.cfg";
-
-		io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;      // Enable Keyboard Controls
-		if (enableDocking)
-			io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
-		if (multiViewports)
-			io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platform Windows
-
-		io->ConfigDockingWithShift = true;
-		//io->ConfigViewportsNoAutoMerge = true;
-		io->ConfigViewportsNoTaskBarIcon = true;
+		if (params.enable_keyboard_navigation) // Enable Keyboard Controls
+			io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		if (params.enable_docking) { // Enable Docking
+			io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+			io->ConfigDockingWithShift = true;
+		}
+		if (params.multi_viewports) { // Enable Multi-Viewport / Platform Windows
+			io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+			//io->ConfigViewportsNoAutoMerge = true;
+			io->ConfigViewportsNoTaskBarIcon = true;
+		}
 
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
@@ -78,6 +79,6 @@ namespace zore {
 	}
 
 	bool EditorUI::DynamicViewportsEnabled() {
-		return io && io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable;
+		return io && (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
 	}
 }

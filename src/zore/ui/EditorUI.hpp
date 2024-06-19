@@ -2,9 +2,15 @@
 
 namespace zore {
 
+	struct EditorUIParams {
+		bool multi_viewports = false;
+		bool enable_docking = false;
+		bool enable_keyboard_navigation = false;
+	};
+
 	class EditorUI {
 	public:
-		static void Init(bool multiViewports = false, bool enableDocking = false);
+		static void Init(const EditorUIParams& params);
 		static void Cleanup();
 
 		static void ShowDemoWindow();

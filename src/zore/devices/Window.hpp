@@ -31,11 +31,11 @@ namespace zore {
 		static bool GetMaximized();
 		static float GetAspectRatio();		
 		static const glm::ivec2& GetSize();
-		static const glm::ivec2& GetFrameBufferSize();
+		static const glm::ivec2 GetFrameBufferSize();
 		static const glm::ivec2& GetPosition();
 		static GLFWwindow* GetWindowHandle();
 		static void GetNativeHandle(void* result);
-		static glm::ivec2 GetNativeResolution(int monitorIndex = 0);
+		static glm::ivec2 GetNativeResolution(int monitor_index = 0);
 
 	private:
 		static void Init(bool transparent);
@@ -43,9 +43,9 @@ namespace zore {
 		static void Cleanup();
 
 		static void ErrorCallback(int error, const char* description);
-		static void ResizeCallback(GLFWwindow* windowHandle, int width, int height);
-		static void MoveCallback(GLFWwindow* windowHandle, int xpos, int ypos);
-		static void FocusCallback(GLFWwindow* windowHandle, int focused);
+		static void ResizeCallback(GLFWwindow* window_handle, int width, int height);
+		static void MoveCallback(GLFWwindow* window_handle, int xpos, int ypos);
+		static void FocusCallback(GLFWwindow* window_handle, int focused);
 
 		//========================================================================
 		//	Window Listener Class
@@ -59,7 +59,7 @@ namespace zore {
 			~Listener();
 
 		private:
-			virtual void OnWindowResize(int width, int height, float aspectRatio) {};
+			virtual void OnWindowResize(int width, int height, float aspect_ratio) {};
 			virtual void OnWindowMove(int xpos, int ypos) {};
 			virtual void OnWindowFocus(int focused) {};
 		};

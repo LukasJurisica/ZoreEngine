@@ -1,5 +1,5 @@
 #include "zore/math/Bezier.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
 
 namespace zm {
 

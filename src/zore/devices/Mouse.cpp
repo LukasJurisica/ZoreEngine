@@ -1,6 +1,6 @@
 #include "zore/devices/Mouse.hpp"
 #include "zore/ui/EditorUI.hpp"
-#include "zore/debug/debug.hpp"
+#include "zore/Debug.hpp"
 
 #include <glfw/glfw3.h>
 

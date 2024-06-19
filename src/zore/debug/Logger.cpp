@@ -1,5 +1,4 @@
-#include "zore/debug/Logger.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
 #include "zore/debug/Console.hpp"
 #include <iostream>
 

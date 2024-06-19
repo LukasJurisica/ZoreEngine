@@ -1,7 +1,7 @@
 #include "zore/math/CellNoise.hpp"
 #include "zore/math/WhiteNoise.hpp"
 #include "zore/math/MathUtils.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
 
 namespace zm {
 

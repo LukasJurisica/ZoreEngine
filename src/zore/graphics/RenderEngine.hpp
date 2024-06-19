@@ -11,7 +11,7 @@ namespace zore {
 	enum class BufferType { COLOUR, DEPTH, STENCIL };
 	enum class IndexType { UINT16, UINT32 };
 	enum class CullingMode { NONE, FRONT, BACK, BOTH };
-	enum class DepthTest { NEVER, LESS, LESS_EQUEL, EQUEL, GREATER_EQUEL, GREATER, NOT_EQUEL, ALWAYS };
+	enum class DepthTest { NEVER, LESS, LESS_EQUAL, EQUAL, GREATER_EQUAL, GREATER, NOT_EQUAL, ALWAYS };
 	enum class MeshTopology { POINT_LIST, LINE_LIST, LINE_STRIP, LINE_LOOP, TRIANGLE_LIST, TRIANGLE_STRIP, TRIANGLE_FAN };
 
 	class RenderEngine {
@@ -30,6 +30,8 @@ namespace zore {
 		static void SetStencilTest(bool value);
 		static void SetWireframe(bool value);
 		static void SetVSync(bool value);
+		static void SetClearDepthValue(float depth);
+		static void SetClearStencilValue(int32_t stencil);
 		static void SetClearColour(float r, float g, float b, float a = 1.0f);
 		static void SetClearMode(const std::vector<BufferType>& buffers);
 		static void EnableColourChannels(bool r = true, bool g = true, bool b = true, bool a = true);
@@ -39,6 +41,9 @@ namespace zore {
 		static void DrawIndexed(uint32_t count, uint32_t offset = 0u);
 		static void DrawLinearInstanced(uint32_t vertexCount, uint32_t modelCount, uint32_t offset = 0u);
 		static void DrawIndexedInstanced(uint32_t indexCount, uint32_t modelCount, uint32_t offset = 0u);
+
+	private:
+		static void SetGLFeature(uint32_t feature, bool& current, bool value);
 	};
 
 	//========================================================================
@@ -46,26 +51,26 @@ namespace zore {
 	//========================================================================
 
 	struct MultidrawCommand {
-		MultidrawCommand(uint32_t vertexCount, uint32_t vertexOffset = 0, uint32_t instanceCount = 1, uint32_t instanceOffset = 0);
-		uint32_t m_vertexCount;
-		uint32_t m_vertexOffset;
-		uint32_t m_instanceCount;
-		uint32_t m_instanceOffset;
+		MultidrawCommand(uint32_t vertex_count, uint32_t vertex_offset = 0, uint32_t instance_count = 1, uint32_t instance_offset = 0);
+		uint32_t m_vertex_count;
+		uint32_t m_vertex_offset;
+		uint32_t m_instance_count;
+		uint32_t m_instance_offset;
 	};
 
 	class MultidrawCommandBuffer {
 	public:
-		MultidrawCommandBuffer(MultidrawCommand* data, uint32_t count, bool calculateInstanceOffsets = false);
+		MultidrawCommandBuffer(MultidrawCommand* data, uint32_t count, bool calculate_instance_offsets = false);
 		MultidrawCommandBuffer(const MultidrawCommandBuffer&) = delete;
 		MultidrawCommandBuffer(MultidrawCommandBuffer&&) = delete;
 		MultidrawCommandBuffer& operator=(const MultidrawCommandBuffer&) = delete;
 		MultidrawCommandBuffer& operator=(MultidrawCommandBuffer&&) = delete;
 		~MultidrawCommandBuffer();
 		
-		static void CalculateInstanceOffsets(MultidrawCommand* data, uint32_t count, uint32_t baseOffset = 0u);
+		static void CalculateInstanceOffsets(MultidrawCommand* data, uint32_t count, uint32_t base_offset = 0u);
 
 		uint32_t GetID() const;
-		void Set(MultidrawCommand* data, uint32_t count, bool calculateInstanceOffsets = false);
+		void Set(MultidrawCommand* data, uint32_t count, bool calculate_instance_offsets = false);
 		void Update(MultidrawCommand* data, uint32_t count, uint32_t offset = 0u);
 		void Bind() const;
 

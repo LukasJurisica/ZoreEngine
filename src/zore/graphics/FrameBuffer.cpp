@@ -1,5 +1,5 @@
 #include "zore/graphics/FrameBuffer.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
 #include <glad/glad.h>
 
 #define MAX_FRAMEBUFFER_ATTACHMENTS 8

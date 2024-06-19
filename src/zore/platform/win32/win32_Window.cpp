@@ -1,5 +1,6 @@
 #include "zore/devices/Window.hpp"
-#include "zore/debug/Debug.hpp"
+#include "zore/Debug.hpp"
+
 #include <glfw/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <glfw/glfw3native.h>
