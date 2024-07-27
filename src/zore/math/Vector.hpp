@@ -11,12 +11,12 @@ namespace zm {
 	template <typename T>
 	struct vec2_base {
 		// Constructors -------------------
-		vec2_base() : x(0), y(0) {};
-		vec2_base(T t) : x(t), y(t) {};
-		vec2_base(T x, T y) : x(x), y(y) {};
+		vec2_base() : x(0), y(0) {}
+		vec2_base(T t) : x(t), y(t) {}
+		vec2_base(T x, T y) : x(x), y(y) {}
 
 		template <typename U>
-		vec2_base(const vec2_base<U>& o) : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)) {};
+		vec2_base(const vec2_base<U>& o) : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)) {}
 
 		// Operators ----------------------
 		inline bool operator==(const vec2_base<T>& o) const {
@@ -110,12 +110,12 @@ namespace zm {
 	template <typename T>
 	struct vec3_base {
 		// Constructors -------------------
-		vec3_base() : x(0), y(0), z(0) {};
-		vec3_base(T t) : x(t), y(t), z(t) {};
-		vec3_base(T x, T y, T z) : x(x), y(y), z(z) {};
+		vec3_base() : x(0), y(0), z(0) {}
+		vec3_base(T t) : x(t), y(t), z(t) {}
+		vec3_base(T x, T y, T z) : x(x), y(y), z(z) {}
 
 		template <typename U>
-		vec3_base(const vec3_base<U>& o) : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)), z(static_cast<T>(o.z)) {};
+		vec3_base(const vec3_base<U>& o) : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)), z(static_cast<T>(o.z)) {}
 
 		// Operators ----------------------
 		inline bool operator==(const vec3_base<T>& o) const {
@@ -219,12 +219,12 @@ namespace zm {
 	template <typename T>
 	struct vec4_base {
 		// Constructors -------------------
-		vec4_base() : x(0), y(0), z(0), w(0) {};
-		vec4_base(T t) : x(t), y(t), z(t), w(t) {};
-		vec4_base(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {};
+		vec4_base() : x(0), y(0), z(0), w(0) {}
+		vec4_base(T t) : x(t), y(t), z(t), w(t) {}
+		vec4_base(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
 
 		template <typename U>
-		vec4_base(const vec4_base<U>& o) : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)), z(static_cast<T>(o.z)), w(static_cast<T>(o.w)) {};
+		vec4_base(const vec4_base<U>& o) : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)), z(static_cast<T>(o.z)), w(static_cast<T>(o.w)) {}
 
 		// Operators ----------------------
 		inline bool operator==(const vec4_base<T>& o) const {
