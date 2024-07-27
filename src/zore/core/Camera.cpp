@@ -13,31 +13,30 @@ namespace zore {
 		SetHeight(height);
 	}
 
-	void Camera2D::UpdateProjection() {
-		m_width = m_height * m_aspect_ratio;
-		m_scale = { 2.f / m_width, 2.f / m_height };
-	}
-
 	void Camera2D::SetPosition(const glm::vec2& position) {
 		m_position = position;
 	}
 
-	void Camera2D::Translate(const glm::vec2& offset) {
+	const glm::vec2& Camera2D::Translate(const glm::vec2& offset) {
 		m_position += offset;
+		return m_position;
 	}
 
-	void Camera2D::TranslatePixels(const glm::vec2& offset) {
-		m_position += (offset / static_cast<float>(Window::GetSize().y)) * m_height;
+	const glm::vec2& Camera2D::TranslatePixels(const glm::vec2& offset) {
+		m_position += GetWorldSpaceTranslation(offset);
+		return m_position;
 	}
 
-	void Camera2D::SetAspectRatio(float aspect_ratio) {
+	const glm::vec2& Camera2D::SetAspectRatio(float aspect_ratio) {
 		m_aspect_ratio = aspect_ratio;
 		UpdateProjection();
+		return m_scale;
 	}
 
-	void Camera2D::SetHeight(float height) {
+	const glm::vec2& Camera2D::SetHeight(float height) {
 		m_height = height;
 		UpdateProjection();
+		return m_scale;
 	}
 
 	bool Camera2D::TestPoint(glm::vec2 point) const {
@@ -59,6 +58,20 @@ namespace zore {
 		return m_scale;
 	}
 
+	glm::vec2 Camera2D::GetWorldSpaceTranslation(const glm::vec2& offset) const {
+		return (offset / static_cast<float>(Window::GetSize().y)) * m_height;
+	}
+
+	glm::vec2 Camera2D::GetWorldSpacePosition(glm::vec2 coordinate) const {
+		coordinate -= glm::vec2(Window::GetSize()) / 2.f;
+		return m_position + GetWorldSpaceTranslation({ coordinate.x, -coordinate.y });
+	}
+
+	void Camera2D::UpdateProjection() {
+		m_width = m_height * m_aspect_ratio;
+		m_scale = { 2.f / m_width, 2.f / m_height };
+	}
+
 	//========================================================================
 	//	Camera3D Base Class
 	//========================================================================
@@ -69,11 +82,6 @@ namespace zore {
 
 		m_up = glm::normalize(glm::cross(m_right, m_forward));
 		m_front = glm::normalize(glm::vec3(m_forward.x, 0, m_forward.z));
-	}
-
-	void Camera3D::UpdateViewMatrix() {
-		m_view_matrix = glm::lookAt(m_position, m_position + m_forward, m_up);
-		UpdateFrustum();
 	}
 
 	void Camera3D::SetPosition(const glm::vec3& position) {
@@ -147,6 +155,11 @@ namespace zore {
 
 	const glm::vec3& Camera3D::GetUp() const {
 		return m_up;
+	}
+
+	void Camera3D::UpdateViewMatrix() {
+		m_view_matrix = glm::lookAt(m_position, m_position + m_forward, m_up);
+		UpdateFrustum();
 	}
 
 	//========================================================================

@@ -14,16 +14,18 @@ namespace zore {
 		~Camera2D() = default;
 
 		void SetPosition(const glm::vec2& position);
-		void Translate(const glm::vec2& offset);
-		void TranslatePixels(const glm::vec2& offset);
-		void SetAspectRatio(float aspect_ratio);
-		void SetHeight(float height);
+		const glm::vec2& Translate(const glm::vec2& offset);
+		const glm::vec2& TranslatePixels(const glm::vec2& offset);
+		const glm::vec2& SetAspectRatio(float aspect_ratio);
+		const glm::vec2& SetHeight(float height);
 
 		bool TestPoint(glm::vec2 point) const;
 		bool TestAABB(glm::vec2 min, const glm::vec2& size) const;
 
 		const glm::vec2& GetPosition() const;
 		const glm::vec2& GetScale() const;
+		glm::vec2 GetWorldSpaceTranslation(const glm::vec2& offset) const;
+		glm::vec2 GetWorldSpacePosition(glm::vec2 coordinate) const;
 
 	private:
 		void UpdateProjection();

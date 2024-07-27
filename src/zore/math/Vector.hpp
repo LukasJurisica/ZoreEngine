@@ -224,7 +224,7 @@ namespace zm {
 		vec4_base(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {};
 
 		template <typename U>
-		vec4_base(const vec4_base<U>& o) : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)), z(static_cast<T>(o.z), w(static_cast<T>(o.w)) {};
+		vec4_base(const vec4_base<U>& o) : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)), z(static_cast<T>(o.z)), w(static_cast<T>(o.w)) {};
 
 		// Operators ----------------------
 		inline bool operator==(const vec4_base<T>& o) const {

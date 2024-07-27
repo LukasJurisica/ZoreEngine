@@ -41,10 +41,8 @@ namespace zm {
 	// Performs a Smoothstep Intrpolation of t between a and b
 	template <typename type>
 	inline float InterpHermite(type a, type b, float t) {
-		//t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-		//return t * t * (3.0 - 2.0 * t);
-		float res = t * t * (3 - 2 * t);
-		return a + (res * (b - a));
+		t = Clamp(InvLerp(a, b, t), 0, 1);
+		return t * t * (3.0 - 2.0 * t);
 	}
 
 	// Performs a Smoothstep Intrpolation of t between 0 and 1

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "zore/platform/Platform.hpp"
+#include "zore/Platform.hpp"
 #include "zore/utils/DataTypes.hpp"
 
 #if defined(COMPILER_MSVC)
