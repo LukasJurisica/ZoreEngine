@@ -29,7 +29,7 @@ namespace zm {
 
 	// Performs a linear interpolation between a and b of n
 	template <typename type>
-	inline type Lerp(type a, type b, float n) { return a + n * (b - a); }
+	inline type Lerp(type a, type b, float n) { return (b - a) * n + a; }
 
 	// Performs an inverse linear interpolation of t between a and b
 	template <typename type>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "zore/utils/DataTypes.hpp"
+#include <cmath>
 
 namespace zm {
 
@@ -45,6 +46,9 @@ namespace zm {
 		}
 
 		// Subtraction
+		inline vec2_base<T> operator-() {
+			return vec2_base<T>(-x, -y);
+		}
 		inline vec2_base<T> operator-(const vec2_base<T>& o) const {
 			return vec2_base<T>(x - o.x, y - o.y);
 		}
@@ -93,6 +97,11 @@ namespace zm {
 		// Other --------------------------
 		inline T Dot(const vec2_base<T>& o) const {
 			return (x * o.x) + (y * o.y);
+		}
+
+		inline vec4_base<T> Normalize() const {
+			T length = 1 / std::sqrt((x * x) + (y * y));
+			return vec3_base<T>(x * length, y * length);
 		}
 
 		// Data ---------------------------
@@ -146,6 +155,9 @@ namespace zm {
 		}
 
 		// Subtraction
+		inline vec3_base<T> operator-() const {
+			return vec3_base<T>(-x, -y, -z);
+		}
 		inline vec3_base<T> operator-(const vec3_base<T>& o) const {
 			return vec3_base<T>(x - o.x, y - o.y, z - o.z);
 		}
@@ -204,6 +216,11 @@ namespace zm {
 			return vec3_base<T>((y * o.z) - (z * o.y), (z * o.x) - (x * o.z), (x * o.y) - (y * o.x));
 		}
 
+		inline vec3_base<T> Normalize() const {
+			T length = 1 / std::sqrt((x * x) + (y * y) + (z * z));
+			return vec3_base<T>(x * length, y * length, z * length);
+		}
+
 		// Data ---------------------------
 		union {
 			struct { T x, y, z; };
@@ -257,11 +274,14 @@ namespace zm {
 		}
 
 		// Subtraction
+		inline vec4_base<T> operator-() {
+			return vec4_base<T>(-x, -y, -z, -w);
+		}
 		inline vec4_base<T> operator-(const vec4_base<T>& o) const {
 			return vec4_base<T>(x - o.x, y - o.y, z - o.z, w - o.w);
 		}
 		inline vec4_base<T> operator-(T o) const {
-			return vec4_base<T>(x - o, y - o, z - o, w - o;);
+			return vec4_base<T>(x - o, y - o, z - o, w - o);
 		}
 		inline vec4_base<T>& operator-=(const vec4_base<T>& o) {
 			x -= o.x;
@@ -314,6 +334,11 @@ namespace zm {
 		inline T Dot(const vec4_base<T>& o) const {
 			return (x * o.x) + (y * o.y) + (z * o.z) + (w * o.w);
 		}
+		
+		inline vec4_base<T> Normalize() const {
+			T length = 1 / std::sqrt((x * x) + (y * y) + (z * z) + (w * w));
+			return vec4_base<T>(x * length, y * length, z * length, w * length);
+		}
 
 		// Data ---------------------------
 		union {
@@ -322,11 +347,11 @@ namespace zm {
 			T data[4];
 		};
 	};
-	
+
 	typedef vec2_base<float> vec2;
 	typedef vec3_base<float> vec3;
 	typedef vec4_base<float> vec4;
-	
+
 	typedef vec2_base<int> ivec2;
 	typedef vec3_base<int> ivec3;
 	typedef vec4_base<int> ivec4;
