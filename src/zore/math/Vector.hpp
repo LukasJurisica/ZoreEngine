@@ -99,9 +99,9 @@ namespace zm {
 			return (x * o.x) + (y * o.y);
 		}
 
-		inline vec4_base<T> Normalize() const {
+		inline vec2_base<T> Normalize() const {
 			T length = 1 / std::sqrt((x * x) + (y * y));
-			return vec3_base<T>(x * length, y * length);
+			return vec2_base<T>(x * length, y * length);
 		}
 
 		// Data ---------------------------
