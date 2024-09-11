@@ -10,6 +10,7 @@ namespace zore {
 
 	Application::Application(bool transparent_window) {
 		Window::Init(transparent_window);
+		Console::RegisterCommand("help", Console::Help);
 	}
 
 	void Application::Init() {

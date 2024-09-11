@@ -2,7 +2,7 @@
 
 namespace zore {
 
-	void StringUtils::SplitOnChr(std::vector<std::string>& result, const std::string& str, const std::string& delimiter) {
+	void StringUtils::Split(std::vector<std::string>& result, const std::string& str, const std::string& delimiter) {
 		size_t start = 0, end;
 		do {
 			end = str.find_first_of(delimiter, start);
@@ -11,14 +11,14 @@ namespace zore {
 		} while (start != std::string::npos);
 	}
 
-	void StringUtils::SplitOnStr(std::vector<std::string>& result, const std::string& str, const std::string& delimiter, bool inclusive) {
-		size_t searchStart = 0, stringStart = 0, end;
+	void StringUtils::SplitView(std::vector<std::string_view>& result, const std::string& str, const std::string& delimiter) {
+		std::string_view str_view(str);
+		size_t start = 0, end;
 		do {
-			end = str.find(delimiter, searchStart);
-			result.emplace_back(str.substr(stringStart, end - stringStart));
-			searchStart = end + delimiter.length();
-			stringStart = inclusive ? end : searchStart;
-		} while (end != std::string::npos); 
+			end = str.find_first_of(delimiter, start);
+			result.emplace_back(str_view.substr(start, end - start));
+			start = str.find_first_not_of(delimiter, end);
+		} while (start != std::string::npos);
 	}
 
 	std::wstring StringUtils::to_wstring(const std::string& string) {

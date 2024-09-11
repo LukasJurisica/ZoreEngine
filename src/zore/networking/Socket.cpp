@@ -23,9 +23,9 @@ namespace zore {
 	class SocketInitializer {
 	public:
 		SocketInitializer() {
-			WSADATA wsaData;
-			ENSURE(WSAStartup(MAKEWORD(2, 2), &wsaData) == 0, "Failed to initialize Winsock.");
-			ENSURE(LOBYTE(wsaData.wVersion) == 2 && HIBYTE(wsaData.wVersion) == 2, "Version 2.2 of Winsock is not available.");
+			WSADATA wsa_data;
+			ENSURE(WSAStartup(MAKEWORD(2, 2), &wsa_data) == 0, "Failed to initialize Winsock.");
+			ENSURE(LOBYTE(wsa_data.wVersion) == 2 && HIBYTE(wsa_data.wVersion) == 2, "Version 2.2 of Winsock is not available.");
 			Logger::Info("Winsock2 Initialization Complete.");
 		}
 
@@ -91,19 +91,12 @@ namespace zore {
 		return std::string(buffer);
 	}
 
-	int Socket::GetLastError() {
-#if defined(PLATFORM_WINDOWS)
-		return WSAGetLastError();
-#elif defined(PLATFORM_LINUX)
-		return = errno;
-#endif
-	}
-
 	void Socket::PrintLastError(const std::string & function) {
-		int error_code = GetLastError();
 #if defined(PLATFORM_WINDOWS)
+		int error_code = WSAGetLastError();
 		std::string error_message = WindowsException::GetErrorString(error_code);
 #elif defined(PLATFORM_LINUX)
+		int error_code = errno;
 		std::string error_message(' ', strerrorlen_s(error_code));
 		strerror_s(error_message.data(), error_message.length(), error_code);
 #endif

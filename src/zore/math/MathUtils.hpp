@@ -1,6 +1,5 @@
 #pragma once
 #include "zore/utils/DataTypes.hpp"
-
 #include <cmath>
 
 namespace zm {

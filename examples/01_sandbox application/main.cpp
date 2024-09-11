@@ -2,12 +2,14 @@
 #include <zore/core/FileManager.hpp>
 #include <zore/core/Camera.hpp>
 #include <zore/ui/EditorUI.hpp>
-#include <zore/utils/Time.hpp>
-
 #include <zore/ui/UILayer.hpp>
+#include <zore/utils/Colour.hpp>
+
 #include <zore/Devices.hpp>
 #include <zore/Graphics.hpp>
 #include <zore/Debug.hpp>
+
+#include <zore/math/vector.hpp>
 
 namespace zore {
 
@@ -47,6 +49,18 @@ namespace zore {
 			//ps.AcceptConnections(new_connections);
 			//Logger::Log(new_connections.size());
 
+
+			Logger::Log("Hello There general kenobi, how are you", "This is insane", 5);
+			//BetterLogger::Log(4, 5);
+
+
+			zm::vec2 x(1, 2);
+
+
+
+			Colour c = Colour::hex("#0F0");
+			Logger::Log(VEC4TOSTR(c.nrgba()));
+
 			VertexLayout layout;
 
 			m_shader.SetSource("example.glsl").Compile();
@@ -58,9 +72,10 @@ namespace zore {
 
 				RenderEngine::DrawLinear(4);
 
-				//EditorUI::BeginFrame();
-				//EditorUI::ShowDemoWindow();
-				//EditorUI::EndFrame();
+				EditorUI::BeginFrame();
+				Console::Draw();
+				EditorUI::ShowDemoWindow();
+				EditorUI::EndFrame();
 				Window::Update();
 			}
 		}

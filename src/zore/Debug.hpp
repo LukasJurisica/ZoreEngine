@@ -2,7 +2,6 @@
 #include "zore/debug/Exception.hpp"
 #include "zore/debug/Logger.hpp"
 
-#define PAUSE system("pause")
 #define ENSURE(expr, msg) (expr || zore::Exception::AssertionException(__LINE__, __FILE__, #expr "\n" msg))
 
 #ifdef _DEBUG

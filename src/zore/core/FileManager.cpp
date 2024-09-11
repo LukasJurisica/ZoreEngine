@@ -63,7 +63,7 @@ namespace zore {
 	void FileManager::IncrementFilenameIfExists(std::string& filename) {
 		if (std::filesystem::exists(filename)) {
 			std::vector<std::string> tokens;
-			StringUtils::SplitOnChr(tokens, filename, ".");
+			StringUtils::Split(tokens, filename, ".");
 
 			uint32_t index = static_cast<uint32_t>(tokens[0].length()) + 2u;
 			std::string test = tokens[0] + "_01." + tokens[1];

@@ -18,7 +18,6 @@ namespace zore {
 	class Socket {
 	public:
 		static std::string GetHostName();
-		static int GetLastError();
 		static void PrintLastError(const std::string& function);
 
 		bool IsValid();
