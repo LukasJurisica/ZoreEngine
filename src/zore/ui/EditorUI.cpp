@@ -1,5 +1,6 @@
 #include "zore/ui/EditorUI.hpp"
 #include "zore/devices/Window.hpp"
+#include "zore/core/FileManager.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -16,6 +17,7 @@ namespace zore {
 		ImGui::CreateContext();
 		io = &ImGui::GetIO();
 
+		FileManager::EnsureDir("config");
 		io->IniFilename = "config/imgui.cfg";
 		if (params.enable_keyboard_navigation) // Enable Keyboard Controls
 			io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
