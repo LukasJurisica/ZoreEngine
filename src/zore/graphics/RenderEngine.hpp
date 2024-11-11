@@ -1,6 +1,7 @@
 #pragma once
 #include "zore/utils/DataTypes.hpp"
 #include <vector>
+#include <string>
 
 namespace zore {
 
@@ -18,8 +19,8 @@ namespace zore {
 	public:
 		static void Init();
 
-		static void SetIndexType(IndexType type);
 		static void ResetViewport();
+		static void SetIndexType(IndexType type);
 		static void SetViewport(uint32_t width, uint32_t height, uint32_t x = 0u, uint32_t y = 0u);
 		static void SetBlending(bool value);
 		static void SetDepthWrite(bool value);
@@ -34,8 +35,8 @@ namespace zore {
 		static void SetClearStencilValue(int32_t stencil);
 		static void SetClearColour(float r, float g, float b, float a = 1.0f);
 		static void SetClearMode(const std::vector<BufferType>& buffers);
-		static void EnableColourChannels(bool r = true, bool g = true, bool b = true, bool a = true);
 		static void SetTopology(MeshTopology topology);
+		static void EnableColourChannels(bool r = true, bool g = true, bool b = true, bool a = true);
 		static void Clear();
 		static void DrawLinear(uint32_t count, uint32_t offset = 0u);
 		static void DrawIndexed(uint32_t count, uint32_t offset = 0u);

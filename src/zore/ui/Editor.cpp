@@ -1,8 +1,7 @@
-#include "zore/ui/EditorUI.hpp"
+#include "zore/ui/Editor.hpp"
 #include "zore/devices/Window.hpp"
 #include "zore/core/FileManager.hpp"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -12,7 +11,7 @@ namespace zore {
 
 	static ImGuiIO* io = nullptr;
 
-	void EditorUI::Init(const EditorUIParams& params) {
+	void Editor::Init(const EditorParams& params) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		io = &ImGui::GetIO();
@@ -42,7 +41,7 @@ namespace zore {
 		ImGui_ImplOpenGL3_Init("#version 460");
 	}
 
-	void EditorUI::Cleanup() {
+	void Editor::Cleanup() {
 		if (io) {
 			ImGui_ImplOpenGL3_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
@@ -50,17 +49,17 @@ namespace zore {
 		}
 	}
 
-	void EditorUI::ShowDemoWindow() {
+	void Editor::ShowDemoWindow() {
 		ImGui::ShowDemoWindow();
 	}
 
-	void EditorUI::BeginFrame() {
+	void Editor::BeginFrame() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui::NewFrame();
 	}
 
-	void EditorUI::EndFrame() {
+	void Editor::EndFrame() {
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -72,15 +71,15 @@ namespace zore {
 		}
 	}
 
-	bool EditorUI::WantsMouse() {
+	bool Editor::WantsMouse() {
 		return io && io->WantCaptureMouse;
 	}
 
-	bool EditorUI::WantsKeyboard() {
+	bool Editor::WantsKeyboard() {
 		return io && io->WantCaptureKeyboard;
 	}
 
-	bool EditorUI::DynamicViewportsEnabled() {
+	bool Editor::DynamicViewportsEnabled() {
 		return io && (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
 	}
 }

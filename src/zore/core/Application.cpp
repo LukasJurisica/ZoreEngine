@@ -1,7 +1,7 @@
 #include "zore/core/Application.hpp"
 #include "zore/core/FileManager.hpp"
 #include "zore/devices/Window.hpp"
-#include "zore/ui/EditorUI.hpp"
+#include "zore/ui/Editor.hpp"
 #include "zore/Debug.hpp"
 
 namespace zore {
@@ -25,7 +25,7 @@ namespace zore {
 	}
 
 	void Application::Cleanup() {
-		EditorUI::Cleanup();
+		Editor::Cleanup();
 		Window::Cleanup();
 		initialized = false;
 	}

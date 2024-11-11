@@ -13,6 +13,7 @@ namespace zore {
 	static uint32_t s_topology = GL_TRIANGLES;
 	static uint32_t s_index_type = GL_UNSIGNED_INT;
 	static uint64_t s_index_size = sizeof(uint32_t);
+	static std::string s_shader_version;
 
 	//========================================================================
 	//	Render Engine Interface
@@ -24,10 +25,14 @@ namespace zore {
 		int context;
 		glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &context);
 		Shader::SetShaderVersion(GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version), context & GL_CONTEXT_CORE_PROFILE_BIT);
-
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		stbi_set_flip_vertically_on_load(true);
+	}
+
+	void RenderEngine::ResetViewport() {
+		const glm::ivec2& res = Window::GetSize();
+		glViewport(0, 0, res.x, res.y);
 	}
 
 	void RenderEngine::SetIndexType(IndexType type) {
@@ -35,11 +40,6 @@ namespace zore {
 		static const uint64_t s_index_type_to_index_size[] = { sizeof(uint16_t), sizeof(uint32_t) };
 		s_index_type = s_index_type_to_gl_index_type[static_cast<uint32_t>(type)];
 		s_index_size = s_index_type_to_index_size[static_cast<uint32_t>(type)];
-	}
-
-	void RenderEngine::ResetViewport() {
-		const glm::ivec2& res = Window::GetSize();
-		glViewport(0, 0, res.x, res.y);
 	}
 
 	void RenderEngine::SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y) {
@@ -119,13 +119,13 @@ namespace zore {
 			s_clear_mode |= s_buffer_type_to_gl_buffer_type[static_cast<int>(b)];
 	}
 
-	void RenderEngine::EnableColourChannels(bool r, bool g, bool b, bool a) {
-		glColorMask(r, g, b, a);
-	}
-
 	void RenderEngine::SetTopology(MeshTopology t) {
 		static const uint32_t s_mesh_topology_to_gl_mesh_topology[] = { GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_LINE_LOOP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN };
 		s_topology = s_mesh_topology_to_gl_mesh_topology[static_cast<int>(t)];
+	}
+
+	void RenderEngine::EnableColourChannels(bool r, bool g, bool b, bool a) {
+		glColorMask(r, g, b, a);
 	}
 
 	void RenderEngine::Clear() {

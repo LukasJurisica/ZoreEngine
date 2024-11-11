@@ -1,5 +1,6 @@
 #include "zore/devices/Mouse.hpp"
-#include "zore/ui/EditorUI.hpp"
+#include "zore/core/ActionMap.hpp"
+#include "zore/ui/Editor.hpp"
 #include "zore/Debug.hpp"
 
 #include <glfw/glfw3.h>
@@ -37,7 +38,7 @@ namespace zore {
 		s_position = { xpos, ypos };
 		delta = s_position - delta;
 
-		if (EditorUI::WantsMouse())
+		if (Editor::WantsMouse())
 			return;
 
 		auto iter = listeners.begin();
@@ -46,7 +47,11 @@ namespace zore {
 	}
 
 	void Mouse::ButtonCallback(GLFWwindow* windowHandle, int button, int action, int mods) {
-		if (EditorUI::WantsMouse())
+		if (Editor::WantsMouse())
+			return;
+
+		ActionMap* action_map = ActionMap::GetActiveActionMap();
+		if (action_map && action_map->HandleEvent(ActionMap::Source::MOUSE, button, action == GLFW_PRESS))
 			return;
 
 		s_button_states[button] = action;
@@ -60,7 +65,7 @@ namespace zore {
 	}
 
 	void Mouse::ScrollCallback(GLFWwindow* windowHandle, double xOffset, double yOffset) {
-		if (EditorUI::WantsMouse())
+		if (Editor::WantsMouse())
 			return;
 
 		auto iter = listeners.begin();

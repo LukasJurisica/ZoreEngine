@@ -1,5 +1,6 @@
 #include "zore/devices/Keyboard.hpp"
-#include "zore/ui/EditorUI.hpp"
+#include "zore/core/ActionMap.hpp"
+#include "zore/ui/Editor.hpp"
 #include "zore/Debug.hpp"
 
 #include <glfw/glfw3.h>
@@ -61,7 +62,11 @@ namespace zore {
 	static std::vector<Keyboard::Listener*> listeners;
 
 	void Keyboard::KeyCallback(GLFWwindow* windowHandle, int key, int scancode, int action, int mods) {
-		if (EditorUI::WantsKeyboard())
+		if (Editor::WantsKeyboard())
+			return;
+
+		ActionMap* action_map = ActionMap::GetActiveActionMap();
+		if (action_map && action_map->HandleEvent(ActionMap::Source::KEYBOARD, key, action == GLFW_PRESS))
 			return;
 
 		if (action != KEY_REPEAT && key > 0 && key < KEY_COUNT) {
@@ -82,7 +87,7 @@ namespace zore {
 	}
 
 	void Keyboard::CharCallback(GLFWwindow* windowHandle, unsigned int code) {
-		if (EditorUI::WantsKeyboard())
+		if (Editor::WantsKeyboard())
 			return; 
 		
 		auto iter = listeners.begin();

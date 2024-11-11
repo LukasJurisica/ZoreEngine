@@ -1,4 +1,3 @@
-
 VertexBuffer copy_constructor(vbo);
 VertexBuffer copy_constructor{ vbo };
 VertexBuffer copy_constructor = vbo;

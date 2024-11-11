@@ -23,7 +23,10 @@ add_library(${PROJECT_NAME} ${ALL_FILES})
 
 configure_file("config/path_config.h.in" "config/path_config.h")
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/config")
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+	CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE
+	CXX_STANDARD 20
+)
 
 # Add dependencies
 include("cmake/CPM.cmake")

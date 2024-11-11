@@ -3,6 +3,7 @@
 #include <zore/utils/DataTypes.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_float4.hpp>
+#include <zore/Debug.hpp>
 
 namespace zore {
 
@@ -22,6 +23,17 @@ namespace zore {
 		glm::vec4 rgba() const { return glm::vec4(m_r, m_g, m_b, m_a); }
 		glm::vec3 nrgb() const { return glm::vec3(m_r, m_g, m_b) / 255.f; }
 		glm::vec4 nrgba() const { return glm::vec4(m_r, m_g, m_b, m_a) / 255.f; }
+		uint32_t compressed() const { return (static_cast<uint32_t>(m_r) << 24) | (static_cast<uint32_t>(m_g) << 16) | (static_cast<uint32_t>(m_b) << 8) | m_a; }
+		uint8_t r() const { return m_r; }
+		uint8_t g() const { return m_g; }
+		uint8_t b() const { return m_b; }
+		uint8_t a() const { return m_a; }
+		uint8_t& r() { return m_r; }
+		uint8_t& g() { return m_g; }
+		uint8_t& b() { return m_b; }
+		uint8_t& a() { return m_a; }
+		uint8_t operator[](int index) const { return (&m_r)[index]; }
+		uint8_t& operator[](int index) { return (&m_r)[index]; }
 
 	private:
 		static inline uint8_t h(char c) { return (c >= 97) ? (c - 87) : ((c >= 65) ? (c - 55) : (c - 48)); }
