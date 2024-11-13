@@ -8,6 +8,9 @@
 #include <zore/Graphics.hpp>
 #include <zore/Debug.hpp>
 
+#include <zore/audio/AudioEngine.hpp>
+#include <zore/networking/Request.hpp>
+#include <zore/networking/Socket.hpp>
 #include <zore/math/vector.hpp>
 #include <zore/core/ActionMap.hpp>
 
@@ -19,11 +22,16 @@ class DemoApplication : public Application, Window::Listener, Mouse::Listener, K
 public:	
 	DemoApplication() : m_camera(Window::GetAspectRatio(), 4.f), m_main_menu("example_menu") {
 		FileManager::Init("/examples/01_sandbox application/");
-		EditorParams params;
-		Editor::Init(params);
+		Editor::Init({});
 		RenderEngine::SetVSync(false);
 		m_camera.SetHeight(static_cast<float>(Window::GetSize().y));
 		m_camera.SetPosition({ Window::GetSize().x >> 1, Window::GetSize().y >> 1 });
+
+		// Initialize Action map
+		action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
+			display_console = !display_console;
+			});
+		action_map.Bind();
 	}
 
 	void CreateSimpleUI() {
@@ -42,8 +50,8 @@ public:
 			.SetColour(Colour::hex("#0000FF"));
 
 		UI::Style& child_style = UI::Style::Create("child")
-			.SetSize(UI::Unit::AUT(), UI::Unit::AUT())
-			.SetMargin(UI::Unit::AUT(), UI::Unit::REM(2))
+			.SetHeight(UI::Unit::AUT(), 1.f)
+			.SetMargin(UI::Unit::REM(2), UI::Unit::REM(2))
 			.SetColour(Colour::hex("#FFFF00"));
 
 		UI::Element a(UI::Element::Type::PANEL, "a");
@@ -64,6 +72,7 @@ public:
 		glm::ivec2 resolution = Window::GetSize();
 		m_main_menu.SetStyle("root");
 		m_main_menu.Flush(resolution.x, resolution.y);
+		UI::Layer::Bind("example_menu");
 	}
 
 	void Run() {
@@ -88,16 +97,9 @@ public:
 		VertexLayout layout(m_ui_shader, {}, {{ "quad", VertexDataType::UINT_32, 4}});
 		layout.Bind();
 
-		ActionMap action_map;
-		action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
-			display_console = !display_console;
-		});
-		action_map.Bind();
-
 		CreateSimpleUI();
-		UI::Layer::Bind("example_menu");
-		//uint32_t count = m_main_menu.Bind();
-		//Logger::Log(count);
+
+		AudioEngine::Play("assets/screen_ring_pen_king.mp3");
 
 		while (!Window::ShouldClose()) {
 			RenderEngine::Clear();
@@ -117,27 +119,11 @@ public:
 		}
 	}
 
-	void set_console(bool value) {
-
-	}
-
-	bool OnMouseMove(float nx, float ny, float dx, float dy) override {
-		//if (Mouse::GetButton(MOUSE_BUTTON_LEFT))
-		//	m_camera.TranslatePixels({ -dx, dy });
-		return true;
-	}
-
-	bool OnMouseScroll(float dx, float dy) override {
-		m_scale -= dy * 0.1f * m_scale;
-		m_camera.SetHeight(m_scale);
-		return true;
-	}
-
 	void OnWindowResize(int width, int height, float aspect_ratio) override {
 		m_camera.SetHeight(static_cast<float>(height));
 		m_camera.SetAspectRatio(aspect_ratio);
 		m_camera.SetPosition({ width >> 1, height >> 1 });
-		m_main_menu.Flush(width, height);
+		UI::Layer::Flush(width, height);
 		m_ui_shader.SetFloat2("window_resolution", { width, height });
 	}
 
@@ -145,8 +131,8 @@ private:
 	Camera2D m_camera;
 	Shader m_quad_shader;
 	Shader m_ui_shader;
-	float m_scale = 4.f;
 	UI::Layer m_main_menu;
+	ActionMap action_map;
 };
 
 Application* Application::Create() {

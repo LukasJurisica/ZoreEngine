@@ -8,36 +8,28 @@
 #include <cpuid.h>
 #endif
 
-#include <vector>
-
 namespace zore {
 
-	Processor::Info Processor::s_info = Processor::Info();
+	//========================================================================
+	//	Processor Class
+	//========================================================================
 
-	static uint32_t getCpuIdMax() {
-#if defined(PLATFORM_WINDOWS)
-		int data[4];
-		__cpuid(data, 0);
-		return data[0];
-#elif defined(PLATFORM_LINUX)
-		return __get_cpuid_max(0, nullptr);
-#endif
+	static int* s_data = nullptr;
+
+	void Processor::Init() {
+		delete[] s_data;
+		uint32_t function_count = GetCPUIDCount();
+		s_data = new int[function_count * 4];
+		for (uint32_t i = 0; i < function_count; i++)
+			GetCPUID(i, &s_data[i * 4]);
 	}
 
-	static void getCpuId(uint32_t level, int reg[4]) {
-#if defined(PLATFORM_WINDOWS)
-		__cpuid(reg, level);
-#elif defined(PLATFORM_LINUX)
-		__get_cpuid(level, &reg[0], &reg[1], &reg[2], &reg[3]);
-#endif
+	void Processor::Cleanup() {
+		delete[] s_data;
 	}
 
 	std::string Processor::GetVendor() {
-		int vendor[3];
-		memset(vendor, 0, sizeof(vendor));
-		vendor[0] = s_info.m_data[0][1];
-		vendor[1] = s_info.m_data[0][3];
-		vendor[2] = s_info.m_data[0][2];
+		int vendor[3] = { Get(0, 1), Get(0, 3), Get(0, 2) };
 		std::string result = std::string(reinterpret_cast<char*>(vendor), sizeof(vendor));
 
 		if (result == "AuthenticAMD")
@@ -47,13 +39,25 @@ namespace zore {
 		return result;
 	}
 
-	Processor::Info::Info() {
-		int data[4];
-		uint32_t function_count = getCpuIdMax();
+	int Processor::Get(int function_id, int reg) {
+		return s_data[(function_id * 4) + reg];
+	}
 
-		for (uint32_t i = 0; i < function_count; i++) {
-			getCpuId(i, data);
-			m_data.emplace_back(std::to_array(data));
-		}
+	int Processor::GetCPUIDCount() {
+#if defined(PLATFORM_WINDOWS)
+		int data[4];
+		GetCPUID(0, data);
+		return data[0];
+#elif defined(PLATFORM_LINUX)
+		return __get_cpuid_max(0, nullptr);
+#endif
+	}
+
+	void Processor::GetCPUID(int function_id, int info[4]) {
+#if defined(PLATFORM_WINDOWS)
+		__cpuid(info, function_id);
+#elif defined(PLATFORM_LINUX)
+		__get_cpuid(function_id, &info[0], &info[1], &info[2], &info[3]);
+#endif
 	}
 }

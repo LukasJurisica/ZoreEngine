@@ -34,8 +34,7 @@ include("cmake/glm.cmake")
 include("cmake/glfw.cmake")
 add_subdirectory("deps/glad")
 add_subdirectory("deps/imgui")
-add_subdirectory("deps/soloud")
-set(ZORE_LIBRARIES glm glfw glad imgui soloud)
+set(ZORE_LIBRARIES glm glfw glad imgui)
 
 # Add Tracy as a dependency if the ZORE_BUILD_PROFILER option is set
 if (${ZORE_BUILD_PROFILER})

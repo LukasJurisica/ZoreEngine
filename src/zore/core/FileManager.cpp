@@ -19,6 +19,10 @@ namespace zore {
 #endif
 	}
 
+	std::string FileManager::GetFullPath(const std::string& filename) {
+		return std::filesystem::current_path().generic_string() + (filename[0] == '/' ? "" : "/") + filename;
+	}
+
 	void FileManager::ReadContent(std::string& result, const std::string& filename, bool include_empty_lines, bool must_exist) {
 		// Open file
 		std::ifstream f(filename);

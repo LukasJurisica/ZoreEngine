@@ -39,7 +39,7 @@ namespace zore {
 	class ActiveSocket : public Socket {
 	public:
 		ActiveSocket(const std::string& address, int port, Protocol protocol);
-		ActiveSocket(int socket_id, addrinfo* results);
+		ActiveSocket(int socket_id, addrinfo* results) : Socket(socket_id, results) {}
 		~ActiveSocket() = default;
 
 		std::string GetPeerName();

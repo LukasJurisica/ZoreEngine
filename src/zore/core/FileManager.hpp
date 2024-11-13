@@ -7,6 +7,7 @@ namespace zore {
 	class FileManager {
 	public:
 		static void Init(const std::string& path = "/");
+		static std::string GetFullPath(const std::string& filename);
 		static void ReadContent(std::string& result, const std::string& filename, bool include_empty_lines = true, bool must_exist = true);
 		static void ReadLines(std::vector<std::string>& result, const std::string& filename, bool include_empty_lines = true, bool must_exist = true);
 		static void ReadChunks(std::vector<std::string>& result, const std::string& filename, const std::string& delimiter, bool include_empty_lines = true, bool must_exist = true);

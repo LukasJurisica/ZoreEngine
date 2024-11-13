@@ -29,6 +29,10 @@ namespace zore {
 			Logger::Info("Winsock2 Initialization Complete.");
 		}
 
+		static void Initialize() {
+			static SocketInitializer socket_initializer;
+		}
+
 		~SocketInitializer() {
 			WSACleanup();
 			Logger::Info("Winsock2 Cleanup Complete.");
@@ -41,11 +45,10 @@ namespace zore {
 	//========================================================================
 
 	Socket::Socket(const std::string& address, int port, Protocol protocol) : m_socket_id(-1) {
-
 #ifdef PLATFORM_WINDOWS
-		static SocketInitializer socket_initializer;
+			SocketInitializer::Initialize();
 #endif
-
+		
 		int status;
 		addrinfo hints;
 
@@ -83,6 +86,9 @@ namespace zore {
 	}
 
 	std::string Socket::GetHostName() {
+#ifdef PLATFORM_WINDOWS
+		SocketInitializer::Initialize();
+#endif
 		char buffer[256];
 		if (gethostname(buffer, 256) == -1) {
 			PrintLastError("gethostname");
@@ -120,10 +126,8 @@ namespace zore {
 		}
 		Logger::Log("Connected");
 
-		freeaddrinfo(m_results); // free the linked-list
+		freeaddrinfo(m_results);
 	}
-
-	ActiveSocket::ActiveSocket(int socket_id, addrinfo* results) : Socket(socket_id, results) {}
 
 	std::string ActiveSocket::GetPeerName() {
 		sockaddr address;
@@ -164,6 +168,7 @@ namespace zore {
 	PassiveSocket::PassiveSocket(int port, Protocol protocol) : Socket("", port, protocol) {
 		if (!m_results)
 			return;
+
 		// Bind our socket to a port
 		if (bind(m_socket_id, m_results->ai_addr, static_cast<int>(m_results->ai_addrlen)) == -1) {
 			PrintLastError("bind");
@@ -184,12 +189,11 @@ namespace zore {
 		sockaddr_storage address_storage;
 		socklen_t address_size = sizeof(address_storage);
 		sockaddr* address_storage_ptr = reinterpret_cast<sockaddr*>(&address_storage);
-		int new_socket_id;
+		int new_socket_id = static_cast<int>(accept(m_socket_id, address_storage_ptr, &address_size));
 
-		if ((new_socket_id = static_cast<int>(accept(m_socket_id, address_storage_ptr, &address_size))) == -1) {
+		if (new_socket_id == -1)
 			PrintLastError("accept");
-			return;
-		}
-		connections.emplace_back(new_socket_id, nullptr);
+		else
+			connections.emplace_back(new_socket_id, nullptr);
 	}
 }

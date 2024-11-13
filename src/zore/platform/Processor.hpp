@@ -1,24 +1,18 @@
 #pragma once
 
-#include <array>
-#include <vector>
 #include <string>
 
 namespace zore {
 
 	class Processor {
 	public:
+		static void Init();
+		static void Cleanup();
 		static std::string GetVendor();
 
 	private:
-		class Info {
-		public:
-			Info();
-			~Info() = default;
-
-			std::vector<std::array<int, 4>> m_data;
-		};
-
-		static Info s_info;
+		static inline int Get(int function_id, int reg);
+		static inline int GetCPUIDCount();
+		static inline void GetCPUID(int function_id, int info[4]);
 	};
 }

@@ -17,6 +17,9 @@ namespace zore::UI {
 
 	Layer::Layer(const std::string& name) : Element(Type::PANEL, name) { 
 		s_active_layer = this;
+		auto iter = s_layers.find(name);
+		if (iter != s_layers.end())
+			Logger::Warn("Created UI Layer with a pre-existing name. Previous layer was overwritten");
 		s_layers[name] = this;
 	}
 
