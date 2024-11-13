@@ -3,24 +3,20 @@
 #include <zore/core/Camera.hpp>
 #include <zore/ui/Editor.hpp>
 #include <zore/ui/Layer.hpp>
+#include <zore/core/ActionMap.hpp>
+#include <zore/audio/AudioEngine.hpp>
 
 #include <zore/Devices.hpp>
 #include <zore/Graphics.hpp>
 #include <zore/Debug.hpp>
 
-#include <zore/audio/AudioEngine.hpp>
-#include <zore/networking/Request.hpp>
-#include <zore/networking/Socket.hpp>
-#include <zore/math/vector.hpp>
-#include <zore/core/ActionMap.hpp>
-
 using namespace zore;
 
-static bool display_console = false;
+static bool s_display_console = false;
 
 class DemoApplication : public Application, Window::Listener, Mouse::Listener, Keyboard::Listener {
 public:	
-	DemoApplication() : m_camera(Window::GetAspectRatio(), 4.f), m_main_menu("example_menu") {
+	DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f), m_main_menu("example_menu") {
 		FileManager::Init("/examples/01_sandbox application/");
 		Editor::Init({});
 		RenderEngine::SetVSync(false);
@@ -29,8 +25,8 @@ public:
 
 		// Initialize Action map
 		action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
-			display_console = !display_console;
-			});
+			s_display_console = !s_display_console;
+		});
 		action_map.Bind();
 	}
 
@@ -81,26 +77,14 @@ public:
 		RenderEngine::SetTopology(MeshTopology::TRIANGLE_STRIP);
 		RenderEngine::SetDepthTest(DepthTest::LESS);
 
-		//Logger::Log("Hostname: " + Socket::GetHostName());
-		//PassiveSocket ps(3000, Protocol::TCP);
-
-		//std::string html = Request::Make("https://info.cern.ch/", HTTPMethod::GET);
-		//Logger::Log(html);
-
-		//ActiveSocket as("127.0.0.1", 3000, Protocol::TCP);
-		//std::vector<ActiveSocket> new_connections;
-		//ps.AcceptConnections(new_connections);
-		//Logger::Log(new_connections.size());
-		
 		m_quad_shader.SetSource("example.glsl").Compile();
 		m_ui_shader.SetSource("default_ui.glsl").Compile();
 		VertexLayout layout(m_ui_shader, {}, {{ "quad", VertexDataType::UINT_32, 4}});
 		layout.Bind();
 
-		CreateSimpleUI();
-
 		AudioEngine::Play("assets/screen_ring_pen_king.mp3");
-
+		CreateSimpleUI();
+ 
 		while (!Window::ShouldClose()) {
 			RenderEngine::Clear();
 			
@@ -111,7 +95,7 @@ public:
 			UI::Layer::Render();
 			
 			Editor::BeginFrame();
-			if (display_console)
+			if (s_display_console)
 				Console::Draw();
 			//Editor::ShowDemoWindow();
 			Editor::EndFrame();
@@ -136,5 +120,7 @@ private:
 };
 
 Application* Application::Create() {
-	return new DemoApplication;
+	LaunchOptions options;
+	options.enable_audio = true;
+	return new DemoApplication(options);
 }

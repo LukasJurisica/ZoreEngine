@@ -8,21 +8,26 @@
 
 namespace zore {
 
-	static bool initialized = false;
+	//========================================================================
+	//	Abstract Application Class
+	//========================================================================
 
-	Application::Application(bool transparent_window) {
+	static bool s_initialized = false;
+
+	Application::Application(const LaunchOptions& options) {
 		Processor::Init();
 		FileManager::Init();
-		Window::Init(transparent_window);
-		AudioEngine::Init();
+		Window::Init(options.transparent_window);
+		if (options.enable_audio)
+			AudioEngine::Init();
 		Console::RegisterCommand("help", Console::Help);
 	}
 
 	void Application::Init() {
-		if (initialized)
+		if (s_initialized)
 			return;
 
-		initialized = true;
+		s_initialized = true;
 		Application* app = Create();
 		app->Run();
 		delete app;
@@ -34,6 +39,6 @@ namespace zore {
 		AudioEngine::Cleanup();
 		Window::Cleanup();
 		Processor::Cleanup();
-		initialized = false;
+		s_initialized = false;
 	}
 }

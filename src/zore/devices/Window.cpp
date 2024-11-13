@@ -40,7 +40,8 @@ namespace zore {
 		Create();
 		Logger::Info("Window Creation Complete.");
 		RenderEngine::Init();
-		Logger::Info("Render Engine Initialization Complete.");	
+		Logger::Info("Render Engine Initialization Complete.");
+		Update();
 	}
 
 	void Window::Create() {

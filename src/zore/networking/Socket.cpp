@@ -109,7 +109,6 @@ namespace zore {
 		Logger::Error("Socket error " + std::to_string(error_code) + " executing \"" + function + "\": " + error_message);
 	}
 
-
 	//========================================================================
 	//	An active socket, used for external connections
 	//========================================================================
