@@ -21,6 +21,7 @@ namespace zore {
 		if (options.enable_audio)
 			AudioEngine::Init();
 		Console::RegisterCommand("help", Console::Help);
+		Editor::Init(options.enable_multi_viewports, options.enable_docking, options.enable_keyboard_navigation);
 	}
 
 	void Application::Init() {

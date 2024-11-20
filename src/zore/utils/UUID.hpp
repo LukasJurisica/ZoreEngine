@@ -15,7 +15,7 @@ namespace zore {
             static std::atomic<uint32_t> id = 0;
             return luid(++id);
         }
-        operator uint32_t& () { return m_id; }
+        operator uint32_t&() { return m_id; }
         operator uint32_t() const { return m_id; }
 
     private:
@@ -38,7 +38,7 @@ namespace zore {
             static std::atomic<uint64_t> id = 0;
             return wuid(++id);
         }
-        operator uint64_t& () { return m_id; }
+        operator uint64_t&() { return m_id; }
         operator uint64_t() const { return m_id; }
 
     private:

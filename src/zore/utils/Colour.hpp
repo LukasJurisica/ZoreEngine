@@ -3,7 +3,6 @@
 #include <zore/utils/DataTypes.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_float4.hpp>
-#include <zore/Debug.hpp>
 
 namespace zore {
 
@@ -18,6 +17,7 @@ namespace zore {
 		static inline Colour hex(const char(&s)[6]) { return Colour(h(s[1], s[1]), h(s[2], s[2]), h(s[3], s[3]), h(s[4], s[4])); }
 		static inline Colour hex(const char(&s)[8]) { return Colour(h(s[1], s[2]), h(s[3], s[4]), h(s[5], s[6]), 255); }
 		static inline Colour hex(const char(&s)[10]) { return Colour(h(s[1], s[2]), h(s[3], s[4]), h(s[5], s[6]), h(s[7], s[8])); }
+		static inline Colour invert(const Colour& colour) { return Colour(255 - colour.m_r, 255 - colour.m_g, 255 - colour.m_b, colour.m_a); }
 
 		glm::vec3 rgb() const { return glm::vec3(m_r, m_g, m_b); }
 		glm::vec4 rgba() const { return glm::vec4(m_r, m_g, m_b, m_a); }

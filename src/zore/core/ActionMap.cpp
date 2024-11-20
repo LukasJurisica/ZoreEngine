@@ -1,8 +1,6 @@
 #include "ActionMap.hpp"
 #include "zore/utils/BitUtils.hpp"
 
-static ActionMap* s_active_action_map = nullptr;
-
 void ActionMap::RegisterAction(Source source, uint32_t code, bool on_start, bool on_stop, void (*action)(bool)) {
 	if (on_start)
 		m_actions[CreateSourceEventKey(source, code, 1)] = action;
@@ -18,10 +16,6 @@ bool ActionMap::HandleEvent(Source source, uint32_t code, bool start) const {
 	return true;
 }
 
-void ActionMap::Bind() {
-	s_active_action_map = this;
-}
-
 ActionMap::Source ActionMap::GetSource(uint32_t key) {
 	return static_cast<Source>(GET_N_BITS(key, 2, 0));
 }
@@ -32,10 +26,6 @@ uint32_t ActionMap::GetCode(uint32_t key) {
 
 uint32_t ActionMap::GetType(uint32_t key) {
 	return GET_N_BITS(key, 1, 2);
-}
-
-ActionMap* ActionMap::GetActiveActionMap() {
-	return s_active_action_map;
 }
 
 uint32_t ActionMap::CreateSourceEventKey(Source source, uint32_t code, uint32_t type) {

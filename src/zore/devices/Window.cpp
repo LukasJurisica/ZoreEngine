@@ -212,10 +212,11 @@ namespace zore {
 	}
 
 	void Window::ResizeCallback(GLFWwindow* window_handle, int width, int height) {
-		RenderEngine::SetViewport(width, height);
-		glfwGetWindowSize(window_handle, &s_size.x, &s_size.y);
+		glfwGetFramebufferSize(window_handle, &s_size.x, &s_size.y);
+		RenderEngine::SetViewport(s_size.x, s_size.y);
+		float aspect_ratio = GetAspectRatio();
 		for (Listener* listener : listeners)
-			listener->OnWindowResize(width, height, GetAspectRatio());
+			listener->OnWindowResize(s_size.x, s_size.y, aspect_ratio);
 	}
 
 	void Window::MoveCallback(GLFWwindow* window_handle, int xpos, int ypos) {

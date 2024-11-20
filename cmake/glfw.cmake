@@ -13,5 +13,5 @@ include(CPM)
 CPMAddPackage(
     NAME glfw
     GITHUB_REPOSITORY glfw/glfw
-    GIT_TAG 3eaf125
+    GIT_TAG b35641f
 )

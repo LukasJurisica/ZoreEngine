@@ -1,5 +1,4 @@
 #include "zore/devices/Mouse.hpp"
-#include "zore/core/ActionMap.hpp"
 #include "zore/ui/Editor.hpp"
 #include "zore/Debug.hpp"
 
@@ -48,10 +47,6 @@ namespace zore {
 
 	void Mouse::ButtonCallback(GLFWwindow* windowHandle, int button, int action, int mods) {
 		if (Editor::WantsMouse())
-			return;
-
-		ActionMap* action_map = ActionMap::GetActiveActionMap();
-		if (action_map && action_map->HandleEvent(ActionMap::Source::MOUSE, button, action == GLFW_PRESS))
 			return;
 
 		s_button_states[button] = action;

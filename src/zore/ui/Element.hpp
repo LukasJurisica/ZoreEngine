@@ -19,10 +19,11 @@ namespace zore::UI {
 		};
 
 	public:
-		Element(Type type, const std::string& style);
+		Element(Type type, const std::string& style = "");
 		Element(Type type, const Style* style);
 
 		Element* AddChild(const Element& element);
+		Element* AddChild(const Element& element, const std::string& style);
 		Bounds ComputeBounds(const Bounds& parent_bounds, uint32_t global_height, uint32_t auto_size, uint32_t axis) const;
 		void ComputeRequiredSize(const Bounds& parent_bounds, uint32_t global_height, uint32_t& auto_count, uint32_t& required_size, uint32_t axis) const;
 

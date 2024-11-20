@@ -9,9 +9,14 @@ namespace zore {
 	class Application {
 	public:
 		struct LaunchOptions {
-			LaunchOptions() = default;
-			bool transparent_window = false;
 			bool enable_audio = false;
+			bool transparent_window = false;
+
+			// Editor UI options
+			bool enable_editor_ui = true;
+			bool enable_docking = false;
+			bool enable_multi_viewports = false;
+			bool enable_keyboard_navigation = false;
 		};
 
 	public:
@@ -20,7 +25,7 @@ namespace zore {
 		static void Cleanup();
 
 	protected:
-		Application(const LaunchOptions& options = LaunchOptions());
+		Application(const LaunchOptions& options = {});
 		virtual ~Application() = default;
 
 	private:

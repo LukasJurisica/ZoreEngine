@@ -13,6 +13,12 @@ namespace zore::UI {
 		return &m_children.back();
 	}
 
+	Element* Element::AddChild(const Element& element, const std::string& style) {
+		m_children.push_back(element);
+		m_children.back().SetStyle(style);
+		return &m_children.back();
+	}
+
 	Element::Bounds Element::ComputeBounds(const Bounds& parent_bounds, uint32_t global_height, uint32_t auto_size, uint32_t axis) const {
 		// Compute size of element if any used auto specifier
 		UpdateIfAuto(m_style->m_margin[axis + 0].GetType(), m_margin[axis + 0], auto_size);

@@ -2,13 +2,17 @@
 
 namespace zore {
 
+	//========================================================================
+	//	Void Span Class
+	//========================================================================
+
 	class VoidSpan {
 	public:
 		template<class T, size_t N>
 		VoidSpan(T(&data)[N]) : VoidSpan(data, N) {}
 
 		template<class T, typename = decltype(std::declval<T>().data())>
-		VoidSpan(T& cont) : VoidSpan(cont.data(), cont.size()) {}
+		VoidSpan(T& container) : VoidSpan(container.data(), container.size()) {}
 
 		~VoidSpan() = default;
 

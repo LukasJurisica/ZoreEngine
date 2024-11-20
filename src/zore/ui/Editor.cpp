@@ -11,20 +11,20 @@ namespace zore {
 
 	static ImGuiIO* io = nullptr;
 
-	void Editor::Init(const EditorParams& params) {
+	void Editor::Init(bool enable_multi_viewports, bool enable_docking, bool enable_keyboard_navigation) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		io = &ImGui::GetIO();
 
 		FileManager::EnsureDir("config");
 		io->IniFilename = "config/imgui.cfg";
-		if (params.enable_keyboard_navigation) // Enable Keyboard Controls
+		if (enable_keyboard_navigation) // Enable Keyboard Controls
 			io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-		if (params.enable_docking) { // Enable Docking
+		if (enable_docking) { // Enable Docking
 			io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 			io->ConfigDockingWithShift = true;
 		}
-		if (params.multi_viewports) { // Enable Multi-Viewport / Platform Windows
+		if (enable_multi_viewports) { // Enable Multi-Viewport / Platform Windows
 			io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 			//io->ConfigViewportsNoAutoMerge = true;
 			io->ConfigViewportsNoTaskBarIcon = true;
