@@ -28,9 +28,9 @@ namespace zore::UI {
 		constexpr float recip = 1.f / 32767.f;
 		switch (m_type) {
 		case Type::PCT:
-			return static_cast<int16_t>(parent_size * recip * m_value); // + 0.5f
+			return static_cast<int16_t>(parent_size * recip * m_value + 0.5f);
 		case Type::REM:
-			return static_cast<int16_t>(global_size * recip * m_value); // + 0.5f
+			return static_cast<int16_t>(global_size * recip * m_value + 0.5f);
 		case Type::PXL:
 			return m_value;
 		case Type::AUT:
@@ -54,9 +54,10 @@ namespace zore::UI {
 
 	Style::Style() {
 		SetSize(Unit::PCT(100), Unit::PCT(100));
+		SetMaxSize(Unit::PCT(100), Unit::PCT(100));
 		SetMargin(Unit::PXL(0));
 		SetPadding(Unit::PXL(0));
-		SetFlowDirection(FlowDirection::HORIZONTAL);
+		SetFlowDirection(FlowDirection::VERTICAL);
 		SetColour(Colour::rgb(0, 0, 0, 0));
 	}
 
@@ -104,6 +105,22 @@ namespace zore::UI {
 		return *this;
 	}
 
+	Style& Style::SetMaxWidth(Unit width) {
+		m_max_size[W] = width;
+		return *this;
+	}
+
+	Style& Style::SetMaxHeight(Unit height) {
+		m_max_size[H] = height;
+		return *this;
+	}
+
+	Style& Style::SetMaxSize(Unit width, Unit height) {
+		m_max_size[W] = width;
+		m_max_size[H] = height;
+		return *this;
+	}
+
 	Style& Style::SetMargin(Unit margin) {
 		m_margin[T] = margin;
 		m_margin[R] = margin;
@@ -113,10 +130,10 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMargin(Unit horizontal, Unit vertical) {
-		m_margin[L] = horizontal;
 		m_margin[T] = vertical;
 		m_margin[R] = horizontal;
 		m_margin[B] = vertical;
+		m_margin[L] = horizontal;
 		return *this;
 	}
 

@@ -1,7 +1,7 @@
 #include <zore/core/Application.hpp>
 #include <zore/core/Camera.hpp>
-#include <zore/ui/Layer.hpp>
 #include <zore/core/ActionMap.hpp>
+#include <zore/ui/Layer.hpp>
 
 #include <zore/Devices.hpp>
 #include <zore/Graphics.hpp>
@@ -16,6 +16,7 @@ namespace zore {
 	private:
 		void Run() override;
 		void CreateSimpleUI();
+		static DemoApplication* Get();
 
 		bool OnMouseMove(float x, float y, float dx, float dy) override;
 		bool OnMousePress(int button) override;

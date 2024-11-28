@@ -10,7 +10,7 @@ void main() {
 	vec2 pos = vec2(quad[0] >> 16, quad[0] & 0xffff);
 	vec2 size = vec2(quad[1] >> 16, quad[1] & 0xffff);
 	uint hovered = quad[2] & 1;
-	uint clicked = (quad[2] >> 1) & 1;
+	uint pressed = (quad[2] >> 1) & 1;
 	uint depth = quad[2] >> 16;
 
 	uint r = (quad[3] >> 24) & 0xff;
@@ -18,14 +18,12 @@ void main() {
 	uint b = (quad[3] >> 8 ) & 0xff;
 	uint a = (quad[3] >> 0 ) & 0xff;
 	
-	/*
-	if (clicked == 1)
+	if (pressed == 1)
 		colour = vec4(0.0, 0.0, 1.0, 1.0);
 	else if (hovered == 1)
 		colour = vec4(0.0, 1.0, 0.0, 1.0);
 	else
-	*/
-	colour = vec4(r, g, b, a) / 255.0;
+		colour = vec4(r, g, b, a) / 255.0;
 		
 	vec2 uv = vec2(gl_VertexID >> 1, gl_VertexID & 1);
 	pos = ((uv * size) + pos - camera.xy) * camera.zw;

@@ -70,6 +70,9 @@ namespace zore::UI {
 		Style& SetWidth(Unit width, float aspect_ratio);
 		Style& SetHeight(Unit height, float aspect_ratio);
 		Style& SetSize(Unit width, Unit height);
+		Style& SetMaxWidth(Unit width);
+		Style& SetMaxHeight(Unit height);
+		Style& SetMaxSize(Unit width, Unit height);
 		Style& SetMargin(Unit margin);
 		Style& SetMargin(Unit horizontal, Unit vertical);
 		Style& SetMargin(Unit left, Unit top, Unit right, Unit bottom);
@@ -83,6 +86,7 @@ namespace zore::UI {
 		float m_aspect_ratio;
 		uint8_t m_dependent_axis;
 		Unit m_size[2];
+		Unit m_max_size[2];
 		Unit m_margin[4];
 		Unit m_padding[4];
 		FlowDirection m_flow_direction;

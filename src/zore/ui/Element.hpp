@@ -24,8 +24,8 @@ namespace zore::UI {
 
 		Element* AddChild(const Element& element);
 		Element* AddChild(const Element& element, const std::string& style);
-		Bounds ComputeBounds(const Bounds& parent_bounds, uint32_t global_height, uint32_t auto_size, uint32_t axis) const;
-		void ComputeRequiredSize(const Bounds& parent_bounds, uint32_t global_height, uint32_t& auto_count, uint32_t& required_size, uint32_t axis) const;
+		Bounds ComputeBounds(const Bounds& parent_bounds, int16_t global_height, int16_t auto_size, int16_t axis) const;
+		void ComputeRequiredSize(const Bounds& parent_bounds, int16_t global_height, int16_t& auto_count, int16_t& required_size, int16_t axis) const;
 
 		inline void SetStyle(const Style* style) { m_style = style; }
 		inline void SetStyle(const std::string& style) { m_style = Style::Get(style); }
@@ -36,8 +36,8 @@ namespace zore::UI {
 		inline const std::vector<Element>& GetChildren() const { return m_children; }
 
 	private:
-		void ComputeSizeOfSecondaryAxis(const Bounds& parent_bounds, uint32_t global_height, uint32_t axis) const;
-		void ComputeRequiredSize(uint32_t parent_size, uint32_t global_height, Unit value, uint32_t& auto_count, uint32_t& required_size, int16_t& result) const;
+		void ComputeSizeOfSecondaryAxis(const Bounds& parent_bounds, int16_t global_height, int16_t axis) const;
+		void ComputeRequiredSize(int16_t parent_size, int16_t global_height, int16_t max_size, Unit value, int16_t& auto_count, int16_t& required_size, int16_t& result) const;
 		void UpdateIfAuto(Unit::Type type, int16_t& value, int16_t auto_size) const;
 
 	protected:
@@ -45,6 +45,7 @@ namespace zore::UI {
 		uint32_t m_id;
 		const Style* m_style;
 		mutable int16_t m_size[2];
+		mutable int16_t m_max_size[2];
 		mutable int16_t m_margin[4];
 		std::vector<Element> m_children;
 	};

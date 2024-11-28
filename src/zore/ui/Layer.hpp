@@ -8,28 +8,27 @@ namespace zore::UI {
     //	Layer Class
     //========================================================================
 
-    class Layer : public Element {
+    class Layer : private Element {
     public:
-        Layer(const std::string& style = "");
+        Layer();
         ~Layer() = default;
-        
-        void Resize(uint32_t width, uint32_t height);
-        void Flush();
-        void Render();
+
+        void Bind();
+
+        static void Resize(uint32_t width, uint32_t height);
+        static void Flush();
+        static void Render();
+
+		static void HandleMouseMove(uint32_t mouse_x, uint32_t mouse_y);
+		static uint32_t HandleMousePress(uint32_t button);
+		static uint32_t HandleMouseRelease(uint32_t button);
+		static uint32_t HandleKeyPress(uint32_t key);
+
+		using Element::AddChild;
+        using Element::GetChild;
+		using Element::GetChildren;
 
     private:
-		void ParseUIElement(const Element& element, uint32_t global_height, const Element::Bounds& parent_bounds, int32_t depth);
-
-    private:
-		struct ColouredQuad {
-			ColouredQuad(int32_t x, int32_t y, int32_t w, int32_t h, int32_t d, Colour c);
-			int32_t position;
-			int32_t size;
-			int32_t data;
-			int32_t colour;
-		};
-
-    private:
-        std::vector<ColouredQuad> m_quads;
+		static void ParseUIElement(const Element& element, int16_t global_height, const Element::Bounds& parent_bounds, int16_t depth);
     };
 }

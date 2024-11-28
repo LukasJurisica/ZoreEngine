@@ -1,5 +1,6 @@
 #include "main.hpp"
 #include <zore/core/FileManager.hpp>
+#include <zore/utils/ConfigManager.hpp>
 #include <zore/audio/AudioEngine.hpp>
 #include <zore/ui/Manager.hpp>
 #include <zore/ui/Editor.hpp>
@@ -8,16 +9,18 @@
 using namespace zore;
 
 static bool s_display_console = false;
+static DemoApplication* s_instance = nullptr;
 
-DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f), m_main_menu(UI::Manager::CreateLayer("example_menu")) {
+DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f), m_main_menu(UI::Manager::CreateLayer("main_menu")) {
 	FileManager::Init("/examples/01_sandbox application/");
 	RenderEngine::SetVSync(false);
 	m_camera.SetHeight(static_cast<float>(Window::GetSize().y));
 	m_camera.SetPosition({ Window::GetSize().x >> 1, Window::GetSize().y >> 1 });
+	s_instance = this;
 
-	// Initialize Action map
+	// Initialize UI
 	UI::Manager::Bind(action_map);
-	UI::Manager::Bind(m_main_menu);
+	UI::Manager::Bind("main_menu");
 
 	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
 		s_display_console = !s_display_console;
@@ -41,7 +44,7 @@ void DemoApplication::Run() {
 		RenderEngine::Clear();
 
 		m_ui_shader.SetFloat4("camera", { m_camera.GetPosition(), m_camera.GetScale() * glm::vec2(1, -1) });
-		m_main_menu.Render();
+		UI::Layer::Render();
 
 		Editor::BeginFrame();
 		if (s_display_console)
@@ -53,72 +56,54 @@ void DemoApplication::Run() {
 }
 
 void DemoApplication::CreateSimpleUI() {
-	
-
-	/*
-	UI::Style::Create("root")
-		.SetColour(Colour::hex("#00FFFF"));
-
-	UI::Style::Create("a")
-		.SetSize(UI::Unit::PCT(100), UI::Unit::PCT(30))
-		.SetPadding(UI::Unit::REM(2))
-		.SetColour(Colour::hex("#00FF00"));
-
-	UI::Style::Create("b")
-		.SetSize(UI::Unit::PCT(100), UI::Unit::PCT(40))
-		.SetPadding(UI::Unit::REM(2))
-		.SetColour(Colour::hex("#0000FF"));
-
-	UI::Style& child_style = UI::Style::Create("child")
-		.SetHeight(UI::Unit::AUT(), 1.f)
-		.SetMargin(UI::Unit::REM(2), UI::Unit::REM(2))
-		.SetColour(Colour::hex("#FFFF00"));
-
-	UI::Style::Clone(child_style, "child2")
-		.SetMargin(UI::Unit::AUT(), UI::Unit::REM(2), UI::Unit::REM(2), UI::Unit::REM(2));
-
-	UI::Element a(UI::Element::Type::PANEL, "a");
-	UI::Element b(UI::Element::Type::PANEL, "b");
-	UI::Element child(UI::Element::Type::BUTTON, "child");
-
-	a.AddChild(child);
-	a.AddChild(child);
-	a.AddChild(child);
-
-	b.AddChild(child, "child2");
-	b.AddChild(child);
-	b.AddChild(child);
-
-	m_main_menu.AddChild(a);
-	m_main_menu.AddChild(b);
-	*/
-
-	UI::Style& child_style = UI::Style::Create("child")
-		.SetHeight(UI::Unit::PCT(90), 1.f)
-		.SetMargin(UI::Unit::AUT())
+	// Define Styles
+	float perc = 100.f / 18.f;
+	UI::Style& standard_button_style = UI::Style::Create("standard_button")
+		.SetHeight(UI::Unit::PCT(perc * 4), 4.f)
+		.SetMargin(UI::Unit::AUT(), UI::Unit::PCT(perc))
 		.SetColour(Colour::hex("#FFFFFF"));
 
-	UI::Element a(UI::Element::Type::BUTTON, &child_style);
+	UI::Style& standard_menu_style = UI::Style::Create("standard_menu")
+		.SetMaxHeight(UI::Unit::PXL(500))
+		.SetMargin(UI::Unit::PXL(0), UI::Unit::AUT());
 
-	action_map.RegisterAction(ActionMap::Source::INTERNAL, a.GetUUID(), true, true, [](bool start) {
-		Logger::Log("Awesome");
+	// Main Menu Demo UI
+	UI::Element button_container(UI::Element::Type::PANEL, &standard_menu_style);
+	UI::Element play(UI::Element::Type::BUTTON, &standard_button_style);
+	UI::Element options(UI::Element::Type::BUTTON, &standard_button_style);
+	UI::Element quit(UI::Element::Type::BUTTON, &standard_button_style);
+	action_map.RegisterAction(ActionMap::Source::INTERNAL, quit.GetUUID(), true, false, [](bool start) {
+		UI::Manager::Bind("confirm_quit_menu");
 		});
-
-	m_main_menu.AddChild(a);
-
+	button_container.AddChild(play);
+	button_container.AddChild(options);
+	button_container.AddChild(quit);
+	m_main_menu.AddChild(button_container);
 	glm::ivec2 resolution = Window::GetSize();
-	m_main_menu.Resize(resolution.x, resolution.y);
+	UI::Layer::Resize(resolution.x, resolution.y);
+
+	// Sub Menu Demo UI
+	UI::Layer& confirm_quit_menu = UI::Manager::CreateLayer("confirm_quit_menu");
+	UI::Element confirm_container(UI::Element::Type::PANEL, &standard_menu_style);
+	UI::Element yes(UI::Element::Type::BUTTON, &standard_button_style);
+	UI::Element no(UI::Element::Type::BUTTON, &standard_button_style);
+	action_map.RegisterAction(ActionMap::Source::INTERNAL, no.GetUUID(), false, true, [](bool start) {
+		UI::Manager::Bind("main_menu");
+		});
+	confirm_container.AddChild(yes);
+	confirm_container.AddChild(no);
+	confirm_quit_menu.AddChild(confirm_container);
+}
+
+DemoApplication* DemoApplication::Get() {
+	return s_instance;
 }
 
 bool DemoApplication::OnMouseMove(float x, float y, float dx, float dy) {
-	//UI::Layer::HandleMouseMove(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
 	return false;
 }
 
 bool DemoApplication::OnMousePress(int button) {
-	//if (uint32_t trigger = UI::Layer::HandleMouseClick(button))
-	//	return action_map.HandleEvent(ActionMap::Source::INTERNAL, trigger, 1);
-	//else
 	return action_map.HandleEvent(ActionMap::Source::MOUSE, button, 1);
 }
 
@@ -127,9 +112,6 @@ bool DemoApplication::OnMouseRelease(int button) {
 }
 
 bool DemoApplication::OnKeyPress(int key, int mods) {
-	//if (uint32_t trigger = UI::Layer::HandleKeyPress(key))
-	//	return action_map.HandleEvent(ActionMap::Source::INTERNAL, trigger, 1);
-	//else
 	return action_map.HandleEvent(ActionMap::Source::KEYBOARD, key, 1);
 }
 

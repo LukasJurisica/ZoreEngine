@@ -11,12 +11,14 @@ namespace zore::UI {
 
     class Manager {
     public:
-        static Layer& CreateLayer(const std::string& name, const std::string& style = "");
-        static Layer* Bind(Layer& layer);
+        static Layer& CreateLayer(const std::string& name);
         static Layer* Bind(const std::string& name);
         static void Bind(ActionMap& action_map);
 
-    private:
+        virtual void OnLayerChange(Layer* layer, const std::string& name) {};
 
+    protected:
+		Manager();
+		~Manager() = default;
     };
 }

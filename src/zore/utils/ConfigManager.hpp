@@ -2,17 +2,31 @@
 #include <string>
 #include <unordered_map>
 
-namespace zore {
+namespace zore::Config {
 
-	class ConfigGroup {
+	//========================================================================
+	//	Config Manager Class
+	//========================================================================
+
+	class Manager {
 	public:
-		ConfigGroup(const std::string& filename);
-		~ConfigGroup() = default;
+		Manager() = default;
+		Manager(const std::string& filename);
+		~Manager() = default;
 
-		void Load();
+		void Load(const std::string& filename);
+		void Save(const std::string& filename);
 		void Save();
-		int Get(const std::string& key, int default_value = 0);
-		int Set(const std::string& key, int value);
+
+		const std::string& GetString(const std::string& key, const std::string& default_value = "");
+		int GetInt(const std::string& key, int default_value = 0);
+		float GetFloat(const std::string& key, float default_value = 0.f);
+		bool GetBool(const std::string& key, bool default_value = false);
+
+		void Set(const std::string& key, const std::string& value);
+		void Set(const std::string& key, int value);
+		void Set(const std::string& key, float value);
+		void Set(const std::string& key, bool value);
 
 	private:
 		std::string m_filename;

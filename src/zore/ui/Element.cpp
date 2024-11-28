@@ -19,7 +19,7 @@ namespace zore::UI {
 		return &m_children.back();
 	}
 
-	Element::Bounds Element::ComputeBounds(const Bounds& parent_bounds, uint32_t global_height, uint32_t auto_size, uint32_t axis) const {
+	Element::Bounds Element::ComputeBounds(const Bounds& parent_bounds, int16_t global_height, int16_t auto_size, int16_t axis) const {
 		// Compute size of element if any used auto specifier
 		UpdateIfAuto(m_style->m_margin[axis + 0].GetType(), m_margin[axis + 0], auto_size);
 		UpdateIfAuto(m_style->m_margin[axis + 2].GetType(), m_margin[axis + 2], auto_size);
@@ -56,10 +56,13 @@ namespace zore::UI {
 		return bounds;
 	}
 
-	void Element::ComputeRequiredSize(const Bounds& parent_bounds, uint32_t global_height, uint32_t& auto_count, uint32_t& required_size, uint32_t axis) const {
+	void Element::ComputeRequiredSize(const Bounds& parent_bounds, int16_t global_height, int16_t& auto_count, int16_t& required_size, int16_t axis) const {
+		m_max_size[W] = m_style->m_max_size[W].Get(global_height, parent_bounds.inner[W], 0);
+		m_max_size[H] = m_style->m_max_size[H].Get(global_height, parent_bounds.inner[H], 0);
+
 		// Compute size of element along primary axis if it is not dependent on the secondary axis
 		if (m_style->m_dependent_axis != axis)
-			ComputeRequiredSize(parent_bounds.inner[axis], global_height, m_style->m_size[axis], auto_count, required_size, m_size[axis]);
+			ComputeRequiredSize(parent_bounds.inner[axis], global_height, m_max_size[axis], m_style->m_size[axis], auto_count, required_size, m_size[axis]);
 
 		// Compute size of secondary axis if it does not rely on the primary axis, or the primary axis is calculable
 		if (m_style->m_dependent_axis != (1 - axis) or m_style->m_size[axis].GetType() != Unit::Type::AUT) {
@@ -71,33 +74,29 @@ namespace zore::UI {
 		}
 
 		// Compute size of margins on primary axis
-		ComputeRequiredSize(parent_bounds.inner[axis], global_height, m_style->m_margin[axis + 0], auto_count, required_size, m_margin[axis + 0]);
-		ComputeRequiredSize(parent_bounds.inner[axis], global_height, m_style->m_margin[axis + 2], auto_count, required_size, m_margin[axis + 2]);
+		ComputeRequiredSize(parent_bounds.inner[axis], global_height, parent_bounds.inner[axis], m_style->m_margin[axis + 0], auto_count, required_size, m_margin[axis + 0]);
+		ComputeRequiredSize(parent_bounds.inner[axis], global_height, parent_bounds.inner[axis], m_style->m_margin[axis + 2], auto_count, required_size, m_margin[axis + 2]);
 	}
 
-	void Element::ComputeSizeOfSecondaryAxis(const Bounds& parent_bounds, uint32_t global_height, uint32_t axis) const {
-		uint32_t auto_count = 0, required_size = 0;
-		ComputeRequiredSize(parent_bounds.inner[axis], global_height, m_style->m_margin[axis + 0], auto_count, required_size, m_margin[axis + 0]);
-		ComputeRequiredSize(parent_bounds.inner[axis], global_height, m_style->m_margin[axis + 2], auto_count, required_size, m_margin[axis + 2]);
-		ComputeRequiredSize(parent_bounds.inner[axis], global_height, m_style->m_size[axis], auto_count, required_size, m_size[axis]);
-		uint32_t auto_size = auto_count > 0 ? ((parent_bounds.inner[axis] - required_size) / auto_count) : 0;
-
+	void Element::ComputeSizeOfSecondaryAxis(const Bounds& parent_bounds, int16_t global_height, int16_t axis) const {
+		int16_t auto_count = 0, required_size = 0;
+		ComputeRequiredSize(parent_bounds.inner[axis], global_height, parent_bounds.inner[axis], m_style->m_margin[axis + 0], auto_count, required_size, m_margin[axis + 0]);
+		ComputeRequiredSize(parent_bounds.inner[axis], global_height, parent_bounds.inner[axis], m_style->m_margin[axis + 2], auto_count, required_size, m_margin[axis + 2]);
+		if (m_style->m_dependent_axis == axis)
+			required_size += (m_size[axis] = zm::Min(m_max_size[axis], static_cast<int16_t>(zm::Round(m_size[1 - axis] * m_style->m_aspect_ratio))));
+		else
+			ComputeRequiredSize(parent_bounds.inner[axis], global_height, m_max_size[axis], m_style->m_size[axis], auto_count, required_size, m_size[axis]);
+		int16_t auto_size = auto_count > 0 ? ((parent_bounds.inner[axis] - required_size) / auto_count) : 0;
 		UpdateIfAuto(m_style->m_margin[axis + 0].GetType(), m_margin[axis + 0], auto_size);
 		UpdateIfAuto(m_style->m_margin[axis + 2].GetType(), m_margin[axis + 2], auto_size);
-		
-		if (m_style->m_dependent_axis == axis)
-			m_size[axis] = static_cast<int16_t>(zm::Round(m_size[1 - axis] * m_style->m_aspect_ratio));
-		else
-			UpdateIfAuto(m_style->m_size[axis].GetType(), m_size[axis], auto_size);
+		UpdateIfAuto(m_style->m_size[axis].GetType(), m_size[axis], zm::Min(m_max_size[axis], auto_size));
 	}
 
-	void Element::ComputeRequiredSize(uint32_t parent_size, uint32_t global_height, Unit value, uint32_t& auto_count, uint32_t& required_size, int16_t& result) const {
+	void Element::ComputeRequiredSize(int16_t parent_size, int16_t global_height, int16_t max_size, Unit value, int16_t& auto_count, int16_t& required_size, int16_t& result) const {
 		if (value.GetType() == Unit::Type::AUT)
 			auto_count++;
-		else {
-			result = value.Get(global_height, parent_size, 0);
-			required_size += result;
-		}
+		else
+			required_size += (result = zm::Min(max_size, value.Get(global_height, parent_size, 0)));
 	}
 
 	void Element::UpdateIfAuto(Unit::Type type, int16_t& value, int16_t auto_size) const {
