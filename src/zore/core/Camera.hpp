@@ -28,7 +28,7 @@ namespace zore {
 		glm::vec2 GetWorldSpacePosition(glm::vec2 coordinate) const;
 
 	private:
-		void UpdateProjection();
+		const glm::vec2& UpdateProjection();
 
 	private:
 		float m_aspect_ratio;

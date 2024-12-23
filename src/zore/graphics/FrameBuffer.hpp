@@ -63,8 +63,8 @@ namespace zore {
 
 	private:
 		uint32_t m_id;
-		uint32_t m_attachmentCount;
-		Texture2DArray m_colourBuffer;
-		DepthBuffer m_depthBuffer;
+		uint32_t m_attachment_count;
+		Texture2DArray m_colour_buffer;
+		DepthBuffer m_depth_buffer;
 	};
 }

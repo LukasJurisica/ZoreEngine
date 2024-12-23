@@ -64,7 +64,7 @@ namespace zore::UI {
 		s_quads.clear();
 		s_button_colliders.clear();
 		Element::Bounds bounds = { width, height, 0, 0, width, height, 0, 0, width, height, 0, 0 };
-		ParseUIElement(*s_active_layer, height, bounds, 0);
+		ParseUIElement(*s_active_layer, width, height, bounds, 0);
 		Flush();
 	}
 
@@ -123,11 +123,9 @@ namespace zore::UI {
 		return luid::INVALID_ID;
 	}
 
-	void Layer::ParseUIElement(const Element& element, int16_t global_height, const Element::Bounds& bounds, int16_t depth) {
+	void Layer::ParseUIElement(Element& element, int16_t viewport_width, int16_t viewport_height, const Element::Bounds& bounds, int16_t depth) {
 		if (bounds.middle[W] <= 0 or bounds.middle[H] <= 0)
 			return;
-
-		Logger::Log(depth);
 
 		Colour c = element.GetStyle()->m_colour;
 		// Only draw the element if it has a non-zero alpha value
@@ -153,16 +151,14 @@ namespace zore::UI {
 			return;
 
 		int16_t x_offset = 0, y_offset = 0;
-		int16_t auto_count = 0, required_size = 0;
-		int16_t axis = static_cast<uint32_t>(element.GetStyle()->m_flow_direction);
+		LayoutParams params(bounds, viewport_width, viewport_height, element.GetStyle()->m_flow_direction);
 
-		for (const Element& child : element.GetChildren())
-			child.ComputeRequiredSize(bounds, global_height, auto_count, required_size, axis);
-		int16_t auto_size = (auto_count > 0) ? (bounds.inner[axis] - required_size) / auto_count : 0;
+		for (Element& child : element.Children())
+			child.ComputeRequiredSize(params, params.flow_axis);
+		int16_t auto_size = params.GetAutoSize(params.flow_axis);
 
-		depth += 1;
-		for (const Element& child : element.GetChildren()) {
-			Bounds child_bounds = child.ComputeBounds(bounds, global_height, auto_size, axis);
+		for (Element& child : element.Children()) {
+			Bounds child_bounds = child.ComputeBounds(params, auto_size);
 
 			if (element.GetStyle()->m_flow_direction == FlowDirection::HORIZONTAL) {
 				child_bounds.outer[X] += x_offset;
@@ -177,7 +173,7 @@ namespace zore::UI {
 				y_offset += child_bounds.outer[H];
 			}
 
-			ParseUIElement(child, global_height, child_bounds, depth);
+			ParseUIElement(child, viewport_width, viewport_height, child_bounds, depth + 1);
 		}
 	}
 }

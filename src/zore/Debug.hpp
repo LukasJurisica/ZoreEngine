@@ -2,7 +2,7 @@
 #include "zore/debug/Exception.hpp"
 #include "zore/debug/Logger.hpp"
 
-#define ENSURE(expr, msg) (expr || zore::Exception::AssertionException(__LINE__, __FILE__, #expr "\n" msg))
+#define ENSURE(expr, msg) (expr || zore::Exception::AssertionException(__LINE__, __FILE__, msg))
 
 #ifdef _DEBUG
 #define DEBUG_ENSURE(expr, msg) ENSURE(expr, msg)

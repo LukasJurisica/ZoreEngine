@@ -82,7 +82,7 @@ namespace zore {
 	//	Frame Buffer Class
 	//========================================================================
 
-	FrameBuffer::FrameBuffer() : m_attachmentCount(0) {
+	FrameBuffer::FrameBuffer() : m_attachment_count(0) {
 		glCreateFramebuffers(1, &m_id);
 	}
 
@@ -100,44 +100,45 @@ namespace zore {
 	}
 
 	Texture2DArray& FrameBuffer::GetColourTexture() {
-		return m_colourBuffer;
+		return m_colour_buffer;
 	}
 
 	DepthBuffer& FrameBuffer::GetDepthTexture() {
-		return m_depthBuffer;
+		return m_depth_buffer;
 	}
 
 	void FrameBuffer::SetSize(uint32_t width, uint32_t height) {
-		m_colourBuffer.SetSize(width, height, m_attachmentCount).Bind();
-		uint32_t texture2DArrayID = m_colourBuffer.GetID();
-		for (uint32_t i = 0; i < m_attachmentCount; i++)
+		m_colour_buffer.Set(nullptr, width, height, m_attachment_count);
+		m_colour_buffer.Bind();
+		uint32_t texture2DArrayID = m_colour_buffer.GetID();
+		for (uint32_t i = 0; i < m_attachment_count; i++)
 			glNamedFramebufferTextureLayer(m_id, GL_COLOR_ATTACHMENT0 + i, texture2DArrayID, 0, i);
 
-		m_depthBuffer.SetSize(width, height);
-		uint32_t depthFormatIndex = static_cast<uint32_t>(m_depthBuffer.m_format);
-		if (m_depthBuffer.m_format == DepthFormat::DEPTH32_TEXTURE || m_depthBuffer.m_format == DepthFormat::DEPTH24_STENCIL8_TEXTURE)
-			glNamedFramebufferTexture(m_id, DepthFormatToGLBaseFormat[depthFormatIndex - 2], m_depthBuffer.GetID(), 0);
+		m_depth_buffer.SetSize(width, height);
+		uint32_t depthFormatIndex = static_cast<uint32_t>(m_depth_buffer.m_format);
+		if (m_depth_buffer.m_format == DepthFormat::DEPTH32_TEXTURE || m_depth_buffer.m_format == DepthFormat::DEPTH24_STENCIL8_TEXTURE)
+			glNamedFramebufferTexture(m_id, DepthFormatToGLBaseFormat[depthFormatIndex - 2], m_depth_buffer.GetID(), 0);
 	}
 
 	void FrameBuffer::Set(uint32_t width, uint32_t height, uint32_t attachmentCount, Texture::Format attachmentFormat, DepthFormat depthFormat) {
 		// Create colour attachments
-		m_attachmentCount = attachmentCount;
+		m_attachment_count = attachmentCount;
 		uint32_t activeAttachments[MAX_FRAMEBUFFER_ATTACHMENTS];
-		m_colourBuffer.SetSize(width, height, m_attachmentCount, Texture::Format::RGBA);
-		uint32_t texture2DArrayID = m_colourBuffer.GetID();
-		for (uint32_t i = 0; i < m_attachmentCount; i++) {
+		m_colour_buffer.Set(nullptr, width, height, m_attachment_count, Texture::Format::RGBA);
+		uint32_t texture2DArrayID = m_colour_buffer.GetID();
+		for (uint32_t i = 0; i < m_attachment_count; i++) {
 			activeAttachments[i] = GL_COLOR_ATTACHMENT0 + i;
 			glNamedFramebufferTextureLayer(m_id, activeAttachments[i], texture2DArrayID, 0, i);
 		}
-		glNamedFramebufferDrawBuffers(m_id, m_attachmentCount, activeAttachments);
+		glNamedFramebufferDrawBuffers(m_id, m_attachment_count, activeAttachments);
 
 		// Create Depth/Stencil Buffer (If requested)
 		uint32_t depthFormatIndex = static_cast<uint32_t>(depthFormat);
-		m_depthBuffer.Set(width, height, depthFormat);
+		m_depth_buffer.Set(width, height, depthFormat);
 		if (depthFormat == DepthFormat::DEPTH32_BUFFER || depthFormat == DepthFormat::DEPTH24_STENCIL8_BUFFER)
-			glNamedFramebufferRenderbuffer(m_id, DepthFormatToGLBaseFormat[depthFormatIndex], GL_RENDERBUFFER, m_depthBuffer.GetID());
+			glNamedFramebufferRenderbuffer(m_id, DepthFormatToGLBaseFormat[depthFormatIndex], GL_RENDERBUFFER, m_depth_buffer.GetID());
 		else if (depthFormat == DepthFormat::DEPTH32_TEXTURE || depthFormat == DepthFormat::DEPTH24_STENCIL8_TEXTURE)
-			glNamedFramebufferTexture(m_id, DepthFormatToGLBaseFormat[depthFormatIndex - 2], m_depthBuffer.GetID(), 0);
+			glNamedFramebufferTexture(m_id, DepthFormatToGLBaseFormat[depthFormatIndex - 2], m_depth_buffer.GetID(), 0);
 
 		// Ensure FrameBuffer was created successfully
 		uint32_t retval = glCheckNamedFramebufferStatus(m_id, GL_FRAMEBUFFER);

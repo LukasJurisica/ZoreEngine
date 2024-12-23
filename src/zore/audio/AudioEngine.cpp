@@ -20,6 +20,8 @@ namespace zore {
 	}
 
 	void AudioEngine::Play(const std::string& filename) {
-		ma_engine_play_sound(&s_audio_engine, filename.c_str(), NULL);
+		ma_result result = ma_engine_play_sound(&s_audio_engine, filename.c_str(), NULL);
+		if (result != MA_SUCCESS)
+			Logger::Error("Failed to play sound:", filename, "Error Code:", result);
 	}
 }

@@ -26,9 +26,9 @@ namespace zore::UI {
 
 		using Element::AddChild;
         using Element::GetChild;
-		using Element::GetChildren;
+		using Element::Children;
 
     private:
-		static void ParseUIElement(const Element& element, int16_t global_height, const Element::Bounds& parent_bounds, int16_t depth);
+		static void ParseUIElement(Element& element, int16_t viewport_width, int16_t viewport_height, const Element::Bounds& parent_bounds, int16_t depth);
     };
 }

@@ -12,9 +12,11 @@ int WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPS
 		return_code = EXIT_SUCCESS;
 	}
 	catch (const zore::Exception& e) {
+		zore::Logger::Error(e.what());
 		MessageBox(nullptr, e.what(), e.GetType(), MB_OK | MB_ICONEXCLAMATION);
 	}
 	catch (const std::exception& e) {
+		zore::Logger::Error(e.what());
 		MessageBox(nullptr, e.what(), "Generic Exception", MB_OK | MB_ICONEXCLAMATION);
 	}
 	catch (...) {

@@ -4,6 +4,7 @@
 #include <zore/audio/AudioEngine.hpp>
 #include <zore/ui/Manager.hpp>
 #include <zore/ui/Editor.hpp>
+#include <zore/ui/Font.hpp>
 #include <zore/Debug.hpp>
 
 using namespace zore;
@@ -32,6 +33,8 @@ void DemoApplication::Run() {
 	RenderEngine::SetClearMode({ BufferType::COLOUR, BufferType::DEPTH });
 	RenderEngine::SetTopology(MeshTopology::TRIANGLE_STRIP);
 	RenderEngine::SetDepthTest(DepthTest::LESS);
+
+	UI::Font& font = UI::Font::Create("assets/fonts/ZoreFont/", Texture::Format::RU);
 
 	m_ui_shader.SetSource("default_ui.glsl").Compile();
 	VertexLayout layout(m_ui_shader, {}, { { "quad", VertexDataType::INT_32, 4} });
@@ -85,7 +88,7 @@ void DemoApplication::CreateSimpleUI() {
 	// Sub Menu Demo UI
 	UI::Layer& confirm_quit_menu = UI::Manager::CreateLayer("confirm_quit_menu");
 	UI::Element confirm_container(UI::Element::Type::PANEL, &standard_menu_style);
-	UI::Element yes(UI::Element::Type::BUTTON, &standard_button_style);
+	UI::Element yes(UI::Element::Type::BUTTON, "standard_button");
 	UI::Element no(UI::Element::Type::BUTTON, &standard_button_style);
 	action_map.RegisterAction(ActionMap::Source::INTERNAL, no.GetUUID(), false, true, [](bool start) {
 		UI::Manager::Bind("main_menu");
@@ -127,6 +130,7 @@ void DemoApplication::OnWindowResize(int width, int height, float aspect_ratio) 
 
 Application* Application::Create() {
 	return new DemoApplication({
-		.enable_audio = false
+		.enable_audio = false,
+		.enable_multi_viewports = true
 		});
 }

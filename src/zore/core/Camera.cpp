@@ -9,8 +9,8 @@ namespace zore {
 	//	2D Camera Class
 	//========================================================================
 
-	Camera2D::Camera2D(float aspect_ratio, float height) : m_aspect_ratio(aspect_ratio), m_position(0, 0) {
-		SetHeight(height);
+	Camera2D::Camera2D(float aspect_ratio, float height) : m_aspect_ratio(aspect_ratio), m_height(height), m_position(0, 0) {
+		UpdateProjection();
 	}
 
 	void Camera2D::SetPosition(const glm::vec2& position) {
@@ -18,25 +18,21 @@ namespace zore {
 	}
 
 	const glm::vec2& Camera2D::Translate(const glm::vec2& offset) {
-		m_position += offset;
-		return m_position;
+		return (m_position += offset);
 	}
 
 	const glm::vec2& Camera2D::TranslatePixels(const glm::vec2& offset) {
-		m_position += GetWorldSpaceTranslation(offset);
-		return m_position;
+		return Translate(GetWorldSpaceTranslation(offset));
 	}
 
 	const glm::vec2& Camera2D::SetAspectRatio(float aspect_ratio) {
 		m_aspect_ratio = aspect_ratio;
-		UpdateProjection();
-		return m_scale;
+		return UpdateProjection();
 	}
 
 	const glm::vec2& Camera2D::SetHeight(float height) {
 		m_height = height;
-		UpdateProjection();
-		return m_scale;
+		return UpdateProjection();
 	}
 
 	bool Camera2D::TestPoint(glm::vec2 point) const {
@@ -67,9 +63,9 @@ namespace zore {
 		return m_position + GetWorldSpaceTranslation({ coordinate.x, -coordinate.y });
 	}
 
-	void Camera2D::UpdateProjection() {
+	const glm::vec2& Camera2D::UpdateProjection() {
 		m_width = m_height * m_aspect_ratio;
-		m_scale = { 2.f / m_width, 2.f / m_height };
+		return (m_scale = { 2.f / m_width, 2.f / m_height });
 	}
 
 	//========================================================================

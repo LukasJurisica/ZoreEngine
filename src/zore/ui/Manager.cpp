@@ -66,6 +66,8 @@ namespace zore::UI {
             if (s_manager_instance)
                 s_manager_instance->OnLayerChange(layer, name);
         }
+        else
+			Logger::Warn("Attempted to bind layer with name that does not exist:", name);
         return layer;
     }
 
