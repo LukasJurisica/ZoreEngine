@@ -15,23 +15,23 @@ namespace zore {
 		friend class FrameBuffer;
 	private:
 		DepthBuffer();
-		DepthBuffer(uint32_t width, uint32_t height, DepthFormat depthFormat);
+		DepthBuffer(uint32_t width, uint32_t height, DepthFormat format);
 		DepthBuffer(const DepthBuffer&) = delete;
 		DepthBuffer(DepthBuffer&&) = delete;
 		DepthBuffer& operator=(const DepthBuffer&) = delete;
 		DepthBuffer& operator=(DepthBuffer&&) = delete;
+		void Free();
 		~DepthBuffer();
 
 	public:
 		uint32_t GetID() const;
-		void SetSize(uint32_t width, uint32_t height);
-		void Set(uint32_t width, uint32_t height, DepthFormat depthFormat);
+		void Set(uint32_t width, uint32_t height);
+		void Set(uint32_t width, uint32_t height, DepthFormat format);
 		void Bind() const;
 		void Bind(uint32_t slot);
 		void Bind(const std::string& slot);
-
-	private:
-		void Free();
+		bool IsRenderBuffer() const;
+		bool IsRenderTexture() const;
 
 	private:
 		uint32_t m_id;
@@ -46,7 +46,7 @@ namespace zore {
 	class FrameBuffer {
 	public:
 		FrameBuffer();
-		FrameBuffer(uint32_t width, uint32_t height, uint32_t attachmentCount, Texture::Format attachmentFormat = Texture::Format::RGBA, DepthFormat depthFormat = DepthFormat::DEPTH32_BUFFER);
+		FrameBuffer(uint32_t width, uint32_t height, uint32_t a_count, Texture::Format a_format = Texture::Format::RGBA, DepthFormat d_format = DepthFormat::DEPTH32_BUFFER);
 		FrameBuffer(const FrameBuffer&) = delete;
 		FrameBuffer(FrameBuffer&&) = delete;
 		FrameBuffer& operator=(const FrameBuffer&) = delete;
@@ -56,8 +56,8 @@ namespace zore {
 		uint32_t GetID() const;
 		Texture2DArray& GetColourTexture();
 		DepthBuffer& GetDepthTexture();
-		void SetSize(uint32_t width, uint32_t height);
-		void Set(uint32_t width, uint32_t height, uint32_t attachmentCount, Texture::Format attachmentFormat = Texture::Format::RGBA, DepthFormat depthFormat = DepthFormat::DEPTH32_BUFFER);
+		void Set(uint32_t width, uint32_t height);
+		void Set(uint32_t width, uint32_t height, uint32_t a_count, Texture::Format a_format = Texture::Format::RGBA, DepthFormat d_format = DepthFormat::DEPTH32_BUFFER);
 		void Bind() const;
 		static void Unbind();
 

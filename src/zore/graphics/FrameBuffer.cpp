@@ -6,8 +6,8 @@
 
 namespace zore {
 
-	static const uint32_t DepthFormatToGLBaseFormat[] = { GL_DEPTH_ATTACHMENT, GL_DEPTH_STENCIL_ATTACHMENT };
-	static const uint32_t DepthFormatToGLSizedFormat[] = { GL_DEPTH_COMPONENT32, GL_DEPTH24_STENCIL8 };
+	static const uint32_t S_DEPTH_FORMAT_TO_BASE_FORMAT[] = { GL_DEPTH_ATTACHMENT, GL_DEPTH_STENCIL_ATTACHMENT };
+	static const uint32_t S_DEPTH_FORMAT_TO_INTERNAL_FORMAT[] = { GL_DEPTH_COMPONENT32, GL_DEPTH24_STENCIL8 };
 
 	//========================================================================
 	//	Depth Buffer Class
@@ -15,8 +15,15 @@ namespace zore {
 
 	DepthBuffer::DepthBuffer() : m_id(0), m_slot(0), m_format(DepthFormat::NONE) {}
 
-	DepthBuffer::DepthBuffer(uint32_t width, uint32_t height, DepthFormat depthFormat) : m_id(0), m_slot(0), m_format(DepthFormat::NONE) {
-		Set(width, height, depthFormat);
+	DepthBuffer::DepthBuffer(uint32_t width, uint32_t height, DepthFormat format) : m_slot(0) {
+		Set(width, height, format);
+	}
+
+	void DepthBuffer::Free() {
+		if (IsRenderBuffer())
+			glDeleteRenderbuffers(1, &m_id);
+		else if (IsRenderTexture())
+			glDeleteTextures(1, &m_id);
 	}
 
 	DepthBuffer::~DepthBuffer() {
@@ -27,38 +34,30 @@ namespace zore {
 		return m_id;
 	}
 
-	void DepthBuffer::SetSize(uint32_t width, uint32_t height) {
-		uint32_t formatIndex = static_cast<uint32_t>(m_format);
-		if (m_format == DepthFormat::DEPTH32_BUFFER || m_format == DepthFormat::DEPTH24_STENCIL8_BUFFER)
-			glNamedRenderbufferStorage(m_id, DepthFormatToGLSizedFormat[formatIndex], width, height);
-		else if (m_format == DepthFormat::DEPTH32_TEXTURE || m_format == DepthFormat::DEPTH24_STENCIL8_TEXTURE) {
-			glDeleteTextures(1, &m_id);
+	void DepthBuffer::Set(uint32_t width, uint32_t height) {
+		Free();
+		if (IsRenderBuffer()) {
+			glCreateRenderbuffers(1, &m_id);
+			glNamedRenderbufferStorage(m_id, S_DEPTH_FORMAT_TO_INTERNAL_FORMAT[static_cast<uint32_t>(m_format)], width, height);
+		}
+		else if (IsRenderTexture()) {
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
-			glTextureStorage2D(m_id, 1, DepthFormatToGLSizedFormat[formatIndex - 2], width, height);
+			glTextureStorage2D(m_id, 1, S_DEPTH_FORMAT_TO_INTERNAL_FORMAT[static_cast<uint32_t>(m_format) - 2], width, height);
 		}
 	}
 
-	void DepthBuffer::Set(uint32_t width, uint32_t height, DepthFormat depthFormat) {
-		Free();
-		uint32_t formatIndex = static_cast<uint32_t>(depthFormat);
-		if (depthFormat == DepthFormat::DEPTH32_BUFFER || depthFormat == DepthFormat::DEPTH24_STENCIL8_BUFFER) {
-			glCreateRenderbuffers(1, &m_id);
-			glNamedRenderbufferStorage(m_id, DepthFormatToGLSizedFormat[formatIndex], width, height);
-		}
-		else if (depthFormat == DepthFormat::DEPTH32_TEXTURE || depthFormat == DepthFormat::DEPTH24_STENCIL8_TEXTURE) {
-			glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
-			glTextureStorage2D(m_id, 1, DepthFormatToGLSizedFormat[formatIndex - 2], width, height);
-		}
-		m_format = depthFormat;
+	void DepthBuffer::Set(uint32_t width, uint32_t height, DepthFormat format) {
+		m_format = format;
+		Set(width, height);
 	}
 
 	void DepthBuffer::Bind() const {
-		if (m_format == DepthFormat::NONE)
-			Logger::Error("Cannot bind Depth Buffer as texture: This FrameBuffer does not contain a Depth Buffer.");
-		else if (m_format == DepthFormat::DEPTH32_BUFFER || m_format == DepthFormat::DEPTH24_STENCIL8_BUFFER)
+		if (IsRenderTexture())
+			glBindTextureUnit(m_slot, m_id);
+		else if (IsRenderBuffer())
 			Logger::Error("Cannot bind Depth Buffer as texture: This FrameBuffer contains a Render Buffer Depth Buffer");
 		else
-			glBindTextureUnit(m_slot, m_id);
+			Logger::Error("Cannot bind Depth Buffer as texture: This FrameBuffer does not contain a Depth Buffer.");
 	}
 
 	void DepthBuffer::Bind(uint32_t slot) {
@@ -67,15 +66,15 @@ namespace zore {
 	}
 
 	void DepthBuffer::Bind(const std::string& slot) {
-		m_slot = Texture::GetNamedTextureSlot(slot);
-		Bind();
+		Bind(Texture::GetNamedTextureSlot(slot));
 	}
 
-	void DepthBuffer::Free() {
-		if (m_format == DepthFormat::DEPTH32_BUFFER || m_format == DepthFormat::DEPTH24_STENCIL8_BUFFER)
-			glDeleteRenderbuffers(1, &m_id);
-		else if (m_format == DepthFormat::DEPTH32_TEXTURE || m_format == DepthFormat::DEPTH24_STENCIL8_TEXTURE)
-			glDeleteTextures(1, &m_id);
+	bool DepthBuffer::IsRenderBuffer() const {
+		return m_format == DepthFormat::DEPTH32_BUFFER || m_format == DepthFormat::DEPTH24_STENCIL8_BUFFER;
+	}
+
+	bool DepthBuffer::IsRenderTexture() const {
+		return m_format == DepthFormat::DEPTH32_TEXTURE || m_format == DepthFormat::DEPTH24_STENCIL8_TEXTURE;
 	}
 
 	//========================================================================
@@ -86,9 +85,9 @@ namespace zore {
 		glCreateFramebuffers(1, &m_id);
 	}
 
-	FrameBuffer::FrameBuffer(uint32_t width, uint32_t height, uint32_t attachmentCount, Texture::Format attachmentFormat, DepthFormat depthFormat) {
+	FrameBuffer::FrameBuffer(uint32_t width, uint32_t height, uint32_t a_count, Texture::Format a_format, DepthFormat d_format) {
 		glCreateFramebuffers(1, &m_id);
-		Set(width, height, attachmentCount, attachmentFormat, depthFormat);
+		Set(width, height, a_count, a_format, d_format);
 	}
 
 	FrameBuffer::~FrameBuffer() {
@@ -107,42 +106,40 @@ namespace zore {
 		return m_depth_buffer;
 	}
 
-	void FrameBuffer::SetSize(uint32_t width, uint32_t height) {
+	void FrameBuffer::Set(uint32_t width, uint32_t height) {
 		m_colour_buffer.Set(nullptr, width, height, m_attachment_count);
-		m_colour_buffer.Bind();
-		uint32_t texture2DArrayID = m_colour_buffer.GetID();
 		for (uint32_t i = 0; i < m_attachment_count; i++)
-			glNamedFramebufferTextureLayer(m_id, GL_COLOR_ATTACHMENT0 + i, texture2DArrayID, 0, i);
+			glNamedFramebufferTextureLayer(m_id, GL_COLOR_ATTACHMENT0 + i, m_colour_buffer.GetID(), 0, i);
 
-		m_depth_buffer.SetSize(width, height);
-		uint32_t depthFormatIndex = static_cast<uint32_t>(m_depth_buffer.m_format);
-		if (m_depth_buffer.m_format == DepthFormat::DEPTH32_TEXTURE || m_depth_buffer.m_format == DepthFormat::DEPTH24_STENCIL8_TEXTURE)
-			glNamedFramebufferTexture(m_id, DepthFormatToGLBaseFormat[depthFormatIndex - 2], m_depth_buffer.GetID(), 0);
+		m_depth_buffer.Set(width, height);
+		if (m_depth_buffer.IsRenderBuffer())
+			glNamedFramebufferRenderbuffer(m_id, S_DEPTH_FORMAT_TO_BASE_FORMAT[static_cast<uint32_t>(m_depth_buffer.m_format)], GL_RENDERBUFFER, m_depth_buffer.GetID());
+		else if (m_depth_buffer.IsRenderTexture())
+			glNamedFramebufferTexture(m_id, S_DEPTH_FORMAT_TO_BASE_FORMAT[static_cast<uint32_t>(m_depth_buffer.m_format) - 2], m_depth_buffer.GetID(), 0);
 	}
 
-	void FrameBuffer::Set(uint32_t width, uint32_t height, uint32_t attachmentCount, Texture::Format attachmentFormat, DepthFormat depthFormat) {
+	void FrameBuffer::Set(uint32_t width, uint32_t height, uint32_t a_count, Texture::Format a_format, DepthFormat d_format) {
 		// Create colour attachments
-		m_attachment_count = attachmentCount;
-		uint32_t activeAttachments[MAX_FRAMEBUFFER_ATTACHMENTS];
-		m_colour_buffer.Set(nullptr, width, height, m_attachment_count, Texture::Format::RGBA);
-		uint32_t texture2DArrayID = m_colour_buffer.GetID();
+		ENSURE((m_attachment_count = a_count) <= MAX_FRAMEBUFFER_ATTACHMENTS, "Cannot create framebuffer: too many colour attachments requested.");
+		uint32_t active_attachments[MAX_FRAMEBUFFER_ATTACHMENTS];
+		m_colour_buffer.Set(nullptr, width, height, m_attachment_count, a_format);
 		for (uint32_t i = 0; i < m_attachment_count; i++) {
-			activeAttachments[i] = GL_COLOR_ATTACHMENT0 + i;
-			glNamedFramebufferTextureLayer(m_id, activeAttachments[i], texture2DArrayID, 0, i);
+			active_attachments[i] = GL_COLOR_ATTACHMENT0 + i;
+			glNamedFramebufferTextureLayer(m_id, active_attachments[i], m_colour_buffer.GetID(), 0, i);
 		}
-		glNamedFramebufferDrawBuffers(m_id, m_attachment_count, activeAttachments);
+		glNamedFramebufferDrawBuffers(m_id, m_attachment_count, active_attachments);
 
 		// Create Depth/Stencil Buffer (If requested)
-		uint32_t depthFormatIndex = static_cast<uint32_t>(depthFormat);
-		m_depth_buffer.Set(width, height, depthFormat);
-		if (depthFormat == DepthFormat::DEPTH32_BUFFER || depthFormat == DepthFormat::DEPTH24_STENCIL8_BUFFER)
-			glNamedFramebufferRenderbuffer(m_id, DepthFormatToGLBaseFormat[depthFormatIndex], GL_RENDERBUFFER, m_depth_buffer.GetID());
-		else if (depthFormat == DepthFormat::DEPTH32_TEXTURE || depthFormat == DepthFormat::DEPTH24_STENCIL8_TEXTURE)
-			glNamedFramebufferTexture(m_id, DepthFormatToGLBaseFormat[depthFormatIndex - 2], m_depth_buffer.GetID(), 0);
+		uint32_t depthFormatIndex = static_cast<uint32_t>(d_format);
+		m_depth_buffer.Set(width, height, d_format);
+		if (m_depth_buffer.IsRenderBuffer())
+			glNamedFramebufferRenderbuffer(m_id, S_DEPTH_FORMAT_TO_BASE_FORMAT[static_cast<uint32_t>(m_depth_buffer.m_format)], GL_RENDERBUFFER, m_depth_buffer.GetID());
+		else if (m_depth_buffer.IsRenderTexture())
+			glNamedFramebufferTexture(m_id, S_DEPTH_FORMAT_TO_BASE_FORMAT[static_cast<uint32_t>(m_depth_buffer.m_format) - 2], m_depth_buffer.GetID(), 0);
 
 		// Ensure FrameBuffer was created successfully
-		uint32_t retval = glCheckNamedFramebufferStatus(m_id, GL_FRAMEBUFFER);
-		ENSURE(retval == GL_FRAMEBUFFER_COMPLETE, "Error creating FrameBuffer. Error code: " + std::to_string(retval));
+		uint32_t result = glCheckNamedFramebufferStatus(m_id, GL_FRAMEBUFFER);
+		ENSURE(result == GL_FRAMEBUFFER_COMPLETE, "Error creating FrameBuffer. Error code: " + std::to_string(result));
 	}
 
 	void FrameBuffer::Bind() const {

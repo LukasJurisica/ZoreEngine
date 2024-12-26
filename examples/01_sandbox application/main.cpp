@@ -7,10 +7,6 @@
 #include <zore/ui/Font.hpp>
 #include <zore/Debug.hpp>
 
-
-#include "glad/glad.h"
-
-
 using namespace zore;
 
 static bool s_display_console = false;
