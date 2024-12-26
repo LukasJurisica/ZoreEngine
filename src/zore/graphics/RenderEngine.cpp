@@ -16,6 +16,17 @@ namespace zore {
 	static std::string s_shader_version;
 
 	//========================================================================
+	//	Render Engine Utility
+	//========================================================================
+
+	void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+		if (type == GL_DEBUG_TYPE_ERROR)
+			Logger::Error("GL ERROR: (", severity, ")", message);
+		else
+			Logger::Info("GL INFO:", message);
+	}
+
+	//========================================================================
 	//	Render Engine Interface
 	//========================================================================
 
@@ -26,6 +37,11 @@ namespace zore {
 		glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &context);
 		Shader::SetShaderVersion(GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version), context & GL_CONTEXT_CORE_PROFILE_BIT);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		if (IS_DEBUG) {
+			glEnable(GL_DEBUG_OUTPUT);
+			glDebugMessageCallback(MessageCallback, 0);
+		}
 
 		stbi_set_flip_vertically_on_load(true);
 	}

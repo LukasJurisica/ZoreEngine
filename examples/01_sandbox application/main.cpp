@@ -7,6 +7,10 @@
 #include <zore/ui/Font.hpp>
 #include <zore/Debug.hpp>
 
+
+#include "glad/glad.h"
+
+
 using namespace zore;
 
 static bool s_display_console = false;
@@ -26,6 +30,16 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
 		s_display_console = !s_display_console;
 		});
+
+	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_F8, true, false, [](bool start) {
+		s_instance->ReloadShaders();
+		});
+}
+
+
+void DemoApplication::ReloadShaders() {
+	m_panel_shader.Compile();
+	m_text_shader.Compile();
 }
 
 void DemoApplication::Run() {
@@ -34,20 +48,29 @@ void DemoApplication::Run() {
 	RenderEngine::SetTopology(MeshTopology::TRIANGLE_STRIP);
 	RenderEngine::SetDepthTest(DepthTest::LESS);
 
-	UI::Font& font = UI::Font::Create("assets/fonts/ZoreFont/", Texture::Format::RU);
-
-	m_ui_shader.SetSource("default_ui.glsl").Compile();
-	VertexLayout layout(m_ui_shader, {}, { { "quad", VertexDataType::INT_32, 4} });
+	m_panel_shader.SetSource("default_ui_panel.glsl").Compile();
+	m_text_shader.SetSource("default_ui_text.glsl").Compile();
+	VertexLayout layout(m_panel_shader, {}, { { "quad", VertexDataType::INT_32, 4} });
 	layout.Bind();
 
-	AudioEngine::Play("assets/screen_ring_pen_king.mp3");
 	CreateSimpleUI();
+
+	// Initialize Font
+	UI::Font& font = UI::Font::Create("assets/fonts/ZoreFont/", Texture::Format::RGBA);
+	Texture::SetNamedTextureSlot("font", 1);
+	font.GetTextureArray().Bind("font");
+	TextureSampler sampler;
+	sampler.SetFilters(TextureSampler::Filter::NEAREST, TextureSampler::Filter::NEAREST);
+	sampler.Bind(1);
 
 	while (!Window::ShouldClose()) {
 		RenderEngine::Clear();
 
-		m_ui_shader.SetFloat4("camera", { m_camera.GetPosition(), m_camera.GetScale() * glm::vec2(1, -1) });
+		m_panel_shader.SetFloat4("camera", { m_camera.GetPosition(), m_camera.GetScale() });
 		UI::Layer::Render();
+
+		m_text_shader.SetFloat4("camera", { m_camera.GetPosition(), m_camera.GetScale() });
+		RenderEngine::DrawLinearInstanced(4, 1);
 
 		Editor::BeginFrame();
 		if (s_display_console)

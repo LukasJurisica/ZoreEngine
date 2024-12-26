@@ -1,6 +1,7 @@
 #include "zore/ui/Font.hpp"
 
 #include <unordered_map>
+#include <zore/Debug.hpp>
 
 namespace zore::UI {
 
@@ -15,7 +16,7 @@ namespace zore::UI {
 		std::vector<std::string> glyph_filenames(ascii_char_count);
 		for (int i = 0; i < ascii_char_count; i++)
 			glyph_filenames[i] = std::to_string(i + 32) + ".png";
-		m_texture_array.Set(glyph_filenames, path, Texture::Format::RGB);
+		m_texture_array.Set(glyph_filenames, path, format);
 	}
 
 	Font& Font::Create(const std::string& name, const std::string& path, Texture::Format format) {

@@ -13,6 +13,8 @@ namespace zore {
 		DemoApplication(const LaunchOptions& options);
 		~DemoApplication() = default;
 
+		void ReloadShaders();
+
 	private:
 		void Run() override;
 		void CreateSimpleUI();
@@ -28,7 +30,8 @@ namespace zore {
 	private:
 		Camera2D m_camera;
 		Shader m_quad_shader;
-		Shader m_ui_shader;
+		Shader m_panel_shader;
+		Shader m_text_shader;
 		UI::Layer& m_main_menu;
 		ActionMap action_map;
 	};

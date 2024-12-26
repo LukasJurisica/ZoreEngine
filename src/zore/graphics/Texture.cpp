@@ -72,12 +72,22 @@ namespace zore {
 	//========================================================================
 
 	static constexpr uint32_t S_INVALID_TEXTURE_ID = ~0;
-	static constexpr uint32_t S_FORMAT_TO_COUNT[] = { GL_RED, GL_RG, GL_RGB, GL_RGBA, GL_RED, GL_RG, GL_RGB, GL_RGBA };
-	static constexpr uint32_t S_FORMAT_TO_TYPE[] = { GL_R8, GL_RG8, GL_RGB8, GL_RGBA8, GL_R8UI, GL_RG8UI, GL_RGB8UI, GL_RGBA8UI };
+	static constexpr uint32_t S_FORMAT_TO_BASE_TYPE[] = {
+		GL_RED        , GL_RG        , GL_RGB        , GL_RGBA        , // R  , RG  , RGB  , RGBA
+		GL_RED_INTEGER, GL_RG_INTEGER, GL_RGB_INTEGER, GL_RGBA_INTEGER  // R8U, RG8U, RGB8U, RGBA8U
+	};
+	static constexpr uint32_t S_FORMAT_TO_INTERNAL_TYPE[] = {
+		GL_R8  , GL_RG8  , GL_RGB8  , GL_RGBA8  , // R  , RG  , RGB  , RGBA
+		GL_R8UI, GL_RG8UI, GL_RGB8UI, GL_RGBA8UI  // R8U, RG8U, RGB8U, RGBA8U
+	};
+	static constexpr uint32_t S_FORMAT_TO_COUNT[] = {
+		1, 2, 3, 4, // R  , RG  , RGB  , RGBA
+		1, 2, 3, 4, // R8U, RG8U, RGB8U, RGBA8U
+		1		    // R32
+	};
 	std::unordered_map<std::string, unsigned int> s_named_texture_slots;
 
-	Texture::Texture(uint32_t target, Format format) :
-		m_id(S_INVALID_TEXTURE_ID), m_target(target), m_format(static_cast<uint32_t>(format)), m_slot(0) {}
+	Texture::Texture(Format format) : m_id(S_INVALID_TEXTURE_ID), m_format(static_cast<uint32_t>(format)), m_slot(0) {}
 
 	Texture::Texture(Texture&& other) noexcept {
 		Swap(other);
@@ -95,7 +105,13 @@ namespace zore {
 		m_slot = other.m_slot;
 		other.m_id = S_INVALID_TEXTURE_ID;
 		other.m_format = static_cast<uint32_t>(Format::RGBA);
-		other.m_slot = 0;glDeleteTextures(1, &m_id);
+		other.m_slot = 0;
+	}
+
+	void Texture::Init(uint32_t target) {
+		if (m_id != S_INVALID_TEXTURE_ID)
+			glDeleteTextures(1, &m_id);
+		glCreateTextures(target, 1, &m_id);
 	}
 
 	Texture::~Texture() {
@@ -121,6 +137,17 @@ namespace zore {
 		glBindTextureUnit(m_slot, m_id);
 	}
 
+	Texture::Image Texture::LoadFromFile(const std::string& path, Format format) {
+		Image result;
+		result.data = stbi_load(path.c_str(), &result.width, &result.height, &result.channels, S_FORMAT_TO_COUNT[static_cast<uint32_t>(format)]);
+		ENSURE(result.data, "Could not load texture: " + path);
+		return result;
+	}
+
+	void Texture::FreeImage(Texture::Image image) {
+		stbi_image_free(image.data);
+	}
+
 	void Texture::SetNamedTextureSlot(const std::string& name, uint32_t slot) {
 		static constexpr uint32_t S_MAX_TEXTURE_SLOTS = 8;
 		ENSURE(slot < S_MAX_TEXTURE_SLOTS, "Attempted to create a named texture slot with invalid value (must be in the range 0 <= s < 8).");
@@ -139,48 +166,27 @@ namespace zore {
 	//	2D Texture Class
 	//========================================================================
 
-	Texture2D::Texture2D(Texture::Format format) : Texture(GL_TEXTURE_2D, format) {}
+	Texture2D::Texture2D(Texture::Format format) : Texture(format) {}
 
-	Texture2D::Texture2D(void* data, uint32_t width, uint32_t height, Texture::Format format) : Texture(GL_TEXTURE_2D, format), m_width(width), m_height(height) {
+	Texture2D::Texture2D(void* data, uint32_t width, uint32_t height, Texture::Format format) : Texture(format), m_width(width), m_height(height) {
 		Set(data, width, height, format);
 	}
 
-	Texture2D::Texture2D(const std::string& filename, Texture::Format format) : Texture(GL_TEXTURE_2D, format) {
+	Texture2D::Texture2D(const std::string& filename, Texture::Format format) : Texture(format) {
 		Set(filename, format);
-	}
-
-	Texture2D::Texture2D(Texture2D&& other) noexcept : Texture(std::move(other)) {
-		Swap(other);
-	}
-
-	Texture2D& Texture2D::operator=(Texture2D&& other) noexcept {
-		if (this != &other) {
-			Texture::operator=(std::move(other));
-			Swap(other);
-		}
-		return *this;
-	}
-
-	void Texture2D::Swap(Texture2D& other) {
-		m_width = other.m_width;
-		m_height = other.m_height;
-		other.m_width = 0;
-		other.m_height = 0;
 	}
 
 	void Texture2D::Update(void* data) {
 		if (data)
-			glTextureSubImage2D(m_id, 0, 0, 0, m_width, m_height, S_FORMAT_TO_COUNT[m_format], GL_UNSIGNED_BYTE, data);
+			glTextureSubImage2D(m_id, 0, 0, 0, m_width, m_height, S_FORMAT_TO_BASE_TYPE[m_format], GL_UNSIGNED_BYTE, data);
 	}
 
 	void Texture2D::Set(void* data, uint32_t width, uint32_t height) {
 		ENSURE(width * height != 0, "Cannot create Texture2D with 0 area (requested Width or Height are 0)");
-		if (m_id != S_INVALID_TEXTURE_ID)
-			glDeleteTextures(1, &m_id);
 		m_width = width;
 		m_height = height;
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
-		glTextureStorage2D(m_id, 1, S_FORMAT_TO_TYPE[m_format], m_width, m_height);
+		Init(GL_TEXTURE_2D);
+		glTextureStorage2D(m_id, 1, S_FORMAT_TO_INTERNAL_TYPE[m_format], m_width, m_height);
 		Update(data);
 	}
 
@@ -190,68 +196,39 @@ namespace zore {
 	}
 
 	void Texture2D::Set(const std::string& filename, Texture::Format format) {
-		m_format = static_cast<uint32_t>(format);
-		int width, height, channels;
-		uint8_t* data = stbi_load(filename.c_str(), &width, &height, &channels, (m_format % 4) + 1);
-		ENSURE(data, "Could not load texture: " + filename);
-
-		Set(data, width, height);
-		stbi_image_free(data);
+		Image image = LoadFromFile(filename, format);
+		Set(image.data, image.width, image.height, format);
+		FreeImage(image);
 	}
 
 	//========================================================================
 	//  2D Array Texture Class
 	//========================================================================
 
-	Texture2DArray::Texture2DArray(Texture::Format format) : Texture(GL_TEXTURE_2D_ARRAY, format) {}
+	Texture2DArray::Texture2DArray(Texture::Format format) : Texture(format) {}
 
-	Texture2DArray::Texture2DArray(void* data, uint32_t width, uint32_t height, uint32_t layers, Texture::Format format)
-		: Texture(GL_TEXTURE_2D_ARRAY, format), m_width(width), m_height(height), m_layers(layers) {
+	Texture2DArray::Texture2DArray(void* data, uint32_t width, uint32_t height, uint32_t layers, Texture::Format format) : Texture(format) {
 		Set(data, width, height, layers, format);
 	}
 
-	Texture2DArray::Texture2DArray(const std::vector<std::string>& filenames, const std::string& root, Texture::Format format)
-		: Texture(GL_TEXTURE_2D_ARRAY, format) {
+	Texture2DArray::Texture2DArray(const std::vector<std::string>& filenames, const std::string& root, Texture::Format format) : Texture(format) {
 		Set(filenames, root, format);
-	}
-
-	Texture2DArray::Texture2DArray(Texture2DArray&& other) noexcept : Texture(std::move(other)) {
-		Swap(other);
-	}
-
-	Texture2DArray& Texture2DArray::operator=(Texture2DArray&& other) noexcept {
-		if (this != &other) {
-			Texture::operator=(std::move(other));
-			Swap(other);
-		}
-		return *this;
-	}
-
-	void Texture2DArray::Swap(Texture2DArray& other) {
-		m_width = other.m_width;
-		m_height = other.m_height;
-		m_layers = other.m_layers;
-		other.m_width = 0;
-		other.m_height = 0;
-		other.m_layers = 0;
 	}
 
 	void Texture2DArray::Update(void* data, uint32_t offset, uint32_t count) {
 		if (data && count > 0) {
 			count = ((offset + count) <= m_layers) ? count : m_layers - offset;
-			glTextureSubImage3D(m_id, 0, 0, 0, offset, m_width, m_height, count, S_FORMAT_TO_COUNT[m_format], GL_UNSIGNED_BYTE, data);
+			glTextureSubImage3D(m_id, 0, 0, 0, offset, m_width, m_height, count, S_FORMAT_TO_BASE_TYPE[m_format], GL_UNSIGNED_BYTE, data);
 		}
 	}
 
 	void Texture2DArray::Set(void* data, uint32_t width, uint32_t height, uint32_t layers) {
 		ENSURE(width * height * layers != 0, "Cannot create Texture2DArray with 0 area (requested Width, Height or Layers are 0)");
-		if (m_id != S_INVALID_TEXTURE_ID)
-			glDeleteTextures(1, &m_id);
 		m_width = width;
 		m_height = height;
 		m_layers = layers;
-		glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &m_id);
-		glTextureStorage3D(m_id, 1, S_FORMAT_TO_TYPE[m_format], m_width, m_height, m_layers);
+		Init(GL_TEXTURE_2D_ARRAY);
+		glTextureStorage3D(m_id, 1, S_FORMAT_TO_INTERNAL_TYPE[m_format], m_width, m_height, m_layers);
 		Update(data, 0, m_layers);
 	}
 
@@ -261,26 +238,18 @@ namespace zore {
 	}
 
 	void Texture2DArray::Set(const std::vector<std::string>& filenames, const std::string& root, Texture::Format format) {
-		m_format = static_cast<uint32_t>(format);
 		// Load the first image, and initialize the Texture2D Array
-		int width, height, channels;
-		std::string path = root + filenames[0];
-		uint8_t* data = stbi_load(path.c_str(), &width, &height, &channels, m_format + 1);
-		ENSURE(data, "Could not load texture: " + path);
-		m_width = width;
-		m_height = height;
-
-		Update(data, 0, 1);
-		stbi_image_free(data);
+		Image image = LoadFromFile(root + filenames[0], format);
+		Set(nullptr, image.width, image.height, filenames.size(), format);
+		Update(image.data, 0, 1);
+		FreeImage(image);
 
 		// Load the remaining images
 		for (int i = 1; i < filenames.size(); i++) {
-			path = root + filenames[i];
-			uint8_t* data = stbi_load(path.c_str(), &width, &height, &channels, m_format + 1);
-			ENSURE(data, "Could not load texture: " + path);
-			ENSURE(width == m_width && height == m_height, "The following texture cannot be added to the texture array as it has different dimensions: " + path);
-			Update(data, i, 1);
-			stbi_image_free(data);
+			image = LoadFromFile(root + filenames[i], format);
+			ENSURE(image.width == m_width && image.height == m_height, "The following texture cannot be added to the texture array as it has different dimensions: " + root + filenames[i]);
+			Update(image.data, i, 1);
+			FreeImage(image);
 		}
 	}
 }

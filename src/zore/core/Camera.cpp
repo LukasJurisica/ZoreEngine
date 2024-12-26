@@ -65,7 +65,7 @@ namespace zore {
 
 	const glm::vec2& Camera2D::UpdateProjection() {
 		m_width = m_height * m_aspect_ratio;
-		return (m_scale = { 2.f / m_width, 2.f / m_height });
+		return (m_scale = { 2.f / m_width, -2.f / m_height });
 	}
 
 	//========================================================================

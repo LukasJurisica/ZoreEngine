@@ -40,15 +40,22 @@ namespace zore {
 		
 	class Texture {
 	public:
-		enum class Format { R, RG, RGB, RGBA, RU, RGU, RGBU, RGBAU,  };
+		enum class Format { R, RG, RGB, RGBA, R8U, RG8U, RGB8U, RGBA8U, R32 };
+		struct Image {
+			uint8_t* data;
+			int width;
+			int height;
+			int channels;
+		};
 
 	protected:
-		Texture(uint32_t target, Format format);
+		Texture(Format format);
 		Texture(const Texture&) = delete;
 		Texture(Texture&&) noexcept;
 		Texture& operator=(const Texture&) = delete;
 		Texture& operator=(Texture&&) noexcept;
 		void Swap(Texture& other);
+		void Init(uint32_t target);
 		~Texture();
 
 	public:
@@ -57,13 +64,14 @@ namespace zore {
 		void Bind(uint32_t slot);
 		void Bind(const std::string& slot);
 
+		static Image LoadFromFile(const std::string& path, Format format);
+		static void FreeImage(Image image);
 		static void SetNamedTextureSlot(const std::string& name, uint32_t slot);
 		static uint32_t GetNamedTextureSlot(const std::string& name);
 
 	protected:
 		uint32_t m_id;
 		uint32_t m_format;
-		uint32_t m_target;
 		uint32_t m_slot;
 	};
 
@@ -76,8 +84,8 @@ namespace zore {
 		Texture2D(Texture::Format format = Texture::Format::RGBA);
 		Texture2D(void* data, uint32_t width, uint32_t height, Texture::Format format = Texture::Format::RGBA);
 		Texture2D(const std::string& filename, Texture::Format format = Texture::Format::RGBA);
-		Texture2D(Texture2D&&) noexcept;
-		Texture2D& operator=(Texture2D&&) noexcept;
+		Texture2D(Texture2D&&) = default;
+		Texture2D& operator=(Texture2D&&) = default;
 		~Texture2D() = default;
 
 		void Update(void* data);
@@ -87,9 +95,6 @@ namespace zore {
 
 		uint32_t GetWidth() { return m_width; }
 		uint32_t GetHeight() { return m_height; }
-
-	private:
-		void Swap(Texture2D& other);
 
 	private:
 		uint32_t m_width = 0;
@@ -105,8 +110,8 @@ namespace zore {
 		Texture2DArray(Texture::Format format = Texture::Format::RGBA);
 		Texture2DArray(void* data, uint32_t width, uint32_t height, uint32_t layers, Texture::Format format = Texture::Format::RGBA);
 		Texture2DArray(const std::vector<std::string>& filenames, const std::string& root = "assets/", Texture::Format format = Texture::Format::RGBA);
-		Texture2DArray(Texture2DArray&&) noexcept;
-		Texture2DArray& operator=(Texture2DArray&&) noexcept;
+		Texture2DArray(Texture2DArray&&) = default;
+		Texture2DArray& operator=(Texture2DArray&&) = default;
 		~Texture2DArray() = default;
 
 		void Update(void* data, uint32_t offset = 0, uint32_t count = ~0);
@@ -117,9 +122,6 @@ namespace zore {
 		uint32_t GetWidth() { return m_width; }
 		uint32_t GetHeight() { return m_height; }
 		uint32_t GetCount() { return m_layers; }
-
-	private:
-		void Swap(Texture2DArray& other);
 
 	private:
 		uint32_t m_width = 0;
