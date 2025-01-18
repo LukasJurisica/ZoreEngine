@@ -20,7 +20,6 @@ namespace zore {
 		DepthBuffer(DepthBuffer&&) = delete;
 		DepthBuffer& operator=(const DepthBuffer&) = delete;
 		DepthBuffer& operator=(DepthBuffer&&) = delete;
-		void Free();
 		~DepthBuffer();
 
 	public:

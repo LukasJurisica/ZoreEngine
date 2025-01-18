@@ -26,29 +26,46 @@ namespace zore::UI {
 
 	class Unit {
 	public:
-		enum class Type : uint16_t { AUT, VPW, VPH, PCT, PXL };
+		enum class Type : uint16_t { AUTO, VW, VH, PW, PH, PC, PX };
 
 	public:
-		Unit() : m_type(Type::PCT), m_value(0) {};
+		Unit() : m_type(Type::PC), m_value(0) {};
 		~Unit() = default;
 
-		static Unit AUT();
-		static Unit VPW(float value);
-		static Unit VPH(float value);
-		static Unit PCT(float value);
-		static Unit PXL(int16_t value);
+		static inline constexpr Unit AUTO() { return Unit(Type::AUTO, 0); }
+		static inline constexpr Unit VW(float value) { return Unit(Type::VW, PercentageAsInt(value)); }
+		static inline constexpr Unit VH(float value) { return Unit(Type::VH, PercentageAsInt(value)); }
+		static inline constexpr Unit PW(float value) { return Unit(Type::PW, PercentageAsInt(value)); }
+		static inline constexpr Unit PH(float value) { return Unit(Type::PH, PercentageAsInt(value)); }
+		static inline constexpr Unit PC(float value) { return Unit(Type::PC, PercentageAsInt(value)); }
+		static inline constexpr Unit PX(int16_t value) { return Unit(Type::PX, value); }
 
 		Type GetType() const { return m_type; }
-		int16_t Get(int16_t viewport_size[2], int16_t parent_size, int16_t auto_size) const;
+		int16_t Get(const int16_t* viewport_size, const int16_t* parent_size, int16_t auto_size, int16_t axis) const;
 
 	private:
-		Unit(Type type, int16_t value) : m_type(type), m_value(value) {};
+		constexpr Unit(Type type, int16_t value) : m_type(type), m_value(value) {};
 		static int16_t PercentageAsInt(float value);
 
 	private:
 		int16_t m_value;
 		Type m_type;
 	};
+
+	namespace literals {
+		constexpr Unit operator"" _vw(long double value) noexcept { return Unit::VW(static_cast<float>(value)); }
+		constexpr Unit operator"" _vw(unsigned long long int value) noexcept { return Unit::VW(static_cast<float>(value)); }
+		constexpr Unit operator"" _vh(long double value) noexcept { return Unit::VH(static_cast<float>(value)); }
+		constexpr Unit operator"" _vh(unsigned long long int value) noexcept { return Unit::VH(static_cast<float>(value)); }
+		constexpr Unit operator"" _pw(long double value) noexcept { return Unit::PW(static_cast<float>(value)); }
+		constexpr Unit operator"" _pw(unsigned long long int value) noexcept { return Unit::PW(static_cast<float>(value)); }
+		constexpr Unit operator"" _ph(long double value) noexcept { return Unit::PH(static_cast<float>(value)); }
+		constexpr Unit operator"" _ph(unsigned long long int value) noexcept { return Unit::PH(static_cast<float>(value)); }
+		constexpr Unit operator"" _pc(long double value) noexcept { return Unit::PC(static_cast<float>(value)); }
+		constexpr Unit operator"" _pc(unsigned long long int value) noexcept { return Unit::PC(static_cast<float>(value)); }
+		constexpr Unit operator"" _px(unsigned long long int value) noexcept { return Unit::PX(static_cast<uint16_t>(value)); }
+		constexpr Unit AUTO() { return Unit::AUTO(); }
+	}
 
 	//========================================================================
 	//	Positioning Enums
@@ -66,8 +83,9 @@ namespace zore::UI {
 		static Style& Create(const std::string& name);
 		static Style& Clone(const Style& style, const std::string& new_name);
 		static Style* Get(const std::string& name);
-		static Style& GetDefaultStyle();
 
+		Style& SetWidth(Unit width);
+		Style& SetHeight(Unit height);
 		Style& SetWidth(Unit width, float aspect_ratio);
 		Style& SetHeight(Unit height, float aspect_ratio);
 		Style& SetSize(Unit width, Unit height);
@@ -102,8 +120,6 @@ namespace zore::UI {
 		Style& SetColour(Colour colour);
 
 	public:
-		float m_aspect_ratio;
-		uint8_t m_dependent_axis;
 		Unit m_size[2];
 		Unit m_min_size[2];
 		Unit m_max_size[2];
@@ -113,7 +129,10 @@ namespace zore::UI {
 		Unit m_padding[4];
 		Unit m_min_padding[4];
 		Unit m_max_padding[4];
-		FlowDirection m_flow_direction;
 		Colour m_colour;
+		bool m_text_scaled;
+		float m_aspect_ratio;
+		uint8_t m_dependent_axis;
+		FlowDirection m_flow_direction;
 	};
 }

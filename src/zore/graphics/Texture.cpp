@@ -71,7 +71,6 @@ namespace zore {
 	//	Texture Base Class
 	//========================================================================
 
-	static constexpr uint32_t S_INVALID_TEXTURE_ID = ~0;
 	static constexpr uint32_t S_FORMAT_TO_BASE_TYPE[] = {
 		GL_RED        , GL_RG        , GL_RGB        , GL_RGBA        , // R  , RG  , RGB  , RGBA
 		GL_RED_INTEGER, GL_RG_INTEGER, GL_RGB_INTEGER, GL_RGBA_INTEGER, // R8U, RG8U, RGB8U, RGBA8U
@@ -89,7 +88,7 @@ namespace zore {
 	};
 	std::unordered_map<std::string, unsigned int> s_named_texture_slots;
 
-	Texture::Texture(Format format) : m_id(S_INVALID_TEXTURE_ID), m_format(static_cast<uint32_t>(format)), m_slot(0) {}
+	Texture::Texture(Format format) : m_id(GL_INVALID_NAME), m_format(static_cast<uint32_t>(format)), m_slot(0) {}
 
 	Texture::Texture(Texture&& other) noexcept {
 		Swap(other);
@@ -105,19 +104,19 @@ namespace zore {
 		m_id = other.m_id;
 		m_format = other.m_format;
 		m_slot = other.m_slot;
-		other.m_id = S_INVALID_TEXTURE_ID;
+		other.m_id = GL_INVALID_NAME;
 		other.m_format = static_cast<uint32_t>(Format::RGBA);
 		other.m_slot = 0;
 	}
 
 	void Texture::Init(uint32_t target) {
-		if (m_id != S_INVALID_TEXTURE_ID)
+		if (m_id != GL_INVALID_NAME)
 			glDeleteTextures(1, &m_id);
 		glCreateTextures(target, 1, &m_id);
 	}
 
 	Texture::~Texture() {
-		if (m_id != S_INVALID_TEXTURE_ID)
+		if (m_id != GL_INVALID_NAME)
 			glDeleteTextures(1, &m_id);
 	}
 

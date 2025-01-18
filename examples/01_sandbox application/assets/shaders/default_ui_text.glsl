@@ -14,13 +14,15 @@ void main() {
 
 #shaderstage fragment
 
-layout(binding = 1) uniform sampler2DArray glyphs;
+layout(binding = 1) uniform usampler2DArray glyphs;
 
 in vec2 uv;
 
 out vec4 FragColour;
 
 void main() {
-	vec4 tex = texture(glyphs, vec3(uv.x, 1 - uv.y, 1));
-	FragColour = vec4(tex.rgb, 1.0);
+	vec4 tex = texture(glyphs, vec3(uv.x, uv.y, 1));
+	if (tex.r == 0.0)
+		discard;
+	FragColour = vec4(tex.r / 3.0, tex.r / 3.0, tex.r / 3.0, 1.0);
 } 

@@ -1,6 +1,5 @@
 #include "zore/ui/Layer.hpp"
 #include "zore/graphics/RenderEngine.hpp"
-#include "zore/graphics/Buffer.hpp"
 #include "zore/utils/UUID.hpp"
 #include "zore/utils/BitUtils.hpp"
 #include "zore/Debug.hpp"
@@ -17,20 +16,32 @@ namespace zore::UI {
 
 	struct ColouredQuad {
 		ColouredQuad(int32_t x, int32_t y, int32_t w, int32_t h, int32_t d, Colour c) :
-			position((x << 16) | y), size((w << 16) | h), data(d << 16), colour(c.compressed()) {
+			position((x << 16) | y), size((w << 16) | h), colour(c.compressed()), data(d << 16) {
 		}
 		int32_t position;
 		int32_t size;
-		int32_t data;
 		int32_t colour;
+		int32_t data;
+	};
+
+	struct GlyphQuad {
+		GlyphQuad(int32_t x, int32_t y, int32_t w, int32_t h, int32_t d, Colour c, int8_t glyph) :
+			position((x << 16) | y), size((w << 16) | h), colour(c.compressed()), depth(d), glyph(glyph), flags(0) {
+		}
+		int32_t position;
+		int32_t size;
+		int32_t colour;
+		int16_t depth;
+		int8_t glyph;
+		int8_t flags;
 	};
 
 	struct ButtonCollider {
-		ButtonCollider(int16_t x, int16_t y, int16_t w, int16_t h, int32_t d, uint32_t id, uint64_t index) :
+		ButtonCollider(int16_t x, int16_t y, int16_t w, int16_t h, int16_t d, uint32_t id, uint32_t index) :
 			x1(x), x2(x + w), y1(y), y2(y + h), depth(d), id(id), index(index) {
 		}
-		int16_t x1, x2, y1, y2;
-		uint16_t depth, id, index;
+		int16_t x1, x2, y1, y2, depth;
+		uint32_t id, index;
 	};
 
 	static Layer* s_active_layer = nullptr;
@@ -38,8 +49,11 @@ namespace zore::UI {
 	static ButtonCollider* s_pressed_button = nullptr;
 
 	static std::vector<ButtonCollider> s_button_colliders;
-	static std::vector<ColouredQuad> s_quads;
+	static std::vector<ColouredQuad> s_coloured_quads;
+	static std::vector<GlyphQuad> s_glyph_quads;
 	static VertexBuffer s_quad_buffer(true);
+
+	static std::vector<DrawCommand> s_draw_list;
 
 	//========================================================================
 	//	Layer Class
@@ -61,38 +75,40 @@ namespace zore::UI {
 	}
 
 	void Layer::Resize(uint32_t width, uint32_t height) {
-		s_quads.clear();
+		s_coloured_quads.clear();
 		s_button_colliders.clear();
-		Element::Bounds bounds = { width, height, 0, 0, width, height, 0, 0, width, height, 0, 0 };
-		ParseUIElement(*s_active_layer, width, height, bounds, 0);
+		int16_t w = static_cast<int16_t>(width), h = static_cast<int16_t>(height);
+		Element::Bounds bounds = { w, h, 0, 0, w, h, 0, 0, w, h, 0, 0 };
+		ParseUIElement(s_active_layer, w, h, bounds, 0);
 		Flush();
 	}
 
 	void Layer::Flush() {
-		s_quad_buffer.Set(s_quads);
+		s_draw_list.clear();
+		s_quad_buffer.Set(s_coloured_quads);
+		s_draw_list.push_back({ &s_quad_buffer, Element::Type::PANEL, static_cast<uint32_t>(s_coloured_quads.size()) });
 	}
 
-	void Layer::Render() {
-		s_quad_buffer.Bind();
-		RenderEngine::DrawLinearInstanced(4, static_cast<uint32_t>(s_quads.size()));
+	const std::vector<DrawCommand>& Layer::GetDrawList() {
+		return s_draw_list;
 	}
 
-	void Layer::HandleMouseMove(uint32_t mouse_x, uint32_t mouse_y) {
+	void Layer::HandleMouseMove(int32_t mouse_x, int32_t mouse_y) {
 		if (!s_active_layer)
 			return;
 
-		ButtonCollider* best_button = nullptr;
+		ButtonCollider* top_button = nullptr;
 
 		for (ButtonCollider& button : s_button_colliders)
-			if (mouse_x >= button.x1 and mouse_x <= button.x2 and mouse_y >= button.y1 and mouse_y <= button.y2 && (!best_button || button.depth > best_button->depth))
-				best_button = &button;
+			if (mouse_x >= button.x1 and mouse_x <= button.x2 and mouse_y >= button.y1 and mouse_y <= button.y2 && (!top_button || button.depth > top_button->depth))
+				top_button = &button;
 
-		if (s_hovered_button != best_button) {
+		if (s_hovered_button != top_button) {
 			if (s_hovered_button) // Clear previously hovered button
-				s_quads[s_hovered_button->index].data &= ~HOVERED_BIT;
-			if (best_button) // Set new hovered button
-				s_quads[best_button->index].data |= HOVERED_BIT;
-			s_hovered_button = best_button;
+				s_coloured_quads[s_hovered_button->index].data &= ~HOVERED_BIT;
+			if (top_button) // Set new hovered button
+				s_coloured_quads[top_button->index].data |= HOVERED_BIT;
+			s_hovered_button = top_button;
 			s_active_layer->Flush();
 		}
 	}
@@ -101,7 +117,7 @@ namespace zore::UI {
 		if (!s_active_layer || !s_hovered_button)
 			return luid::INVALID_ID;
 
-		s_quads[s_hovered_button->index].data |= PRESSED_BIT;
+		s_coloured_quads[s_hovered_button->index].data |= PRESSED_BIT;
 		s_pressed_button = s_hovered_button;
 		Flush();
 		return s_hovered_button->id;
@@ -110,7 +126,7 @@ namespace zore::UI {
 	uint32_t Layer::HandleMouseRelease(uint32_t button) {
 		uint32_t button_id = luid::INVALID_ID;
 		if (s_pressed_button) {
-			s_quads[s_pressed_button->index].data &= ~PRESSED_BIT;
+			s_coloured_quads[s_pressed_button->index].data &= ~PRESSED_BIT;
 			Flush();
 			if (s_hovered_button == s_pressed_button)
 				button_id = s_hovered_button->id;
@@ -123,23 +139,25 @@ namespace zore::UI {
 		return luid::INVALID_ID;
 	}
 
-	void Layer::ParseUIElement(Element& element, int16_t viewport_width, int16_t viewport_height, const Element::Bounds& bounds, int16_t depth) {
+	void Layer::ParseUIElement(Element* element, int16_t viewport_width, int16_t viewport_height, const Element::Bounds& bounds, int16_t depth) {
 		if (bounds.middle[W] <= 0 or bounds.middle[H] <= 0)
 			return;
 
-		Colour c = element.GetStyle()->m_colour;
+		Colour c = element->GetStyle()->m_colour;
+		const int16_t& x = bounds.middle[X], y = bounds.middle[Y], w = bounds.middle[W], h = bounds.middle[H];
+
 		// Only draw the element if it has a non-zero alpha value
 		if (c.a() > 0) {
-			switch (element.GetType()) {
+			switch (element->GetType()) {
 			case Element::Type::PANEL:
-				s_quads.push_back({ bounds.middle[X], bounds.middle[Y], bounds.middle[W], bounds.middle[H], depth, c });
+				s_coloured_quads.push_back({ x, y, w, h, depth, c });
 				break;
 			case Element::Type::LABEL:
-
+				s_coloured_quads.push_back({ x, y, w, h, depth, c });
 				break;
 			case Element::Type::BUTTON:
-				s_button_colliders.push_back({ bounds.middle[X], bounds.middle[Y], bounds.middle[W], bounds.middle[H], depth, element.GetUUID(), s_quads.size() });
-				s_quads.push_back({ bounds.middle[X], bounds.middle[Y], bounds.middle[W], bounds.middle[H], depth, c });
+				s_button_colliders.push_back({ x, y, w, h, depth, element->GetUUID(), static_cast<uint32_t>(s_coloured_quads.size()) });
+				s_coloured_quads.push_back({ x, y, w, h, depth, c });
 				break;
 			case Element::Type::SLIDER:
 
@@ -151,16 +169,16 @@ namespace zore::UI {
 			return;
 
 		int16_t x_offset = 0, y_offset = 0;
-		LayoutParams params(bounds, viewport_width, viewport_height, element.GetStyle()->m_flow_direction);
+		LayoutParams params(bounds, viewport_width, viewport_height, element->GetStyle()->m_flow_direction);
 
-		for (Element& child : element.Children())
-			child.ComputeRequiredSize(params, params.flow_axis);
+		for (UNIQUE<Element>& child : element->Children())
+			child->ComputeRequiredSize(params, params.flow_axis);
 		int16_t auto_size = params.GetAutoSize(params.flow_axis);
 
-		for (Element& child : element.Children()) {
-			Bounds child_bounds = child.ComputeBounds(params, auto_size);
+		for (UNIQUE<Element>& child : element->Children()) {
+			Bounds child_bounds = child->ComputeBounds(params, auto_size);
 
-			if (element.GetStyle()->m_flow_direction == FlowDirection::HORIZONTAL) {
+			if (element->GetStyle()->m_flow_direction == FlowDirection::HORIZONTAL) {
 				child_bounds.outer[X] += x_offset;
 				child_bounds.middle[X] += x_offset;
 				child_bounds.inner[X] += x_offset;
@@ -173,7 +191,7 @@ namespace zore::UI {
 				y_offset += child_bounds.outer[H];
 			}
 
-			ParseUIElement(child, viewport_width, viewport_height, child_bounds, depth + 1);
+			ParseUIElement(child.get(), viewport_width, viewport_height, child_bounds, depth + 1);
 		}
 	}
 }

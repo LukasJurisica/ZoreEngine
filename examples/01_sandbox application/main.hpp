@@ -32,7 +32,6 @@ namespace zore {
 		Shader m_quad_shader;
 		Shader m_panel_shader;
 		Shader m_text_shader;
-		UI::Layer& m_main_menu;
 		ActionMap action_map;
 	};
 }

@@ -9,14 +9,14 @@ out flat vec4 colour;
 void main() {
 	vec2 pos = vec2(quad[0] >> 16, quad[0] & 0xffff);
 	vec2 size = vec2(quad[1] >> 16, quad[1] & 0xffff);
-	uint hovered = quad[2] & 1;
-	uint pressed = (quad[2] >> 1) & 1;
-	uint depth = quad[2] >> 16;
+	uint hovered = quad[3] & 1;
+	uint pressed = (quad[3] >> 1) & 1;
+	uint depth = quad[3] >> 16;
 
-	uint r = (quad[3] >> 24) & 0xff;
-	uint g = (quad[3] >> 16) & 0xff;
-	uint b = (quad[3] >> 8 ) & 0xff;
-	uint a = (quad[3] >> 0 ) & 0xff;
+	uint r = (quad[2] >> 24) & 0xff;
+	uint g = (quad[2] >> 16) & 0xff;
+	uint b = (quad[2] >> 8 ) & 0xff;
+	uint a = (quad[2] >> 0 ) & 0xff;
 	
 	if (pressed == 1)
 		colour = vec4(0.0, 0.0, 1.0, 1.0);

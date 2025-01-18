@@ -4,7 +4,7 @@
 
 namespace zore::UI {
 
-    static std::unordered_map<std::string, Layer> s_layers;
+    static std::unordered_map<std::string, UNIQUE<Layer>> s_layers;
     static ActionMap* s_active_action_map = nullptr;
 
     //========================================================================
@@ -55,12 +55,13 @@ namespace zore::UI {
 
     Layer& Manager::CreateLayer(const std::string& name) {
         static EventListener s_event_listener;
-		return s_layers.emplace(name, Layer()).first->second;
+        s_layers[name] = MAKE_UNIQUE<Layer>();
+        return *s_layers[name];
     }
 
     Layer* Manager::Bind(const std::string& name) {
 		auto iter = s_layers.find(name);
-        Layer* layer = (iter != s_layers.end()) ? &iter->second : nullptr;
+        Layer* layer = (iter != s_layers.end()) ? iter->second.get() : nullptr;
         if (layer) {
             layer->Bind();
             if (s_manager_instance)
@@ -77,6 +78,7 @@ namespace zore::UI {
 
     Manager::Manager() {
         ENSURE(!s_manager_instance, "Attempted to create multiple UI Managers - this is not supported.");
+        Logger::Info("UI Manager Initialized");
 		s_manager_instance = this;
     }
 }

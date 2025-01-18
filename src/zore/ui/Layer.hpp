@@ -1,8 +1,15 @@
 #pragma once
 
 #include "zore/ui/Element.hpp"
+#include "zore/graphics/Buffer.hpp"
 
 namespace zore::UI {
+
+    struct DrawCommand {
+        VertexBuffer* buffer;
+        Element::Type type;
+        uint32_t count;
+    };
 
     //========================================================================
     //	Layer Class
@@ -17,18 +24,17 @@ namespace zore::UI {
 
         static void Resize(uint32_t width, uint32_t height);
         static void Flush();
-        static void Render();
+        static const std::vector<DrawCommand>& GetDrawList();
 
-		static void HandleMouseMove(uint32_t mouse_x, uint32_t mouse_y);
-		static uint32_t HandleMousePress(uint32_t button);
-		static uint32_t HandleMouseRelease(uint32_t button);
-		static uint32_t HandleKeyPress(uint32_t key);
+        static void HandleMouseMove(int32_t mouse_x, int32_t mouse_y);
+        static uint32_t HandleMousePress(uint32_t button);
+        static uint32_t HandleMouseRelease(uint32_t button);
+        static uint32_t HandleKeyPress(uint32_t key);
 
-		using Element::AddChild;
-        using Element::GetChild;
-		using Element::Children;
+        using Element::AddChild;
+        using Element::Children;
 
     private:
-		static void ParseUIElement(Element& element, int16_t viewport_width, int16_t viewport_height, const Element::Bounds& parent_bounds, int16_t depth);
+        static void ParseUIElement(Element* element, int16_t viewport_width, int16_t viewport_height, const Element::Bounds& parent_bounds, int16_t depth);
     };
 }

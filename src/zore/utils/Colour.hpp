@@ -10,8 +10,11 @@ namespace zore {
 	public:
 		Colour() : m_r(0), m_g(0), m_b(0), m_a(0) {}
 		Colour(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : m_r(r), m_g(g), m_b(b), m_a(a) {}
+		Colour(uint32_t c) : m_r((c >> 24) & 0xFF), m_g((c >> 16) & 0xFF), m_b((c >> 8) & 0xFF), m_a(c & 0xFF) {}
 
-		static inline Colour rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) { return Colour(r, g, b, a); }
+		static inline Colour rgb(uint8_t r, uint8_t g, uint8_t b) { return Colour(r, g, b, 255); }
+		static inline Colour rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { return Colour(r, g, b, a); }
+		static inline Colour rgba(uint32_t c) { return Colour(c); }
 		static inline Colour nrgb(float r, float g, float b, float a = 1.f) { return Colour(n(r), n(g), n(b), n(a)); }
 		static inline Colour hex(const char(&s)[5]) { return Colour(h(s[1], s[1]), h(s[2], s[2]), h(s[3], s[3]), 255); }
 		static inline Colour hex(const char(&s)[6]) { return Colour(h(s[1], s[1]), h(s[2], s[2]), h(s[3], s[3]), h(s[4], s[4])); }

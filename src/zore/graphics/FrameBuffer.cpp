@@ -13,21 +13,19 @@ namespace zore {
 	//	Depth Buffer Class
 	//========================================================================
 
-	DepthBuffer::DepthBuffer() : m_id(0), m_slot(0), m_format(DepthFormat::NONE) {}
+	DepthBuffer::DepthBuffer() : m_id(GL_INVALID_NAME), m_slot(0), m_format(DepthFormat::NONE) {}
 
 	DepthBuffer::DepthBuffer(uint32_t width, uint32_t height, DepthFormat format) : m_slot(0) {
 		Set(width, height, format);
 	}
 
-	void DepthBuffer::Free() {
-		if (IsRenderBuffer())
-			glDeleteRenderbuffers(1, &m_id);
-		else if (IsRenderTexture())
-			glDeleteTextures(1, &m_id);
-	}
-
 	DepthBuffer::~DepthBuffer() {
-		Free();
+		if (m_id != GL_INVALID_NAME) {
+			if (IsRenderBuffer())
+				glDeleteRenderbuffers(1, &m_id);
+			else if (IsRenderTexture())
+				glDeleteTextures(1, &m_id);
+		}
 	}
 
 	uint32_t DepthBuffer::GetID() const {
@@ -35,12 +33,15 @@ namespace zore {
 	}
 
 	void DepthBuffer::Set(uint32_t width, uint32_t height) {
-		Free();
 		if (IsRenderBuffer()) {
+			if (m_id != GL_INVALID_NAME)
+				glDeleteRenderbuffers(1, &m_id);
 			glCreateRenderbuffers(1, &m_id);
 			glNamedRenderbufferStorage(m_id, S_DEPTH_FORMAT_TO_INTERNAL_FORMAT[static_cast<uint32_t>(m_format)], width, height);
 		}
 		else if (IsRenderTexture()) {
+			if (m_id != GL_INVALID_NAME)
+				glDeleteTextures(1, &m_id);
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
 			glTextureStorage2D(m_id, 1, S_DEPTH_FORMAT_TO_INTERNAL_FORMAT[static_cast<uint32_t>(m_format) - 2], width, height);
 		}

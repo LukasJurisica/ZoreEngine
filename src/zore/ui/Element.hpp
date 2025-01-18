@@ -1,6 +1,7 @@
 #pragma once
 
 #include "zore/ui/Style.hpp"
+#include "zore/utils/Memory.hpp"
 #include <vector>
 
 namespace zore::UI {
@@ -43,28 +44,38 @@ namespace zore::UI {
 		};
 
 	public:
-		Element(Type type, const std::string& style = "");
 		Element(Type type, const Style* style);
+		Element(Type type, const std::string& style = "");
+		Element(const Element&) = delete;
+		Element(Element&&) = delete;
+		Element& operator=(const Element&) = delete;
+		Element& operator=(Element&&) = delete;
+		~Element() = default;
 
-		Element* AddChild(const Element& element);
-		Element* AddChild(const Element& element, const std::string& style);
-		Bounds ComputeBounds(LayoutParams& layout, int16_t auto_size);
-		void ComputeRequiredSize(LayoutParams& layout, int16_t axis);
+		Element& AddChild(Type type, const Style* style);
+		Element& AddChild(Type type, const std::string& style = "");
+		Element& SetStyle(const Style* style);
+		Element& SetStyle(const std::string& style);
+		Element& SetText(const std::string& text);
 
-		inline void SetStyle(const Style* style) { m_style = style; }
-		inline void SetStyle(const std::string& style) { m_style = Style::Get(style); }
 		inline Type GetType() const { return m_type; }
 		inline uint32_t GetUUID() const { return m_id; }
+		inline const std::string& GetText() const { return m_text; }
 		inline const Style* GetStyle() const { return m_style; }
-		inline Element* GetChild(uint32_t index) { return (index >= m_children.size()) ? nullptr : &m_children[index]; }
-		inline std::vector<Element>& Children() { return m_children; }
+		inline std::vector<UNIQUE<Element>>& Children() { return m_children; }
+
+		Bounds ComputeBounds(LayoutParams& layout, int16_t auto_size);
+		void ComputeRequiredSize(LayoutParams& layout, int16_t axis);
 
 	private:
 		void ComputeSizeOfSecondaryAxis(LayoutParams& layout);
 		void ComputeRequiredSize(LayoutParams& layout, int16_t axis, Unit value, int16_t min, int16_t max, int16_t& result);
 		void UpdateIfAuto(Unit::Type type, int16_t& value, int16_t auto_size);
+		void ComputeProportionalSize(LayoutParams& layout, int16_t axis);
 
 	protected:
+		std::string m_text;
+		std::vector<UNIQUE<Element>> m_children;
 		Type m_type;
 		uint32_t m_id;
 		const Style* m_style;
@@ -74,6 +85,5 @@ namespace zore::UI {
 		int16_t m_margin[4];
 		int16_t m_min_margin[4];
 		int16_t m_max_margin[4];
-		std::vector<Element> m_children;
 	};
 }

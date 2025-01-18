@@ -12,7 +12,7 @@ using namespace zore;
 static bool s_display_console = false;
 static DemoApplication* s_instance = nullptr;
 
-DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f), m_main_menu(UI::Manager::CreateLayer("main_menu")) {
+DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f) {
 	FileManager::Init("/examples/01_sandbox application/");
 	RenderEngine::SetVSync(false);
 	m_camera.SetHeight(static_cast<float>(Window::GetSize().y));
@@ -22,6 +22,8 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	// Initialize UI
 	UI::Manager::Bind(action_map);
 	UI::Manager::Bind("main_menu");
+
+	Logger::Log(sizeof(UI::Style));
 
 	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
 		s_display_console = !s_display_console;
@@ -52,7 +54,7 @@ void DemoApplication::Run() {
 	CreateSimpleUI();
 
 	// Initialize Font
-	UI::Font& font = UI::Font::Create("assets/fonts/ZoreFont/", Texture::Format::RGBA);
+	UI::Font& font = UI::Font::Create("assets/fonts/ZoreFont.zbt", Texture::Format::R8U);
 	Texture::SetNamedTextureSlot("font", 1);
 	font.GetTextureArray().Bind("font");
 	TextureSampler sampler;
@@ -63,7 +65,10 @@ void DemoApplication::Run() {
 		RenderEngine::Clear();
 
 		m_panel_shader.SetFloat4("camera", { m_camera.GetPosition(), m_camera.GetScale() });
-		UI::Layer::Render();
+		for (const UI::DrawCommand& command : UI::Layer::GetDrawList()) {
+			command.buffer->Bind();
+			RenderEngine::DrawLinearInstanced(4, command.count);
+		}
 
 		m_text_shader.SetFloat4("camera", { m_camera.GetPosition(), m_camera.GetScale() });
 		RenderEngine::DrawLinearInstanced(4, 1);
@@ -71,50 +76,58 @@ void DemoApplication::Run() {
 		Editor::BeginFrame();
 		if (s_display_console)
 			Console::Draw();
-		//Editor::ShowDemoWindow();
+			//Editor::ShowDemoWindow();
 		Editor::EndFrame();
 		Window::Update();
 	}
 }
 
 void DemoApplication::CreateSimpleUI() {
+	using namespace UI::literals;
+
 	// Define Styles
+	UI::Style& standard_menu_style = UI::Style::Create("standard_menu")
+		.SetMaxHeight(500_px)
+		.SetMargin(0_px, AUTO());
+
 	float perc = 100.f / 18.f;
 	UI::Style& standard_button_style = UI::Style::Create("standard_button")
-		.SetHeight(UI::Unit::PCT(perc * 4), 4.f)
-		.SetMargin(UI::Unit::AUT(), UI::Unit::PCT(perc))
-		.SetColour(Colour::hex("#FFFFFF"));
+		.SetHeight(UI::Unit::PC(perc * 4), 4.f)
+		.SetMargin(AUTO(), UI::Unit::PC(perc))
+		.SetPadding(3_ph)
+		.SetColour(0xFFFFFFFF);
 
-	UI::Style& standard_menu_style = UI::Style::Create("standard_menu")
-		.SetMaxHeight(UI::Unit::PXL(500))
-		.SetMargin(UI::Unit::PXL(0), UI::Unit::AUT());
+	UI::Style& standard_text_style = UI::Style::Create("standard_text")
+		.SetHeight(100_ph)
+		.SetMargin(AUTO(), 0_px)
+		.SetColour(0xAA00AAFF);
 
 	// Main Menu Demo UI
-	UI::Element button_container(UI::Element::Type::PANEL, &standard_menu_style);
-	UI::Element play(UI::Element::Type::BUTTON, &standard_button_style);
-	UI::Element options(UI::Element::Type::BUTTON, &standard_button_style);
-	UI::Element quit(UI::Element::Type::BUTTON, &standard_button_style);
-	action_map.RegisterAction(ActionMap::Source::INTERNAL, quit.GetUUID(), true, false, [](bool start) {
+	UI::Layer& main_menu = UI::Manager::CreateLayer("main_menu");
+	UI::Element& button_container = main_menu.AddChild(UI::Element::Type::PANEL, "standard_menu");
+	UI::Element& play_button = button_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
+	UI::Element& options_button = button_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
+	UI::Element& quit_button = button_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
+
+	play_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("Play");
+	options_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("Options");
+	quit_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("Quit");
+
+	action_map.RegisterAction(ActionMap::Source::INTERNAL, quit_button.GetUUID(), true, false, [](bool start) {
 		UI::Manager::Bind("confirm_quit_menu");
 		});
-	button_container.AddChild(play);
-	button_container.AddChild(options);
-	button_container.AddChild(quit);
-	m_main_menu.AddChild(button_container);
+
 	glm::ivec2 resolution = Window::GetSize();
 	UI::Layer::Resize(resolution.x, resolution.y);
 
 	// Sub Menu Demo UI
 	UI::Layer& confirm_quit_menu = UI::Manager::CreateLayer("confirm_quit_menu");
-	UI::Element confirm_container(UI::Element::Type::PANEL, &standard_menu_style);
-	UI::Element yes(UI::Element::Type::BUTTON, "standard_button");
-	UI::Element no(UI::Element::Type::BUTTON, &standard_button_style);
+	UI::Element& confirm_container = confirm_quit_menu.AddChild(UI::Element::Type::PANEL, "standard_menu");
+	UI::Element& yes = confirm_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
+	UI::Element& no = confirm_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
 	action_map.RegisterAction(ActionMap::Source::INTERNAL, no.GetUUID(), false, true, [](bool start) {
 		UI::Manager::Bind("main_menu");
 		});
-	confirm_container.AddChild(yes);
-	confirm_container.AddChild(no);
-	confirm_quit_menu.AddChild(confirm_container);
 }
 
 DemoApplication* DemoApplication::Get() {

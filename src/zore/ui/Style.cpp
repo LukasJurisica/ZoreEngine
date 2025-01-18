@@ -12,38 +12,22 @@ namespace zore::UI {
 	//	Unit Class
 	//========================================================================
 
-	Unit Unit::AUT() {
-		return Unit(Type::AUT, 0);
-	}
-
-	Unit Unit::VPW(float value) {
-		return Unit(Type::VPW, PercentageAsInt(value));
-	}
-
-	Unit Unit::VPH(float value) {
-		return Unit(Type::VPH, PercentageAsInt(value));
-	}
-
-	Unit Unit::PCT(float value) {
-		return Unit(Type::PCT, PercentageAsInt(value));
-	}
-
-	Unit Unit::PXL(int16_t value) {
-		return Unit(Type::PXL, value);
-	}
-
-	int16_t Unit::Get(int16_t viewport_size[2], int16_t parent_size, int16_t auto_size) const {
-		constexpr float recip = 1.f / INT16_MAX_VALUE;
+	int16_t Unit::Get(const int16_t* viewport_size, const int16_t* parent_size, int16_t auto_size, int16_t axis) const {
+		static constexpr float recip = 1.f / INT16_MAX_VALUE;
 		switch (m_type) {
-		case Type::AUT:
+		case Type::AUTO:
 			return auto_size;
-		case Type::VPW:
+		case Type::VW:
 			return static_cast<int16_t>(viewport_size[W] * recip * m_value + 0.5f);
-		case Type::VPH:
+		case Type::VH:
 			return static_cast<int16_t>(viewport_size[H] * recip * m_value + 0.5f);
-		case Type::PCT:
-			return static_cast<int16_t>(parent_size * recip * m_value + 0.5f);
-		case Type::PXL:
+		case Type::PW:
+			return static_cast<int16_t>(parent_size[W] * recip * m_value + 0.5f);
+		case Type::PH:
+			return static_cast<int16_t>(parent_size[H] * recip * m_value + 0.5f);
+		case Type::PC:
+			return static_cast<int16_t>(parent_size[axis] * recip * m_value + 0.5f);
+		case Type::PX:
 			return m_value;
 		default:
 			return 0;
@@ -51,9 +35,8 @@ namespace zore::UI {
 	}
 
 	int16_t Unit::PercentageAsInt(float value) {
-		value = zm::Clamp(value, 0.f, 100.f);
 		static constexpr float upper_bound = INT16_MAX_VALUE / 100.f;
-		return static_cast<int16_t>(zm::Round(upper_bound * value));
+		return static_cast<int16_t>(zm::Round(upper_bound * zm::Clamp(value, 0.f, 100.f)));
 	}
 
 	//========================================================================
@@ -63,17 +46,17 @@ namespace zore::UI {
 	static std::unordered_map<std::string, Style> s_styles;
 
 	Style::Style() {
-		SetSize(Unit::PCT(100), Unit::PCT(100));
-		SetMinSize(Unit::PXL(0), Unit::PXL(0));
-		SetMaxSize(Unit::PXL(INT16_MAX_VALUE), Unit::PXL(INT16_MAX_VALUE));
-		SetMargin(Unit::PXL(0));
-		SetMinMargin(Unit::PXL(0));
-		SetMaxMargin(Unit::PXL(INT16_MAX_VALUE));
-		SetPadding(Unit::PXL(0));
-		SetMinPadding(Unit::PXL(0));
-		SetMaxPadding(Unit::PXL(INT16_MAX_VALUE));
+		SetSize(Unit::PC(100), Unit::PC(100));
+		SetMinSize(Unit::PX(0), Unit::PX(0));
+		SetMaxSize(Unit::PX(INT16_MAX_VALUE), Unit::PX(INT16_MAX_VALUE));
+		SetMargin(Unit::PX(0));
+		SetMinMargin(Unit::PX(0));
+		SetMaxMargin(Unit::PX(INT16_MAX_VALUE));
+		SetPadding(Unit::PX(0));
+		SetMinPadding(Unit::PX(0));
+		SetMaxPadding(Unit::PX(INT16_MAX_VALUE));
 		SetFlowDirection(FlowDirection::VERTICAL);
-		SetColour(Colour::rgb(0, 0, 0, 0));
+		SetColour(0x00000000);
 	}
 
 	Style& Style::Create(const std::string & name) {
@@ -90,27 +73,37 @@ namespace zore::UI {
 			return &iter->second;
 		else if (name != "")
 			Logger::Warn("Attempted to use UI Style that doesn't exist:", name);
-		return &GetDefaultStyle();
+		static Style style;
+		return &style;
 	}
 
-	Style& Style::GetDefaultStyle() {
-		static Style style;
-		return style;
+	Style& Style::SetWidth(Unit width) {
+		m_size[W] = width;
+		m_dependent_axis = 1;
+		m_text_scaled = true;
+		return *this;
+	}
+
+	Style& Style::SetHeight(Unit height) {
+		m_size[H] = height;
+		m_dependent_axis = 0;
+		m_text_scaled = true;
+		return *this;
 	}
 
 	Style& Style::SetWidth(Unit width, float aspect_ratio) {
 		m_size[W] = width;
-		m_size[H] = Unit::PXL(0);
 		m_aspect_ratio = aspect_ratio;
 		m_dependent_axis = 1;
+		m_text_scaled = false;
 		return *this;
 	}
 
 	Style& Style::SetHeight(Unit height, float aspect_ratio) {
-		m_size[W] = Unit::PXL(0);
 		m_size[H] = height;
 		m_aspect_ratio = aspect_ratio;
 		m_dependent_axis = 0;
+		m_text_scaled = false;
 		return *this;
 	}
 
@@ -119,6 +112,7 @@ namespace zore::UI {
 		m_size[H] = height;
 		m_aspect_ratio = 0.f;
 		m_dependent_axis = 2;
+		m_text_scaled = false;
 		return *this;
 	}
 

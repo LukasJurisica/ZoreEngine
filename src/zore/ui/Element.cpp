@@ -46,31 +46,47 @@ namespace zore::UI {
 	}
 
 	Element::Element(Type type, const std::string& style) : Element(type, Style::Get(style)) {}
+
 	Element::Element(Type type, const Style* style) :
-		m_type(type), m_style(style), m_id(luid::Generate()),
+		m_type(type), m_style(style ? style : Style::Get("")), m_id(luid::Generate()),
 		m_size{}, m_max_size{}, m_min_size{}, m_margin{}, m_min_margin{}, m_max_margin{} {
 	}
 
-	Element* Element::AddChild(const Element& element) {
-		m_children.push_back(element);
-		return &m_children.back();
+	Element& Element::AddChild(Type type, const Style* style) {
+		m_children.push_back(MAKE_UNIQUE<Element>(type, style));
+		return *m_children.back();
 	}
 
-	Element* Element::AddChild(const Element& element, const std::string& style) {
-		m_children.push_back(element);
-		m_children.back().SetStyle(style);
-		return &m_children.back();
+	Element& Element::AddChild(Type type, const std::string& style) {
+		m_children.push_back(MAKE_UNIQUE<Element>(type, style));
+		return *m_children.back();
+	}
+
+	Element& Element::SetStyle(const Style* style) {
+		m_style = style;
+		return *this;
+	}
+	
+	Element& Element::SetStyle(const std::string& style) {
+		m_style = Style::Get(style);
+		return *this;
+	}
+	
+	Element& Element::SetText(const std::string& text) {
+		if (m_type == Type::LABEL)
+			m_text = text;
+		return *this;
 	}
 
 	Element::Bounds Element::ComputeBounds(LayoutParams& layout, int16_t auto_size) {
 		// Compute size of element if any used auto specifier
 		int16_t axis = layout.flow_axis;
-		UpdateIfAuto(m_style->m_margin[axis + 0].GetType(), m_margin[axis + 0], auto_size);
-		UpdateIfAuto(m_style->m_margin[axis + 2].GetType(), m_margin[axis + 2], auto_size);
+		UpdateIfAuto(m_style->m_margin[axis + 0].GetType(), m_margin[axis + 0], zm::Clamp(auto_size, m_min_margin[axis + 0], m_max_margin[axis + 0]));
+		UpdateIfAuto(m_style->m_margin[axis + 2].GetType(), m_margin[axis + 2], zm::Clamp(auto_size, m_min_margin[axis + 2], m_max_margin[axis + 2]));
 		UpdateIfAuto(m_style->m_size[axis].GetType(), m_size[axis], zm::Clamp(auto_size, m_min_size[axis], m_max_size[axis]));
 
 		// Compute size of secondary axis if it relies on the primary axis, and primary axis was auto
-		if (m_style->m_dependent_axis == (1 - layout.flow_axis) and m_style->m_size[layout.flow_axis].GetType() == Unit::Type::AUT)
+		if (m_style->m_dependent_axis == (1 - layout.flow_axis) and m_style->m_size[layout.flow_axis].GetType() == Unit::Type::AUTO)
 			ComputeSizeOfSecondaryAxis(layout);
 
 		Bounds bounds;
@@ -89,21 +105,21 @@ namespace zore::UI {
 
 		// Compute the size and position of the contained inner content (self - padding)
 		int16_t min_padding[4] = {
-			m_style->m_min_padding[T].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0),
-			m_style->m_min_padding[R].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0),
-			m_style->m_min_padding[B].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0),
-			m_style->m_min_padding[L].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0)
+			m_style->m_min_padding[T].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H),
+			m_style->m_min_padding[R].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W),
+			m_style->m_min_padding[B].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H),
+			m_style->m_min_padding[L].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W)
 		};
 		int16_t max_padding[4] = {
-			m_style->m_max_padding[T].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0),
-			m_style->m_max_padding[R].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0),
-			m_style->m_max_padding[B].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0),
-			m_style->m_max_padding[L].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0)
+			m_style->m_max_padding[T].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H),
+			m_style->m_max_padding[R].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W),
+			m_style->m_max_padding[B].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H),
+			m_style->m_max_padding[L].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W)
 		};
-		int16_t padding_t = zm::Clamp(m_style->m_padding[T].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0), min_padding[T], max_padding[T]);
-		int16_t padding_r = zm::Clamp(m_style->m_padding[R].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0), min_padding[R], max_padding[R]);
-		int16_t padding_b = zm::Clamp(m_style->m_padding[B].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0), min_padding[B], max_padding[B]);
-		int16_t padding_l = zm::Clamp(m_style->m_padding[L].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0), min_padding[L], max_padding[L]);
+		int16_t padding_t = zm::Clamp(m_style->m_padding[T].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H), min_padding[T], max_padding[T]);
+		int16_t padding_r = zm::Clamp(m_style->m_padding[R].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W), min_padding[R], max_padding[R]);
+		int16_t padding_b = zm::Clamp(m_style->m_padding[B].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H), min_padding[B], max_padding[B]);
+		int16_t padding_l = zm::Clamp(m_style->m_padding[L].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W), min_padding[L], max_padding[L]);
 		bounds.inner[X] = bounds.middle[X] + padding_l;
 		bounds.inner[Y] = bounds.middle[Y] + padding_t;
 		bounds.inner[W] = bounds.middle[W] - padding_l - padding_r;
@@ -113,31 +129,29 @@ namespace zore::UI {
 	}
 
 	void Element::ComputeRequiredSize(LayoutParams& layout, int16_t axis) {
-		m_min_size[W] = m_style->m_min_size[W].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0);
-		m_min_size[H] = m_style->m_min_size[H].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0);
-		m_max_size[W] = m_style->m_max_size[W].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0);
-		m_max_size[H] = m_style->m_max_size[H].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0);
+		m_min_size[W] = m_style->m_min_size[W].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
+		m_min_size[H] = m_style->m_min_size[H].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
+		m_max_size[W] = m_style->m_max_size[W].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
+		m_max_size[H] = m_style->m_max_size[H].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
 
-		m_min_margin[T] = m_style->m_min_margin[T].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0);
-		m_min_margin[R] = m_style->m_min_margin[R].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0);
-		m_min_margin[B] = m_style->m_min_margin[B].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0);
-		m_min_margin[L] = m_style->m_min_margin[L].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0);
+		m_min_margin[T] = m_style->m_min_margin[T].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
+		m_min_margin[R] = m_style->m_min_margin[R].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
+		m_min_margin[B] = m_style->m_min_margin[B].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
+		m_min_margin[L] = m_style->m_min_margin[L].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
 
-		m_max_margin[T] = m_style->m_max_margin[T].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0);
-		m_max_margin[R] = m_style->m_max_margin[R].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0);
-		m_max_margin[B] = m_style->m_max_margin[B].Get(layout.viewport_size, layout.parent_bounds.inner[H], 0);
-		m_max_margin[L] = m_style->m_max_margin[L].Get(layout.viewport_size, layout.parent_bounds.inner[W], 0);
+		m_max_margin[T] = m_style->m_max_margin[T].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
+		m_max_margin[R] = m_style->m_max_margin[R].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
+		m_max_margin[B] = m_style->m_max_margin[B].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
+		m_max_margin[L] = m_style->m_max_margin[L].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
 
 		// Compute size of element along primary axis if it is not dependent on the secondary axis
 		if (m_style->m_dependent_axis != axis)
 			ComputeRequiredSize(layout, axis, m_style->m_size[axis], m_min_size[axis], m_max_size[axis], m_size[axis]);
 		// Compute size of secondary axis if it does not rely on the primary axis, or the primary axis is calculable
-		if (m_style->m_dependent_axis != (1 - axis) or m_style->m_size[axis].GetType() != Unit::Type::AUT) {
+		if (m_style->m_dependent_axis != (1 - axis) or m_style->m_size[axis].GetType() != Unit::Type::AUTO) {
 			ComputeSizeOfSecondaryAxis(layout);
-			if (m_style->m_dependent_axis == axis) {
-				m_size[axis] = static_cast<int16_t>(zm::Round(m_size[1 - axis] * m_style->m_aspect_ratio));
-				layout.auto_params[axis].required_size += m_size[axis];
-			}
+			if (m_style->m_dependent_axis == axis)
+				ComputeProportionalSize(layout, axis);
 		}
 
 		// Compute size of margins on primary axis
@@ -151,10 +165,8 @@ namespace zore::UI {
 		layout.auto_params[axis].count = 0;
 		ComputeRequiredSize(layout, axis, m_style->m_margin[axis + 0], m_min_margin[axis + 0], m_max_margin[axis + 0], m_margin[axis + 0]);
 		ComputeRequiredSize(layout, axis, m_style->m_margin[axis + 2], m_min_margin[axis + 2], m_max_margin[axis + 2], m_margin[axis + 2]);
-		if (m_style->m_dependent_axis == axis) {
-			m_size[axis] = zm::Min(m_max_size[axis], static_cast<int16_t>(zm::Round(m_size[layout.flow_axis] * m_style->m_aspect_ratio)));
-			layout.auto_params[axis].required_size += m_size[axis];
-		}
+		if (m_style->m_dependent_axis == axis)
+			ComputeProportionalSize(layout, axis);
 		else
 			ComputeRequiredSize(layout, axis, m_style->m_size[axis], m_min_size[axis], m_max_size[axis], m_size[axis]);
 		int16_t auto_size = layout.GetAutoSize(axis);
@@ -164,19 +176,28 @@ namespace zore::UI {
 	}
 
 	void Element::ComputeRequiredSize(LayoutParams& layout, int16_t axis, Unit value, int16_t min, int16_t max, int16_t& result) {
-		if (value.GetType() == Unit::Type::AUT) {
+		if (value.GetType() == Unit::Type::AUTO) {
 			layout.auto_params[axis].count++;
 			layout.auto_params[axis].auto_max_sizes.push_back(max);
 			layout.auto_params[axis].auto_min_sizes.push_back(min);
 		}
 		else {
-			result = zm::Min(max, value.Get(layout.viewport_size, layout.parent_bounds.inner[axis], 0));
+			result = zm::Clamp(value.Get(layout.viewport_size, layout.parent_bounds.inner, 0, axis), min, max);
 			layout.auto_params[axis].required_size += result;
 		}
 	}
 
 	void Element::UpdateIfAuto(Unit::Type type, int16_t& value, int16_t auto_size) {
-		if (type == Unit::Type::AUT)
+		if (type == Unit::Type::AUTO)
 			value = auto_size;
+	}
+
+	void Element::ComputeProportionalSize(LayoutParams& layout, int16_t axis) {
+		if (m_type == Type::LABEL)
+			m_size[axis] = static_cast<int16_t>(zm::Round(m_size[1 - axis] * m_text.length() * (12.f / 18.f)));
+			// 12x18
+		else
+			m_size[axis] = static_cast<int16_t>(zm::Round(m_size[1 - axis] * m_style->m_aspect_ratio));
+		layout.auto_params[axis].required_size += m_size[axis];
 	}
 }

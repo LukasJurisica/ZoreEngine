@@ -674,6 +674,7 @@ typedef void (*GLADpostcallback)(void *ret, const char *name, GLADapiproc apipro
 #define GL_INVALID_INDEX 0xFFFFFFFF
 #define GL_INVALID_OPERATION 0x0502
 #define GL_INVALID_VALUE 0x0501
+#define GL_INVALID_NAME 0xFFFFFFFF
 #define GL_INVERT 0x150A
 #define GL_ISOLINES 0x8E7A
 #define GL_IS_PER_PATCH 0x92E7
