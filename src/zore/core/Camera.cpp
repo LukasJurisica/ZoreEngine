@@ -9,7 +9,12 @@ namespace zore {
 	//	2D Camera Class
 	//========================================================================
 
-	Camera2D::Camera2D(float aspect_ratio, float height) : m_aspect_ratio(aspect_ratio), m_height(height), m_position(0, 0) {
+	Camera2D::Camera2D(float aspect_ratio, float height) : m_aspect_ratio(aspect_ratio), m_height(height), m_position(0, 0), m_multiplier(1, 1) {
+		UpdateProjection();
+	}
+
+	void Camera2D::Invert(bool x, bool y) {
+		m_multiplier = { x ? -1 : 1 , y ? -1 : 1 };
 		UpdateProjection();
 	}
 
@@ -65,7 +70,8 @@ namespace zore {
 
 	const glm::vec2& Camera2D::UpdateProjection() {
 		m_width = m_height * m_aspect_ratio;
-		return (m_scale = { 2.f / m_width, 2.f / m_height });
+		m_scale = { 2.f / m_width, 2.f / m_height };
+		return (m_scale *= m_multiplier);
 	}
 
 	//========================================================================

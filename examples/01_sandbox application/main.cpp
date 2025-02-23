@@ -20,6 +20,7 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	RenderEngine::SetVSync(false);
 	m_camera.SetHeight(static_cast<float>(Window::GetSize().y));
 	m_camera.SetPosition({ Window::GetSize().x >> 1, Window::GetSize().y >> 1 });
+	m_camera.Invert(false, true);
 	s_instance = this;
 
 	// Initialize UI

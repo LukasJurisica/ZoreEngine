@@ -13,6 +13,7 @@ namespace zore {
 		Camera2D(float aspect_ratio, float height);
 		~Camera2D() = default;
 
+		void Invert(bool x = false, bool y = true);
 		void SetPosition(const glm::vec2& position);
 		const glm::vec2& Translate(const glm::vec2& offset);
 		const glm::vec2& TranslatePixels(const glm::vec2& offset);
@@ -33,7 +34,8 @@ namespace zore {
 	private:
 		float m_aspect_ratio;
 		float m_width, m_height;
-
+		
+		glm::vec2 m_multiplier;
 		glm::vec2 m_position;
 		glm::vec2 m_scale;
 	};
