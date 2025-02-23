@@ -26,14 +26,12 @@ namespace zore::UI {
 
 	struct GlyphQuad {
 		GlyphQuad(int32_t x, int32_t y, int32_t w, int32_t h, int32_t d, Colour c, int8_t glyph) :
-			position((x << 16) | y), size((w << 16) | h), colour(c.compressed()), depth(d), glyph(glyph), flags(0) {
+			position((x << 16) | y), size((w << 16) | h), colour(c.compressed()), data((d << 16) | (static_cast<uint32_t>(glyph - 32) << 8)) {
 		}
 		int32_t position;
 		int32_t size;
 		int32_t colour;
-		int16_t depth;
-		int8_t glyph;
-		int8_t flags;
+		int32_t data;
 	};
 
 	struct ButtonCollider {
@@ -52,6 +50,7 @@ namespace zore::UI {
 	static std::vector<ColouredQuad> s_coloured_quads;
 	static std::vector<GlyphQuad> s_glyph_quads;
 	static VertexBuffer s_quad_buffer(true);
+	static VertexBuffer s_glyph_buffer(true);
 
 	static std::vector<DrawCommand> s_draw_list;
 
@@ -61,7 +60,7 @@ namespace zore::UI {
 
 	Layer::Layer() : Element(Type::PANEL) {
 		if (!s_active_layer)
-			s_active_layer = this;
+			Bind();
 	}
 
 	void Layer::Bind() {
@@ -76,6 +75,7 @@ namespace zore::UI {
 
 	void Layer::Resize(uint32_t width, uint32_t height) {
 		s_coloured_quads.clear();
+		s_glyph_quads.clear();
 		s_button_colliders.clear();
 		int16_t w = static_cast<int16_t>(width), h = static_cast<int16_t>(height);
 		Element::Bounds bounds = { w, h, 0, 0, w, h, 0, 0, w, h, 0, 0 };
@@ -87,6 +87,8 @@ namespace zore::UI {
 		s_draw_list.clear();
 		s_quad_buffer.Set(s_coloured_quads);
 		s_draw_list.push_back({ &s_quad_buffer, Element::Type::PANEL, static_cast<uint32_t>(s_coloured_quads.size()) });
+		s_glyph_buffer.Set(s_glyph_quads);
+		s_draw_list.push_back({ &s_glyph_buffer, Element::Type::LABEL, static_cast<uint32_t>(s_glyph_quads.size()) });
 	}
 
 	const std::vector<DrawCommand>& Layer::GetDrawList() {
@@ -145,6 +147,9 @@ namespace zore::UI {
 
 		Colour c = element->GetStyle()->m_colour;
 		const int16_t& x = bounds.middle[X], y = bounds.middle[Y], w = bounds.middle[W], h = bounds.middle[H];
+		const std::string& text = element->GetText();
+		int16_t glyph_width = text.length() > 0 ? (w / text.length()) : 0;
+		int idx = 0;
 
 		// Only draw the element if it has a non-zero alpha value
 		if (c.a() > 0) {
@@ -153,7 +158,9 @@ namespace zore::UI {
 				s_coloured_quads.push_back({ x, y, w, h, depth, c });
 				break;
 			case Element::Type::LABEL:
-				s_coloured_quads.push_back({ x, y, w, h, depth, c });
+				for (int i = 0; i < text.length(); i++)
+					s_glyph_quads.push_back({ x + (glyph_width * i), y, glyph_width, h, depth, c, text[i] });
+				//s_coloured_quads.push_back({ x + (glyph_width * i), y, (glyph_width >> 1), h, depth, c });
 				break;
 			case Element::Type::BUTTON:
 				s_button_colliders.push_back({ x, y, w, h, depth, element->GetUUID(), static_cast<uint32_t>(s_coloured_quads.size()) });

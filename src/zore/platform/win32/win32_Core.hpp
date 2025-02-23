@@ -7,7 +7,6 @@
 // get weird errors when trying to do some windows stuff, try removing some
 // (or all) of these defines (it will increase build time though).
 #define NOATOM
-#define NOCLIPBOARD
 #define NOCOMM
 #define NOCOLOR
 #define NOCTLMGR9

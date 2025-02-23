@@ -16,6 +16,7 @@ namespace zore::Config {
 	}
 
 	void Manager::Load(const std::string& filename) {
+		FileManager::EnsureDir("config");
 		m_filename = "config/" + filename + ".cfg";
 		std::vector<std::string> content;
 		FileManager::ReadLines(content, m_filename, false, false);
@@ -78,7 +79,7 @@ namespace zore::Config {
 		else if (value == "false")
 			return false;
 		else
-			Set(key, default_value ? "true" : "false");
+			Set(key, default_value);
 		return default_value;
 	}
 
@@ -96,6 +97,7 @@ namespace zore::Config {
 	}
 
 	void Manager::Set(const std::string& key, bool value) {
-		Set(key, value ? "true" : "false");
+		const std::string possible_values[] = { "true", "false" };
+		Set(key, possible_values[static_cast<int>(value)]);
 	}
 }

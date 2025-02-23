@@ -81,10 +81,9 @@ namespace zore {
 		static CullingMode s_face_culling_mode = CullingMode::BACK;
 
 		SetFaceCulling(mode != CullingMode::NONE);
-		if (mode != s_face_culling_mode) {
+		if (mode != CullingMode::NONE && mode != s_face_culling_mode)
 			glCullFace(s_culling_mode_to_gl_culling_mode[static_cast<uint32_t>(mode)]);
-			s_face_culling_mode = mode;
-		}
+		s_face_culling_mode = mode;
 	}
 
 	void RenderEngine::SetDepthTest(bool value) {
