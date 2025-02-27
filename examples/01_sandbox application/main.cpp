@@ -9,8 +9,6 @@
 
 #include <zore/ui/Clipboard.hpp>
 
-#include <algorithm>
-
 using namespace zore;
 
 static bool s_display_console = false;

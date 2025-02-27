@@ -91,6 +91,7 @@ namespace zore {
 		glfwSwapBuffers(s_window_handle);
 		Time::NewFrame();
 		Keyboard::ClearState(false);
+		Mouse::ClearState(false);
 		glfwPollEvents();
 		FrameMark;
 	}

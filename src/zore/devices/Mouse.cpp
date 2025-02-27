@@ -68,7 +68,7 @@ namespace zore {
 		if (Editor::WantsMouse())
 			return;
 
-		s_button_held_states[button] = true;
+		s_button_held_states[button] = action;
 
 		if (action == GLFW_PRESS) {
 			s_button_down_states[button] = true;

@@ -64,7 +64,7 @@ namespace zore {
 			return;
 
 		if (action != KEY_REPEAT && key > 0 && key < KEY_COUNT) {
-			s_key_held_states[key] = true;
+			s_key_held_states[key] = action;
 
 			if (action == GLFW_PRESS) {
 				s_key_down_states[key] = true;
