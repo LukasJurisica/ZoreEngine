@@ -1,84 +1,92 @@
 #include "zore/ui/Manager.hpp"
-#include "zore/Devices.hpp"
+#include "zore/Events.hpp"
 #include "zore/Debug.hpp"
 
 namespace zore::UI {
 
-    static std::unordered_map<std::string, UNIQUE<Layer>> s_layers;
-    static ActionMap* s_active_action_map = nullptr;
+	static std::unordered_map<std::string, UNIQUE<Layer>> s_layers;
+	static ActionMap* s_active_action_map = nullptr;
 
-    //========================================================================
-    //	UI Event Listener Class
-    //========================================================================
+	//========================================================================
+	//	UI Event Listener Class
+	//========================================================================
 
-    class EventListener : Window::Listener, Keyboard::Listener, Mouse::Listener {
-    public:
-        EventListener() : Keyboard::Listener(100), Mouse::Listener(100) {}
-        ~EventListener() = default;
+	class EventListener {
+	public:
+		EventListener() {
+			Event::MultiHandler& handler = Event::MultiHandler::Get();
+			handler.Register(&OnMouseMove, 100);
+			handler.Register(&OnMousePress, 100);
+			handler.Register(&OnMouseRelease, 100);
+			handler.Register(&OnKeyPress, 100);
+			handler.Register(&OnWindowResize, 100);
+		}
+		~EventListener() = default;
 
-        void OnWindowResize(int width, int height, float aspect_ratio) override {
-            Layer::Resize(width, height);
-        }
+		static bool OnMouseMove(const MouseMovedEvent& e) {
+			Layer::HandleMouseMove(static_cast<uint32_t>(e.x), static_cast<uint32_t>(e.y));
+			return false;
+		}
 
-        bool OnMouseMove(float x, float y, float dx, float dy) override {
-			Layer::HandleMouseMove(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
-            return false;
-        }
-
-        bool OnMousePress(int button) override {
-			uint32_t trigger = Layer::HandleMousePress(button);
+		static bool OnMousePress(const MousePressedEvent& e) {
+			uint32_t trigger = Layer::HandleMousePress(e.button);
 			if (trigger && s_active_action_map)
 				return s_active_action_map->HandleEvent(ActionMap::Source::INTERNAL, trigger, 1);
-            return false;
-        }
+			return false;
+		}
 
-        bool OnMouseRelease(int button) override {
-			uint32_t trigger = Layer::HandleMouseRelease(button);
+		static bool OnMouseRelease(const MouseReleasedEvent& e) {
+			uint32_t trigger = Layer::HandleMouseRelease(e.button);
 			if (trigger && s_active_action_map)
-                return s_active_action_map->HandleEvent(ActionMap::Source::INTERNAL, trigger, 0);
-            return false;
-        }
+				return s_active_action_map->HandleEvent(ActionMap::Source::INTERNAL, trigger, 0);
+			return false;
+		}
 
-        bool OnKeyPress(int key, int mods) override {
-			uint32_t trigger = Layer::HandleKeyPress(key);
+		static bool OnKeyPress(const KeyPressedEvent& e) {
+			uint32_t trigger = Layer::HandleKeyPress(e.key);
 			if (trigger && s_active_action_map)
-                return s_active_action_map->HandleEvent(ActionMap::Source::INTERNAL, trigger, 1);
-            return false;
-        }
-    };
+				return s_active_action_map->HandleEvent(ActionMap::Source::INTERNAL, trigger, 1);
+			return false;
+		}
 
-    //========================================================================
-    //	UI Manager Class
-    //========================================================================
+		static bool OnWindowResize(const WindowResizedEvent& e) {
+			Layer::Resize(e.width, e.height);
+			return false;
+		}
+	};
 
-    static Manager* s_manager_instance = nullptr;
+	//========================================================================
+	//	UI Manager Class
+	//========================================================================
 
-    Layer& Manager::CreateLayer(const std::string& name) {
-        static EventListener s_event_listener;
-        s_layers[name] = MAKE_UNIQUE<Layer>();
-        return *s_layers[name];
-    }
+	static Manager* s_manager_instance = nullptr;
 
-    Layer* Manager::Bind(const std::string& name) {
+	Layer& Manager::CreateLayer(const std::string& name) {
+		static EventListener s_event_listener;
+		s_layers[name] = MAKE_UNIQUE<Layer>();
+		return *s_layers[name];
+	}
+
+	Layer* Manager::Bind(const std::string& name) {
 		auto iter = s_layers.find(name);
-        Layer* layer = (iter != s_layers.end()) ? iter->second.get() : nullptr;
-        if (layer) {
-            layer->Bind();
-            if (s_manager_instance)
-                s_manager_instance->OnLayerChange(layer, name);
-        }
-        else
+		Layer* layer = (iter != s_layers.end()) ? iter->second.get() : nullptr;
+		if (layer) {
+			layer->Bind();
+			if (s_manager_instance)
+				s_manager_instance->OnLayerChange(layer, name);
+		}
+		else
 			Logger::Warn("Attempted to bind layer with name that does not exist:", name);
-        return layer;
-    }
+		return layer;
+	}
 
-    void Manager::Bind(ActionMap& action_map) {
-        s_active_action_map = &action_map;
-    }
+	void Manager::Bind(ActionMap& action_map) {
+		s_active_action_map = &action_map;
+	}
 
-    Manager::Manager() {
-        ENSURE(!s_manager_instance, "Attempted to create multiple UI Managers - this is not supported.");
-        Logger::Info("UI Manager Initialized");
+	Manager::Manager() {
+		ENSURE(!s_manager_instance, "Attempted to create multiple UI Managers - this is not supported.");
+		Logger::Info("UI Manager Initialized");
 		s_manager_instance = this;
-    }
+	}
 }

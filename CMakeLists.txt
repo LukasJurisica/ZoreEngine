@@ -17,7 +17,7 @@ endif()
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # Specify project files
-file(GLOB_RECURSE ALL_FILES "src/*.cpp" "src/*.hpp")
+file(GLOB_RECURSE ALL_FILES "src/*.cpp" "src/*.hpp" "src/*.inl")
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src/zore" PREFIX "src" FILES ${ALL_FILES})
 add_library(${PROJECT_NAME} ${ALL_FILES})
 

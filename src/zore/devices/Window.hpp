@@ -46,22 +46,5 @@ namespace zore {
 		static void ResizeCallback(GLFWwindow* window_handle, int width, int height);
 		static void MoveCallback(GLFWwindow* window_handle, int xpos, int ypos);
 		static void FocusCallback(GLFWwindow* window_handle, int focused);
-
-		//========================================================================
-		//	Window Listener Class
-		//========================================================================
-
-	public:
-		class Listener {
-			friend class Window;
-		protected:
-			Listener();
-			~Listener();
-
-		private:
-			virtual void OnWindowResize(int width, int height, float aspect_ratio) {};
-			virtual void OnWindowMove(int xpos, int ypos) {};
-			virtual void OnWindowFocus(int focused) {};
-		};
 	};
 }

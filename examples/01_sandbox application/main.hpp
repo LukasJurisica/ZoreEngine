@@ -5,10 +5,11 @@
 
 #include <zore/Devices.hpp>
 #include <zore/Graphics.hpp>
+#include <zore/Events.hpp>
 
 namespace zore {
 
-	class DemoApplication : public Application, Window::Listener, Mouse::Listener, Keyboard::Listener {
+	class DemoApplication : public Application {
 	public:
 		DemoApplication(const LaunchOptions& options);
 		~DemoApplication() = default;
@@ -20,12 +21,11 @@ namespace zore {
 		void CreateSimpleUI();
 		static DemoApplication* Get();
 
-		bool OnMouseMove(float x, float y, float dx, float dy) override;
-		bool OnMousePress(int button) override;
-		bool OnMouseRelease(int button) override;
-		bool OnKeyPress(int key, int mods) override;
-		bool OnKeyRelease(int key) override;
-		void OnWindowResize(int width, int height, float aspect_ratio) override;
+		bool OnMousePress(const MousePressedEvent& e);
+		bool OnMouseRelease(const MouseReleasedEvent& e);
+		bool OnKeyPress(const KeyPressedEvent& e);
+		bool OnKeyRelease(const KeyReleasedEvent& e);
+		bool OnWindowResize(const WindowResizedEvent& e);
 
 	private:
 		Camera2D m_camera;
@@ -33,5 +33,7 @@ namespace zore {
 		Shader m_panel_shader;
 		Shader m_text_shader;
 		ActionMap action_map;
+
+		Event::MultiHandler m_event_handler;
 	};
 }

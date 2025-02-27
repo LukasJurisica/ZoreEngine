@@ -1,5 +1,7 @@
 #include "zore/Devices.hpp"
 #include "zore/graphics/RenderEngine.hpp"
+#include "zore/events/WindowEvents.hpp"
+#include "zore/events/Manager.hpp"
 #include "zore/utils/Time.hpp"
 #include "zore/debug/Profiler.hpp"
 #include "zore/Debug.hpp"
@@ -66,7 +68,7 @@ namespace zore {
 
 		double xpos, ypos;
 		glfwGetCursorPos(s_window_handle, &xpos, &ypos);
-		Mouse::ClearState(static_cast<float>(xpos), static_cast<float>(ypos));
+		Mouse::SetPosition(static_cast<float>(xpos), static_cast<float>(ypos));
 
 		// Set GLFW event callbacks
 		glfwSetWindowPosCallback(s_window_handle, MoveCallback);
@@ -135,7 +137,7 @@ namespace zore {
 
 		if (!value) {
 			glfwSetCursorPos(s_window_handle, s_size.x / 2, s_size.y / 2);
-			Mouse::ClearState(static_cast<float>(s_size.x / 2), static_cast<float>(s_size.y / 2));
+			Mouse::SetPosition(static_cast<float>(s_size.x / 2), static_cast<float>(s_size.y / 2));
 		}
 	}
 
@@ -205,8 +207,6 @@ namespace zore {
 	//	Window Callback Functions
 	//------------------------------------------------------------------------
 
-	std::vector<Window::Listener*> listeners;
-
 	void Window::ErrorCallback(int error, const char* description) {
 		Logger::Error("GLFW Error: (" + std::to_string(error) + "): " + description);
 	}
@@ -214,34 +214,16 @@ namespace zore {
 	void Window::ResizeCallback(GLFWwindow* window_handle, int width, int height) {
 		glfwGetFramebufferSize(window_handle, &s_size.x, &s_size.y);
 		RenderEngine::SetViewport(s_size.x, s_size.y);
-		float aspect_ratio = GetAspectRatio();
-		for (Listener* listener : listeners)
-			listener->OnWindowResize(s_size.x, s_size.y, aspect_ratio);
+		Event::Manager::Dispatch(WindowResizedEvent(width, height));
 	}
 
 	void Window::MoveCallback(GLFWwindow* window_handle, int xpos, int ypos) {
 		//if (!window->fullscreen)
 		s_position = { xpos, ypos };
-		for (Listener* listener : listeners)
-			listener->OnWindowMove(xpos, ypos);
+		Event::Manager::Dispatch(WindowMovedEvent(xpos, ypos));
 	}
 
 	void Window::FocusCallback(GLFWwindow* window_handle, int focused) {
-		// focused = true means window gained focus
-		for (Listener* listener : listeners)
-			listener->OnWindowFocus(focused);
-	}
-
-	//========================================================================
-	//	Window Listener Class
-	//========================================================================
-
-	Window::Listener::Listener() {
-		listeners.push_back(this);
-	}
-
-	Window::Listener::~Listener() {
-		auto iter = find(listeners.begin(), listeners.end(), this);
-		listeners.erase(iter);
+		Event::Manager::Dispatch(WindowFocusedEvent(focused));
 	}
 }

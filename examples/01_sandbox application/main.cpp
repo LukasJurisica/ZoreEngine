@@ -9,6 +9,8 @@
 
 #include <zore/ui/Clipboard.hpp>
 
+#include <algorithm>
+
 using namespace zore;
 
 static bool s_display_console = false;
@@ -22,6 +24,13 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	m_camera.SetPosition({ Window::GetSize().x >> 1, Window::GetSize().y >> 1 });
 	m_camera.Invert(false, true);
 	s_instance = this;
+
+	// Initialize Event Handlers
+	m_event_handler.Register(&DemoApplication::OnMousePress, this);
+	m_event_handler.Register(&DemoApplication::OnMouseRelease, this);
+	m_event_handler.Register(&DemoApplication::OnKeyPress, this);
+	m_event_handler.Register(&DemoApplication::OnKeyRelease, this);
+	m_event_handler.Register(&DemoApplication::OnWindowResize, this);
 
 	// Initialize UI
 	CreateSimpleUI();
@@ -38,7 +47,6 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 		s_instance->ReloadShaders();
 		});
 }
-
 
 void DemoApplication::ReloadShaders() {
 	m_panel_shader.Compile();
@@ -143,30 +151,27 @@ DemoApplication* DemoApplication::Get() {
 	return s_instance;
 }
 
-bool DemoApplication::OnMouseMove(float x, float y, float dx, float dy) {
+bool DemoApplication::OnMousePress(const MousePressedEvent& e) {
+	return action_map.HandleEvent(ActionMap::Source::MOUSE, e.button, 1);
+}
+
+bool DemoApplication::OnMouseRelease(const MouseReleasedEvent& e) {
+	return action_map.HandleEvent(ActionMap::Source::MOUSE, e.button, 0);
+}
+
+bool DemoApplication::OnKeyPress(const KeyPressedEvent& e) {
+	return action_map.HandleEvent(ActionMap::Source::KEYBOARD, e.key, 1);
+}
+
+bool DemoApplication::OnKeyRelease(const KeyReleasedEvent& e) {
+	return action_map.HandleEvent(ActionMap::Source::KEYBOARD, e.key, 0);
+}
+
+bool DemoApplication::OnWindowResize(const WindowResizedEvent& e) {
+	m_camera.SetHeight(static_cast<float>(e.height));
+	m_camera.SetAspectRatio(e.aspect_ratio);
+	m_camera.SetPosition({ e.width >> 1, e.height >> 1 });
 	return false;
-}
-
-bool DemoApplication::OnMousePress(int button) {
-	return action_map.HandleEvent(ActionMap::Source::MOUSE, button, 1);
-}
-
-bool DemoApplication::OnMouseRelease(int button) {
-	return action_map.HandleEvent(ActionMap::Source::MOUSE, button, 0);
-}
-
-bool DemoApplication::OnKeyPress(int key, int mods) {
-	return action_map.HandleEvent(ActionMap::Source::KEYBOARD, key, 1);
-}
-
-bool DemoApplication::OnKeyRelease(int key) {
-	return action_map.HandleEvent(ActionMap::Source::KEYBOARD, key, 0);
-}
-
-void DemoApplication::OnWindowResize(int width, int height, float aspect_ratio) {
-	m_camera.SetHeight(static_cast<float>(height));
-	m_camera.SetAspectRatio(aspect_ratio);
-	m_camera.SetPosition({ width >> 1, height >> 1 });
 }
 
 Application* Application::Create() {
