@@ -1,10 +1,11 @@
 #include "zore/devices/Mouse.hpp"
+#include "zore/devices/Window.hpp"
 #include "zore/events/MouseEvents.hpp"
 #include "zore/events/Manager.hpp"
 #include "zore/ui/Editor.hpp"
 #include "zore/Debug.hpp"
 
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <bitset>
 
 namespace zore {
@@ -40,6 +41,7 @@ namespace zore {
 
 	void Mouse::SetPosition(float x, float y) {
 		s_position = { x, y };
+		glfwSetCursorPos(Window::GetWindowHandle(), x, y);
 	}
 
 	void Mouse::ClearState(bool clear_held_state) {
@@ -53,23 +55,10 @@ namespace zore {
 	//	GLFW Mouse Callbacks
 	//------------------------------------------------------------------------
 
-	void Mouse::MoveCallback(GLFWwindow* windowHandle, double xpos, double ypos) {
-		glm::vec2 delta = s_position;
-		s_position = { xpos, ypos };
-		delta = s_position - delta;
-
-		if (Editor::WantsMouse())
-			return;
-
-		Event::Manager::Dispatch(MouseMovedEvent(s_position.x, s_position.y, delta.x, delta.y));
-	}
-
 	void Mouse::ButtonCallback(GLFWwindow* windowHandle, int button, int action, int mods) {
 		if (Editor::WantsMouse())
 			return;
-
 		s_button_held_states[button] = action;
-
 		if (action == GLFW_PRESS) {
 			s_button_down_states[button] = true;
 			Event::Manager::Dispatch(MousePressedEvent(button, mods));
@@ -83,7 +72,19 @@ namespace zore {
 	void Mouse::ScrollCallback(GLFWwindow* windowHandle, double xOffset, double yOffset) {
 		if (Editor::WantsMouse())
 			return;
-
 		Event::Manager::Dispatch(MouseScrolledEvent(static_cast<float>(xOffset), static_cast<float>(yOffset)));
+	}
+
+	void Mouse::MoveCallback(GLFWwindow* windowHandle, double xpos, double ypos) {
+		glm::vec2 delta = s_position;
+		s_position = { xpos, ypos };
+		delta = s_position - delta;
+		if (Editor::WantsMouse())
+			return;
+		Event::Manager::Dispatch(MouseMovedEvent(s_position.x, s_position.y, delta.x, delta.y));
+	}
+
+	void Mouse::EnterCallback(GLFWwindow* window_handle, int entered) {
+		Event::Manager::Dispatch(MouseEnteredEvent(entered));
 	}
 }

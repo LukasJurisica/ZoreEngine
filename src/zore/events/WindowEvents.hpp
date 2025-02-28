@@ -2,6 +2,8 @@
 
 #include "zore/events/Event.hpp"
 
+#include <vector>
+
 namespace zore {
 
 	struct WindowResizedEvent : public Event::EventBase {
@@ -20,5 +22,25 @@ namespace zore {
 	struct WindowFocusedEvent : public Event::EventBase {
 		WindowFocusedEvent(bool focused) : focused(focused) {}
 		bool focused;
+	};
+
+	struct WindowMaximizedEvent : public Event::EventBase {
+		WindowMaximizedEvent(bool maximized) : maximized(maximized) {}
+		bool maximized;
+	};
+
+	struct WindowMinimizedEvent : public Event::EventBase {
+		WindowMinimizedEvent(bool minimized) : minimized(minimized) {}
+		bool minimized;
+	};
+
+	struct WindowFileDropEvent : public Event::EventBase {
+		WindowFileDropEvent(const std::vector<std::string>& files_paths) : paths(paths) {}
+		WindowFileDropEvent(int count, const char** files_paths) {
+			paths.reserve(count);
+			for (int i = 0; i < count; i++)
+				paths.emplace_back(files_paths[i]);
+		}
+		std::vector<std::string> paths;
 	};
 }

@@ -21,8 +21,9 @@ namespace zore {
 		static void ClearState(bool clear_held_state = true);
 
 	private:
-		static void MoveCallback(GLFWwindow* window_handle, double xpos, double ypos);
 		static void ButtonCallback(GLFWwindow* window_handle, int button, int action, int mods);
 		static void ScrollCallback(GLFWwindow* window_handle, double xoffset, double yoffset);
+		static void MoveCallback(GLFWwindow* window_handle, double xpos, double ypos);
+		static void EnterCallback(GLFWwindow* window_handle, int entered);
 	};
 }

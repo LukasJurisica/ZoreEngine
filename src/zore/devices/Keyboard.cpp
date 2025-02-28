@@ -4,7 +4,7 @@
 #include "zore/ui/Editor.hpp"
 #include "zore/Debug.hpp"
 
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 #include <bitset>
 
 namespace zore {

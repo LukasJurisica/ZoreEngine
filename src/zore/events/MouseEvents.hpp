@@ -23,4 +23,9 @@ namespace zore {
 		MouseMovedEvent(float x, float y, float dx, float dy) : x(x), y(y), dx(dx), dy(dy) {}
 		float x, y, dx, dy;
 	};
+
+	struct MouseEnteredEvent : public Event::EventBase {
+		MouseEnteredEvent(bool entered) : entered(entered) {}
+		bool entered;
+	};
 }

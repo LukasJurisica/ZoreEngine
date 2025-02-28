@@ -7,7 +7,7 @@
 #include <zore/ui/Font.hpp>
 #include <zore/Debug.hpp>
 
-#include <zore/ui/Clipboard.hpp>
+#include <zore/devices/Clipboard.hpp>
 
 using namespace zore;
 

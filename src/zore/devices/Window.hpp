@@ -14,7 +14,7 @@ namespace zore {
 		friend class Application;
 	public:
 		static void Update();
-		static bool ShouldClose();
+		static void Close(bool value = true);
 		static void SetTitle(const char* title);
 		static void SetResizable(bool value);
 		static void SetMaximized(bool value);
@@ -25,13 +25,16 @@ namespace zore {
 		static void HideCursor(bool value);
 		static void ToggleCursor();
 		static void SetSize(int width, int height);
+		static void SetMinSize(int width = -1, int height = -1);
+		static void SetMaxSize(int width = -1, int height = -1);
+		static void ForceAspectRatio(int width = -1, int height = -1);
 		static void SetPosition(int x, int y);
 		static void Centre();
 
+		static bool ShouldClose();
 		static bool GetMaximized();
 		static float GetAspectRatio();		
 		static const glm::ivec2& GetSize();
-		static const glm::ivec2 GetFrameBufferSize();
 		static const glm::ivec2& GetPosition();
 		static GLFWwindow* GetWindowHandle();
 		static void GetNativeHandle(void* result);
@@ -46,5 +49,8 @@ namespace zore {
 		static void ResizeCallback(GLFWwindow* window_handle, int width, int height);
 		static void MoveCallback(GLFWwindow* window_handle, int xpos, int ypos);
 		static void FocusCallback(GLFWwindow* window_handle, int focused);
+		static void PathDropCallback(GLFWwindow* window, int count, const char** paths);
+		static void MaximizedCallback(GLFWwindow* window_handle, int maximized);
+		static void MinimizedCallback(GLFWwindow* window_handle, int minimized);
 	};
 }
