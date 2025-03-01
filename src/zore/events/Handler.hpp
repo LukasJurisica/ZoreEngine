@@ -33,7 +33,7 @@ namespace zore::Event {
 		static_assert(std::is_base_of<EventBase, EventType>::value, "EventType must derive from Event");
 
 	public:
-		explicit Handler() = default;
+		explicit Handler() { Manager::Subscribe(typeid(EventType), nullptr); }
 		template <typename ClassType>
 		explicit Handler(bool(ClassType::* func)(const EventType&), ClassType* obj, int priority = 0) { Register(func, obj, priority); }
 		explicit Handler(Callback<EventType> callback, int priority = 0 ) { Register(callback, priority); }

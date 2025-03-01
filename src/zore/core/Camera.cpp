@@ -58,6 +58,10 @@ namespace zore {
 	const glm::vec2& Camera2D::GetScale() const {
 		return m_scale;
 	}
+	
+	const float Camera2D::GetHeight() const {
+		return m_height;
+	}
 
 	glm::vec2 Camera2D::GetWorldSpaceTranslation(const glm::vec2& offset) const {
 		return (offset / static_cast<float>(Window::GetSize().y)) * m_height;

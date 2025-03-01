@@ -25,6 +25,7 @@ namespace zore {
 
 		const glm::vec2& GetPosition() const;
 		const glm::vec2& GetScale() const;
+		float GetHeight() const;
 		glm::vec2 GetWorldSpaceTranslation(const glm::vec2& offset) const;
 		glm::vec2 GetWorldSpacePosition(glm::vec2 coordinate) const;
 

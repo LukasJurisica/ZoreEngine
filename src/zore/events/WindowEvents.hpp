@@ -3,6 +3,7 @@
 #include "zore/events/Event.hpp"
 
 #include <vector>
+#include <string>
 
 namespace zore {
 

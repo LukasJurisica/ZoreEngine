@@ -97,7 +97,7 @@ namespace zore::Config {
 	}
 
 	void Manager::Set(const std::string& key, bool value) {
-		const std::string possible_values[] = { "true", "false" };
+		const std::string possible_values[] = { "false", "true" };
 		Set(key, possible_values[static_cast<int>(value)]);
 	}
 }
