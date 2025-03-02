@@ -2,10 +2,10 @@
 #include <mutex>
 
 template <size_t SIZE, class TYPE>
-class circular_buffer {
+class circular_queue {
 public:
-	explicit circular_buffer() : m_head(0), m_tail(0), m_full(false) {};
-	~circular_buffer() = default;
+	explicit circular_queue() : m_head(0), m_tail(0), m_full(false) {};
+	~circular_queue() = default;
 
 	void push(const TYPE& item) {
 		std::lock_guard<std::mutex> lock(m_mutex);

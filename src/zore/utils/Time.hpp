@@ -33,7 +33,7 @@ namespace zore {
 		}
 
 	private:
-		static void NewFrame() {
+		static inline void NewFrame() {
 			TimePoint current_time = CurrentTime();
 			std::chrono::duration<float> elapsed_time = current_time - s_last_time;
 			s_delta_time = elapsed_time.count();
@@ -41,9 +41,8 @@ namespace zore {
 		}
 
 	private:
-		// These are defined in Window.cpp
-		static TimePoint s_last_time;
-		static float s_delta_time;
+		static inline TimePoint s_last_time;
+		static inline float s_delta_time;
 	};
 
 	//========================================================================

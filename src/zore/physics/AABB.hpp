@@ -2,20 +2,20 @@
 
 namespace zore {
 
-	template <int DIMS>
+	template <typename TYPE, int DIMS>
 	class Point {
 	public:
 
 	private:
-		float[DIMS] data;
+		TYPE[DIMS] data;
 	};
 
-	template <int DIMS>
+	template <typename TYPE, int DIMS>
 	class AABB {
 	public:
 
 	private:
-		Point<DIMS> min;
-		Point<DIMS> max;
+		Point<TYPE, DIMS> min;
+		Point<TYPE, DIMS> max;
 	};
 }

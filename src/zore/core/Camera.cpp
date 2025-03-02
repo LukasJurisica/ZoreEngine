@@ -59,7 +59,7 @@ namespace zore {
 		return m_scale;
 	}
 	
-	const float Camera2D::GetHeight() const {
+	float Camera2D::GetHeight() const {
 		return m_height;
 	}
 
