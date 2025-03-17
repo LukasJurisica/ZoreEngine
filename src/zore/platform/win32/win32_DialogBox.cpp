@@ -41,6 +41,7 @@ namespace zore {
 	void InitializeOFN(OPENFILENAME& ofn, char* szFile, char* filter, const std::vector<FilterDesc>& filters, bool include_all_files, DWORD flags) {
 		CreateFilterStringFromVector(filter, filters, include_all_files);
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		ZeroMemory(szFile, CHAR_BUFFER_SIZE);
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		Window::GetNativeHandle(&ofn.hwndOwner);
 		ofn.lpstrFile = szFile;

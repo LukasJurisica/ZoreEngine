@@ -33,12 +33,11 @@ namespace zore {
 		const glm::vec2& UpdateProjection();
 
 	private:
-		float m_aspect_ratio;
-		float m_width, m_height;
-		
 		glm::vec2 m_multiplier;
 		glm::vec2 m_position;
 		glm::vec2 m_scale;
+		float m_width, m_height;
+		float m_aspect_ratio;
 	};
 
 	//========================================================================

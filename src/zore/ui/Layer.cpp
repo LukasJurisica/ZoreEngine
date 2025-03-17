@@ -16,7 +16,7 @@ namespace zore::UI {
 
 	struct ColouredQuad {
 		ColouredQuad(int32_t x, int32_t y, int32_t w, int32_t h, int32_t d, Colour c) :
-			position((x << 16) | y), size((w << 16) | h), colour(c.compressed()), data(d << 16) {
+			position((x << 16) | y), size((w << 16) | h), colour(c.u32()), data(d << 16) {
 		}
 		int32_t position;
 		int32_t size;
@@ -26,7 +26,7 @@ namespace zore::UI {
 
 	struct GlyphQuad {
 		GlyphQuad(int32_t x, int32_t y, int32_t w, int32_t h, int32_t d, Colour c, int8_t glyph) :
-			position((x << 16) | y), size((w << 16) | h), colour(c.compressed()), data((d << 16) | (static_cast<uint32_t>(glyph - 32) << 8)) {
+			position((x << 16) | y), size((w << 16) | h), colour(c.u32()), data((d << 16) | (static_cast<uint32_t>(glyph - 32) << 8)) {
 		}
 		int32_t position;
 		int32_t size;

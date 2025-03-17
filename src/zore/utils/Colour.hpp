@@ -12,10 +12,11 @@ namespace zore {
 		Colour(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : m_r(r), m_g(g), m_b(b), m_a(a) {}
 		Colour(uint32_t c) : m_r((c >> 24) & 0xFF), m_g((c >> 16) & 0xFF), m_b((c >> 8) & 0xFF), m_a(c & 0xFF) {}
 
-		static inline Colour rgb(uint8_t r, uint8_t g, uint8_t b) { return Colour(r, g, b, 255); }
-		static inline Colour rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { return Colour(r, g, b, a); }
-		static inline Colour rgba(uint32_t c) { return Colour(c); }
+		static inline Colour rgb(uint32_t c) { return Colour(c); }
+		static inline Colour rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) { return Colour(r, g, b, a); }
 		static inline Colour nrgb(float r, float g, float b, float a = 1.f) { return Colour(n(r), n(g), n(b), n(a)); }
+		static inline Colour rgb(const glm::vec3& c) { return Colour::nrgb(c.r, c.g, c.b); }
+		static inline Colour rgb(const glm::vec4& c) { return Colour::nrgb(c.r, c.g, c.b, c.a); }
 		static inline Colour hex(const char(&s)[5]) { return Colour(h(s[1], s[1]), h(s[2], s[2]), h(s[3], s[3]), 255); }
 		static inline Colour hex(const char(&s)[6]) { return Colour(h(s[1], s[1]), h(s[2], s[2]), h(s[3], s[3]), h(s[4], s[4])); }
 		static inline Colour hex(const char(&s)[8]) { return Colour(h(s[1], s[2]), h(s[3], s[4]), h(s[5], s[6]), 255); }
@@ -26,7 +27,8 @@ namespace zore {
 		glm::vec4 rgba() const { return glm::vec4(m_r, m_g, m_b, m_a); }
 		glm::vec3 nrgb() const { return glm::vec3(m_r, m_g, m_b) / 255.f; }
 		glm::vec4 nrgba() const { return glm::vec4(m_r, m_g, m_b, m_a) / 255.f; }
-		uint32_t compressed() const { return (static_cast<uint32_t>(m_r) << 24) | (static_cast<uint32_t>(m_g) << 16) | (static_cast<uint32_t>(m_b) << 8) | m_a; }
+		uint32_t u32() const { return (static_cast<uint32_t>(m_r) << 24) | (static_cast<uint32_t>(m_g) << 16) | (static_cast<uint32_t>(m_b) << 8) | m_a; }
+		uint16_t u16() const { return (static_cast<uint16_t>(m_r >> 4) << 12) | (static_cast<uint16_t>(m_g >> 4) << 8) | (static_cast<uint16_t>(m_b >> 4) << 4) | (m_a >> 4); }
 		uint8_t r() const { return m_r; }
 		uint8_t g() const { return m_g; }
 		uint8_t b() const { return m_b; }
