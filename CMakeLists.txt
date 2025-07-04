@@ -6,6 +6,9 @@ option(ZORE_BUILD_TESTS OFF)
 option(ZORE_BUILD_EXAMPLES OFF)
 option(ZORE_BUILD_PROFILER ON)
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
+
 # Detects whether this is a top-level project
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 if(HAS_PARENT)
@@ -43,8 +46,7 @@ if (${ZORE_BUILD_PROFILER})
 endif()
 # Link the Winsock2 library if we are compiling for windows
 if (WIN32)
-	set(WS2_32_LIBRARY ws2_32)
-	set(ZORE_LIBRARIES ${ZORE_LIBRARIES} ${WS2_32_LIBRARY})
+	set(ZORE_LIBRARIES ${ZORE_LIBRARIES} ws2_32)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "src" "deps/include")

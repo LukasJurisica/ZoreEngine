@@ -1,8 +1,8 @@
 #include "zore/ui/Layer.hpp"
 #include "zore/graphics/RenderEngine.hpp"
+#include "zore/math/MathUtils.hpp"
 #include "zore/utils/UUID.hpp"
 #include "zore/utils/BitUtils.hpp"
-#include "zore/Debug.hpp"
 #include "zore/devices/Window.hpp"
 
 #define HOVERED_BIT 0x1
@@ -142,7 +142,7 @@ namespace zore::UI {
 	}
 
 	void Layer::ParseUIElement(Element* element, int16_t viewport_width, int16_t viewport_height, const Element::Bounds& bounds, int16_t depth) {
-		if (bounds.middle[W] <= 0 or bounds.middle[H] <= 0)
+		if (bounds.middle[W] <= 0 || bounds.middle[H] <= 0)
 			return;
 
 		Colour c = element->GetStyle()->m_colour;
@@ -172,15 +172,34 @@ namespace zore::UI {
 			}
 		}
 
-		if (bounds.inner[W] <= 0 or bounds.inner[H] <= 0)
+		if (bounds.inner[W] <= 0 || bounds.inner[H] <= 0 || element->Children().size() <= 0)
 			return;
 
 		int16_t x_offset = 0, y_offset = 0;
 		LayoutParams params(bounds, viewport_width, viewport_height, element->GetStyle()->m_flow_direction);
-
 		for (UNIQUE<Element>& child : element->Children())
 			child->ComputeRequiredSize(params, params.flow_axis);
+
+		int16_t x_gap, y_gap;
+		uint16_t gap_count = static_cast<uint16_t>(element->Children().size()) - 1;
+		int16_t min_gap = element->GetStyle()->m_min_gap[params.flow_axis].Get(params.viewport_size, params.parent_bounds.inner, 0, params.flow_axis);
+		int16_t max_gap = element->GetStyle()->m_max_gap[params.flow_axis].Get(params.viewport_size, params.parent_bounds.inner, 0, params.flow_axis);
+
+		if (element->GetStyle()->m_gap[params.flow_axis].GetType() == Unit::Type::AUTO) {
+			for (int i = 0; i < gap_count; i++) {
+				params.auto_params[params.flow_axis].count += 1;
+				params.auto_params[params.flow_axis].auto_max_sizes.push_back(max_gap);
+				params.auto_params[params.flow_axis].auto_min_sizes.push_back(min_gap);
+			}
+		}
+		else {
+			int16_t gap = zm::Clamp(element->GetStyle()->m_gap[params.flow_axis].Get(params.viewport_size, params.parent_bounds.inner, 0, params.flow_axis), min_gap, max_gap);
+			params.auto_params[params.flow_axis].required_size += gap * gap_count;
+		}
+
 		int16_t auto_size = params.GetAutoSize(params.flow_axis);
+		x_gap = element->GetStyle()->m_gap[W].Get(params.viewport_size, params.parent_bounds.inner, zm::Clamp(auto_size, min_gap, max_gap), W);
+		y_gap = element->GetStyle()->m_gap[H].Get(params.viewport_size, params.parent_bounds.inner, zm::Clamp(auto_size, min_gap, max_gap), H);
 
 		for (UNIQUE<Element>& child : element->Children()) {
 			Bounds child_bounds = child->ComputeBounds(params, auto_size);
@@ -189,13 +208,13 @@ namespace zore::UI {
 				child_bounds.outer[X] += x_offset;
 				child_bounds.middle[X] += x_offset;
 				child_bounds.inner[X] += x_offset;
-				x_offset += child_bounds.outer[W];
+				x_offset += child_bounds.outer[W] + x_gap;
 			}
 			else {
 				child_bounds.outer[Y] += y_offset;
 				child_bounds.middle[Y] += y_offset;
 				child_bounds.inner[Y] += y_offset;
-				y_offset += child_bounds.outer[H];
+				y_offset += child_bounds.outer[H] + y_gap;
 			}
 
 			ParseUIElement(child.get(), viewport_width, viewport_height, child_bounds, depth + 1);

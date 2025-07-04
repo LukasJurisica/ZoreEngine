@@ -117,6 +117,12 @@ namespace zore::UI {
 		Style& SetMaxPadding(Unit left, Unit top, Unit right, Unit bottom);
 
 		Style& SetFlowDirection(FlowDirection flow_direction);
+		Style& SetGap(Unit gap);
+		Style& SetGap(Unit horizontal, Unit vertical);
+		Style& SetMinGap(Unit gap);
+		Style& SetMinGap(Unit horizontal, Unit vertical);
+		Style& SetMaxGap(Unit gap);
+		Style& SetMaxGap(Unit horizontal, Unit vertical);
 		Style& SetColour(Colour colour);
 
 	public:
@@ -129,9 +135,12 @@ namespace zore::UI {
 		Unit m_padding[4];
 		Unit m_min_padding[4];
 		Unit m_max_padding[4];
+		Unit m_gap[2];
+		Unit m_min_gap[2];
+		Unit m_max_gap[2];
 		Colour m_colour;
-		bool m_text_scaled;
 		float m_aspect_ratio;
+		bool m_text_scaled;
 		uint8_t m_dependent_axis;
 		FlowDirection m_flow_direction;
 	};

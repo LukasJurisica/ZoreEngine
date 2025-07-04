@@ -55,6 +55,9 @@ namespace zore::UI {
 		SetPadding(Unit::PX(0));
 		SetMinPadding(Unit::PX(0));
 		SetMaxPadding(Unit::PX(INT16_MAX_VALUE));
+		SetGap(Unit::PX(0));
+		SetMinGap(Unit::PX(0));
+		SetMaxGap(Unit::PX(INT16_MAX_VALUE));
 		SetFlowDirection(FlowDirection::VERTICAL);
 		SetColour(0x00000000);
 	}
@@ -294,6 +297,42 @@ namespace zore::UI {
 
 	Style& Style::SetFlowDirection(FlowDirection flow_direction) {
 		m_flow_direction = flow_direction;
+		return *this;
+	}
+
+	Style& Style::SetGap(Unit gap) {
+		m_gap[W] = gap;
+		m_gap[H] = gap;
+		return *this;
+	}
+
+	Style& Style::SetGap(Unit horizontal, Unit vertical) {
+		m_gap[W] = horizontal;
+		m_gap[H] = vertical;
+		return *this;
+	}
+
+	Style& Style::SetMinGap(Unit gap) {
+		m_min_gap[W] = gap;
+		m_min_gap[H] = gap;
+		return *this;
+	}
+
+	Style& Style::SetMinGap(Unit horizontal, Unit vertical) {
+		m_min_gap[W] = horizontal;
+		m_min_gap[H] = vertical;
+		return *this;
+	}
+
+	Style& Style::SetMaxGap(Unit gap) {
+		m_max_gap[W] = gap;
+		m_max_gap[H] = gap;
+		return *this;
+	}
+
+	Style& Style::SetMaxGap(Unit horizontal, Unit vertical) {
+		m_max_gap[W] = horizontal;
+		m_max_gap[H] = vertical;
 		return *this;
 	}
 
