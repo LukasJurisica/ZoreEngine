@@ -97,16 +97,13 @@ void DemoApplication::CreateSimpleUI() {
 
 	// Define Styles
 	UI::Style& standard_menu_style = UI::Style::Create("standard_menu")
-		//.SetMaxHeight(500_px)
-		.SetGap(AUTO())
-		.SetMaxGap(10_pc)
+		.SetMaxHeight(500_px)
 		.SetMargin(0_px, AUTO());
 
 	float perc = 100.f / 18.f;
 	UI::Style& standard_button_style = UI::Style::Create("standard_button")
-		.SetSize(100_pc, AUTO())
-		//.SetHeight(UI::Unit::PC(perc * 4), 4.f)
-		//.SetMargin(AUTO(), UI::Unit::PC(perc))
+		.SetHeight(UI::Unit::PC(perc * 4), 4.f)
+		.SetMargin(AUTO(), UI::Unit::PC(perc))
 		.SetPadding(3_ph, 6_ph, 3_ph, 3_ph)
 		.SetColour(0xFFFFFFFF);
 
