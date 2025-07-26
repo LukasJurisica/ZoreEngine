@@ -1,61 +1,73 @@
 #pragma once
 
-#include "zore/utils/Span.hpp"
+#include "zore/networking/Address.hpp"
+#include "zore/networking/Packet.hpp"
+#include "zore/networking/Types.hpp"
 
-#include <string>
 #include <vector>
 
-struct addrinfo;
-
-namespace zore {
-
-	enum class Protocol { TCP, UDP };
+namespace zore::net {
 
 	//========================================================================
-	//	An abstract generic socket class
+	//	Base Socket
 	//========================================================================
 
-	class Socket {
+	class AbstractSocket {
 	public:
-		static std::string GetHostName();
-		static void PrintLastError(const std::string& function);
-
-		bool IsValid();
+		void SetBlocking(bool blocking);
+		void Close();
 
 	protected:
-		Socket(const std::string& address, int port, Protocol protocol);
-		Socket(int socket_id, addrinfo* results);
-		virtual ~Socket();
+		AbstractSocket(socket_t socket_id, bool blocking = true);
+		virtual ~AbstractSocket();
 
 	protected:
-		int m_socket_id;
-		addrinfo* m_results;
+		socket_t m_socket_id;
+		bool m_blocking;
 	};
 
 	//========================================================================
-	//	An active Stream socket, used for external connections
+	//	Connection Socket
 	//========================================================================
 
-	class ActiveSocket : public Socket {
+	class Socket : public AbstractSocket {
+    public:
+        enum class Status {
+            DONE,
+            READY,
+            DISCONNECTED,
+            ERROR
+        };
+    
 	public:
-		ActiveSocket(const std::string& address, int port, Protocol protocol);
-		ActiveSocket(int socket_id, addrinfo* results) : Socket(socket_id, results) {}
-		~ActiveSocket() = default;
+        Socket(Protocol protocol, bool blocking = false);
+		Socket(const Address& address, Protocol protocol, bool blocking = false);
+		Socket(socket_t socket_id, Protocol protocol, bool blocking = false);
+		~Socket();
 
-		std::string GetPeerName();
-		bool SendPacket(const void* data, int* length);
-		bool ReceivePacket(void* buffer, int* max_length);
+		Status Connect(const Address& address);
+		Status Send(Packet& packet);
+		Status Send(const void* data, uint32_t size);
+		Status Receive(Packet& packet);
+		Status Receive(void* data, uint32_t size, uint32_t& recieved);
+        Status GetStatus() const;
+
+	private:
+		int m_socket_type;
+		int m_socket_protocol;
+        uint32_t m_sequence_id = 0;
 	};
 
 	//========================================================================
-	//	A passive socket, used for listening for incoming connections
+	//	Listener Socket
 	//========================================================================
 
-	class PassiveSocket : public Socket {
+	class Listener : public AbstractSocket {
 	public:
-		PassiveSocket(int port, Protocol protocol);
-		~PassiveSocket() = default;
+		Listener(bool blocking = false);
+		~Listener();
 
-		void AcceptConnections(std::vector<ActiveSocket>& connections);
+		void Listen(uint16_t port);
+		void AcceptConnections(std::vector<Socket>& connections);
 	};
 }

@@ -29,3 +29,14 @@
 #define COMPILER "GCC"
 #define ZORE_ALWAYS_INLINE __attribute__((always_inline))
 #endif
+
+#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define LITTLE_ENDIAN
+#define ENDIANNESS "LITTLE_ENDIAN"
+#elif defined(PLATFORM_WINDOWS) || defined(ARCHITECTURE_x86_64) || defined(ARCHITECTURE_x86_32)
+#define LITTLE_ENDIAN
+#define ENDIANNESS "LITTLE_ENDIAN"
+#else
+#define BIG_ENDIAN
+#define ENDIANNESS "BIG_ENDIAN"
+#endif

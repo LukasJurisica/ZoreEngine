@@ -1,5 +1,5 @@
 #include "zore/core/FileManager.hpp"
-#include "zore/utils/StringUtils.hpp"
+#include "zore/utils/String.hpp"
 #include "zore/Debug.hpp"
 #include "path_config.h"
 
@@ -66,11 +66,11 @@ namespace zore {
 
 	void FileManager::IncrementFilenameIfExists(std::string& filename) {
 		if (std::filesystem::exists(filename)) {
-			std::vector<std::string> tokens;
-			StringUtils::Split(tokens, filename, ".");
+			std::vector<std::string_view> tokens;
+			String::Split(tokens, filename, ".");
 
 			uint32_t index = static_cast<uint32_t>(tokens[0].length()) + 2u;
-			std::string test = tokens[0] + "_01." + tokens[1];
+			std::string test = std::format("{}_01.{}", tokens[0], tokens[1]);
 			for (int count = 1; std::filesystem::exists(test); count++) {
 				if (count % 10)
 					test[index] += 1;

@@ -4,10 +4,26 @@
 
 namespace zore {
 
-	class StringUtils {
+	class String {
 	public:
-		static void Split(std::vector<std::string>& result, const std::string& str, const std::string& delimiter);
-		static void SplitView(std::vector<std::string_view>& result, const std::string& str, const std::string& delimiter);
+		static void Split(std::vector<std::string>& result, const std::string& str, const std::string& delimiter) {
+			size_t start = 0, end;
+			do {
+				end = str.find_first_of(delimiter, start);
+				result.emplace_back(str.substr(start, end - start));
+				start = str.find_first_not_of(delimiter, end);
+			} while (start != std::string::npos);
+		}
+
+		static void Split(std::vector<std::string_view>& result, const std::string& str, const std::string& delimiter) {
+			std::string_view str_view(str);
+			size_t start = 0, end;
+			do {
+				end = str.find_first_of(delimiter, start);
+				result.emplace_back(str_view.substr(start, end - start));
+				start = str.find_first_not_of(delimiter, end);
+			} while (start != std::string::npos);
+		}
 
 		static inline std::string LTrim(const std::string& s, const std::string& delimiter = " \n\r\t") {
 			return s.substr(s.find_first_not_of(delimiter), std::string::npos);
@@ -34,26 +50,26 @@ namespace zore {
 			RTrimInPlace(s, delimiter);
 		}
 
-		static std::string ToLower(const std::string& s) {
+		static std::string Lower(const std::string& s) {
 			std::string result = s;
 			for (char& c : result)
 				c = std::tolower(c);
 			return result;
 		}
 
-		static void ToLowerInPlace(std::string& s) {
+		static void LowerInPlace(std::string& s) {
 			for (char& c : s)
 				c = std::tolower(c);
 		}
 
-		static std::string ToUpper(const std::string& s) {
+		static std::string Upper(const std::string& s) {
 			std::string result = s;
 			for (char& c : result)
 				c = std::toupper(c);
 			return result;
 		}
 
-		static void ToUpperInPlace(std::string& s) {
+		static void UpperInPlace(std::string& s) {
 			for (char& c : s)
 				c = std::toupper(c);
 		}
@@ -68,8 +84,12 @@ namespace zore {
 			return std::string(count, '0') + num;
 		}
 
-		static std::wstring to_wstring(const std::string& string);
-		static std::string to_string(const std::wstring& string);
-
+		static std::wstring to_wstring(const std::string& string) {
+			return std::wstring(string.begin(), string.end());
+		}
+		
+		static std::string to_string(const std::wstring& string) {
+			return std::string(string.begin(), string.end());
+		}
 	};
 }

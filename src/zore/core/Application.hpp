@@ -10,6 +10,7 @@ namespace zore {
 	public:
 		struct LaunchOptions {
 			bool enable_audio = false;
+			bool enable_networking = false;
 			bool transparent_window = false;
 
 			// Editor UI options

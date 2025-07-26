@@ -1,6 +1,6 @@
 #include <zore/ui/Console.hpp>
 #include <zore/core/FileManager.hpp>
-#include <zore/utils/StringUtils.hpp>
+#include <zore/utils/String.hpp>
 #include <zore/utils/Time.hpp>
 #include <zore/Debug.hpp>
 #include <imgui.h>
@@ -116,7 +116,7 @@ namespace zore {
 	}
 
 	void Console::RegisterCommand(const std::string& command, void (*func)(const std::vector<std::string>&)) {
-		s_commands[StringUtils::ToLower(command)] = func;
+		s_commands[String::Lower(command)] = func;
 	}
 
 	void Console::UnregisterCommand(const std::string& command) {
@@ -167,8 +167,8 @@ namespace zore {
 	void Console::ProcessCommand() {
 		std::vector<std::string> args;
 		std::string buffer = std::string(s_buffer);
-		StringUtils::Split(args, buffer, " ");
-		StringUtils::ToLowerInPlace(args[0]);
+		String::Split(args, buffer, " ");
+		String::LowerInPlace(args[0]);
 		buffer = "# " + buffer;
 
 		Print(buffer, LogLevel::CMD);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <zore/ui/console.hpp>
+#include <format>
 #include <sstream>
 
 namespace zore {

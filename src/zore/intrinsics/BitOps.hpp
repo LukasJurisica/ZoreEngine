@@ -2,6 +2,7 @@
 
 #include "zore/Platform.hpp"
 #include "zore/utils/DataTypes.hpp"
+#include <bit>
 
 #if defined(COMPILER_MSVC)
 #	include <intrin.h>
@@ -130,7 +131,7 @@ namespace zore {
 	 * @param[in] x         - 32 bit unsigned integer.
 	 * @return the number of 1 bits.
 	 */
-	inline uint32_t popcnt_32(uint32_t x) {
+	inline uint32_t popcnt_u32(uint32_t x) {
 #if defined(ARCHITECTURE_x86_64) && defined(COMPILER_MSVC)
 		return __popcnt(x);
 #elif defined(COMPILER_GCC)
@@ -151,7 +152,7 @@ namespace zore {
 	 * @param[in] x         - 64 bit integer.
 	 * @return the number of 1 bits.
 	 */
-	inline uint32_t popcnt_64(uint64_t x) {
+	inline uint32_t popcnt_u64(uint64_t x) {
 #if defined(ARCHITECTURE_x86_64) && defined(COMPILER_MSVC)
 		return __popcnt64(x);
 #elif defined(COMPILER_GCC)
@@ -164,5 +165,60 @@ namespace zore {
 		}
 		return c;
 #endif
+	}
+
+	inline uint16_t byteswap_u16(uint16_t x) {
+		if constexpr (std::endian::native == std::endian::little) {
+#if defined(COMPILER_MSVC)
+			return _byteswap_ushort(x);
+#elif defined(COMPILER_GCC)
+			return __builtin_bswap16(x);
+#else
+			return (x << 8) | (x >> 8);
+#endif
+		}
+		else {
+			return x;
+		}
+	}
+
+	inline uint32_t byteswap_u32(uint32_t x) {
+		if constexpr (std::endian::native == std::endian::little) {
+#if defined(COMPILER_MSVC)
+			return _byteswap_ulong(x);
+#elif defined(COMPILER_GCC)
+			return __builtin_bswap32(x);
+#else
+			return ((x << 24) & 0xff000000) |
+				   ((x << 8)  & 0x00ff0000) |
+				   ((x >> 8)  & 0x0000ff00) |
+				   ((x >> 24) & 0x000000ff);
+#endif
+		}
+		else {
+			return x;
+		}
+	}
+
+	inline uint64_t byteswap_u64(uint64_t x) {
+		if constexpr (std::endian::native == std::endian::little) {
+#if defined(COMPILER_MSVC)
+			return _byteswap_uint64(x);
+#elif defined(COMPILER_GCC)
+			return __builtin_bswap64(x);
+#else
+			return ((x << 56) & 0xff00000000000000) |
+				   ((x << 40) & 0x00ff000000000000) |
+				   ((x << 24) & 0x0000ff0000000000) |
+				   ((x << 8)  & 0x000000ff00000000) |
+				   ((x >> 8)  & 0x00000000ff000000) |
+				   ((x >> 24) & 0x0000000000ff0000) |
+				   ((x >> 40) & 0x000000000000ff00) |
+				   ((x >> 56) & 0x00000000000000ff);
+#endif
+		}
+		else {
+			return x;
+		}
 	}
 }

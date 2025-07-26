@@ -1,6 +1,6 @@
 #include "zore/utils/ConfigManager.hpp"
 #include "zore/core/FileManager.hpp"
-#include "zore/utils/StringUtils.hpp"
+#include "zore/utils/String.hpp"
 #include "zore/Debug.hpp"
 
 #include <vector>
@@ -21,9 +21,9 @@ namespace zore::Config {
 		std::vector<std::string> content;
 		FileManager::ReadLines(content, m_filename, false, false);
 		for (std::string& line : content) {
-			StringUtils::TrimInPlace(line);
+			String::TrimInPlace(line);
 			size_t index = line.find("=");
-			std::string key = StringUtils::RTrim(line.substr(0, index));
+			std::string key = String::RTrim(line.substr(0, index));
 			m_entries[key] = line.substr(index + 1);
 		}
 	}

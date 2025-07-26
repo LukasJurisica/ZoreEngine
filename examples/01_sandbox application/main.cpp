@@ -7,7 +7,7 @@
 #include <zore/ui/Font.hpp>
 #include <zore/Debug.hpp>
 
-#include <zore/devices/Clipboard.hpp>
+#include <zore/networking/http/Client.hpp>
 
 using namespace zore;
 
@@ -44,6 +44,12 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_F8, true, false, [](bool start) {
 		s_instance->ReloadShaders();
 		});
+
+	using namespace zore::net::http;
+	Client client("www.sfml-dev.org", 80);
+	Request request(Request::Method::GET, "/ip-provider.php");
+	Response response = client.Make(request);
+	Logger::Log(response.GetBody());
 }
 
 void DemoApplication::ReloadShaders() {
@@ -175,6 +181,7 @@ bool DemoApplication::OnWindowResize(const WindowResizedEvent& e) {
 Application* Application::Create() {
 	return new DemoApplication({
 		.enable_audio = false,
+		.enable_networking = true,
 		.enable_multi_viewports = true
 		});
 }

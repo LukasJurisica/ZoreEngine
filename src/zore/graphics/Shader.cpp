@@ -1,6 +1,6 @@
 #include "zore/graphics/Shader.hpp"
 #include "zore/core/FileManager.hpp"
-#include "zore/utils/StringUtils.hpp"
+#include "zore/utils/String.hpp"
 #include "zore/Debug.hpp"
 #include <glad/glad.h>
 
@@ -76,7 +76,7 @@ namespace zore {
 				break;
 
 			size_t start = source.find("\n", left);
-			CreateShaderStage(stages.emplace_back(StringUtils::SubStrRange(source, left + 13, start), StringUtils::SubStrRange(source, start + 1, right)));
+			CreateShaderStage(stages.emplace_back(String::SubStrRange(source, left + 13, start), String::SubStrRange(source, start + 1, right)));
 
 			right = left - 1;
 		} while (left > 0);
