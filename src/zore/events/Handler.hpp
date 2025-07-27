@@ -5,7 +5,7 @@
 #include <functional>
 #include <vector>
 
-namespace zore::Event {
+namespace zore::event {
 
 	template<typename EventType>
 	using Callback = std::function<bool(const EventType&)>;

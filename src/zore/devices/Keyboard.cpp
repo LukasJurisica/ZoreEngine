@@ -68,11 +68,11 @@ namespace zore {
 
 			if (action == GLFW_PRESS) {
 				s_key_down_states[key] = true;
-				Event::Manager::Dispatch(KeyPressedEvent(key, mods));
+				event::Manager::Dispatch(KeyPressedEvent(key, mods));
 			}
 			else {
 				s_key_up_states[key] = true;
-				Event::Manager::Dispatch(KeyReleasedEvent(key));
+				event::Manager::Dispatch(KeyReleasedEvent(key));
 			}
 		}
 	}

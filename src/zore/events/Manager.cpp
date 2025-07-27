@@ -5,22 +5,22 @@
 #include <algorithm>
 #include <unordered_map>
 
-namespace zore {
+namespace zore::event {
 
 	//========================================================================
 	//	Event Manager Class
 	//========================================================================
 
-	using EventHandlerMapType = std::unordered_map<std::type_index, std::vector<Event::HandlerBase*>>;
+	using EventHandlerMapType = std::unordered_map<std::type_index, std::vector<HandlerBase*>>;
 
 	static EventHandlerMapType& EventHandlerMap() {
-		static std::unordered_map<std::type_index, std::vector<Event::HandlerBase*>> s_event_handlers;
+		static std::unordered_map<std::type_index, std::vector<HandlerBase*>> s_event_handlers;
 		return s_event_handlers;
 	}
 
-	static bool comparator(Event::HandlerBase* a, Event::HandlerBase* b) { return a->m_priority > b->m_priority; }
+	static bool comparator(HandlerBase* a, HandlerBase* b) { return a->m_priority > b->m_priority; }
 
-	void Event::Manager::Subscribe(std::type_index type, HandlerBase* handler) {
+	void Manager::Subscribe(std::type_index type, HandlerBase* handler) {
 		static EventHandlerMapType& event_handlers = EventHandlerMap();
 		if (!handler)
 			return;
@@ -34,7 +34,7 @@ namespace zore {
 		}
 	}
 
-	void Event::Manager::Unsubscribe(std::type_index type, HandlerBase* handler) {
+	void Manager::Unsubscribe(std::type_index type, HandlerBase* handler) {
 		static EventHandlerMapType& event_handlers = EventHandlerMap();
 		auto iter = event_handlers.find(type);
 		if (iter != event_handlers.end()) {
@@ -43,7 +43,7 @@ namespace zore {
 		}
 	}
 
-	void Event::Manager::Dispatch(std::type_index type, const EventBase& event) {
+	void Manager::Dispatch(std::type_index type, const EventBase& event) {
 		static EventHandlerMapType& event_handlers = EventHandlerMap();
 		auto iter = event_handlers.find(type);
 		if (iter != event_handlers.end()) {

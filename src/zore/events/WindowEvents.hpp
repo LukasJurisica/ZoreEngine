@@ -7,7 +7,7 @@
 
 namespace zore {
 
-	struct WindowResizedEvent : public Event::EventBase {
+	struct WindowResizedEvent : public event::EventBase {
 		WindowResizedEvent(int width, int height) : width(width), height(height) {
 			aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
 		}
@@ -15,27 +15,27 @@ namespace zore {
 		float aspect_ratio;
 	};
 
-	struct WindowMovedEvent : public Event::EventBase {
+	struct WindowMovedEvent : public event::EventBase {
 		WindowMovedEvent(int xpos, int ypos) : xpos(xpos), ypos(ypos) {}
 		int xpos, ypos;
 	};
 
-	struct WindowFocusedEvent : public Event::EventBase {
+	struct WindowFocusedEvent : public event::EventBase {
 		WindowFocusedEvent(bool focused) : focused(focused) {}
 		bool focused;
 	};
 
-	struct WindowMaximizedEvent : public Event::EventBase {
+	struct WindowMaximizedEvent : public event::EventBase {
 		WindowMaximizedEvent(bool maximized) : maximized(maximized) {}
 		bool maximized;
 	};
 
-	struct WindowMinimizedEvent : public Event::EventBase {
+	struct WindowMinimizedEvent : public event::EventBase {
 		WindowMinimizedEvent(bool minimized) : minimized(minimized) {}
 		bool minimized;
 	};
 
-	struct WindowFileDropEvent : public Event::EventBase {
+	struct WindowFileDropEvent : public event::EventBase {
 		WindowFileDropEvent(const std::vector<std::string>& files_paths) : paths(paths) {}
 		WindowFileDropEvent(int count, const char** files_paths) {
 			paths.reserve(count);

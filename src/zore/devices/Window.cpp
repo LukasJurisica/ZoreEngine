@@ -227,27 +227,27 @@ namespace zore {
 	void Window::ResizeCallback(GLFWwindow* window_handle, int width, int height) {
 		s_size = { width, height };
 		RenderEngine::SetViewport(s_size.x, s_size.y);
-		Event::Manager::Dispatch(WindowResizedEvent(width, height));
+		event::Manager::Dispatch(WindowResizedEvent(width, height));
 	}
 
 	void Window::MoveCallback(GLFWwindow* window_handle, int xpos, int ypos) {
 		s_position = { xpos, ypos };
-		Event::Manager::Dispatch(WindowMovedEvent(xpos, ypos));
+		event::Manager::Dispatch(WindowMovedEvent(xpos, ypos));
 	}
 
 	void Window::FocusCallback(GLFWwindow* window_handle, int focused) {
-		Event::Manager::Dispatch(WindowFocusedEvent(focused));
+		event::Manager::Dispatch(WindowFocusedEvent(focused));
 	}
 
 	void Window::PathDropCallback(GLFWwindow* window, int count, const char** paths) {
-		Event::Manager::Dispatch(WindowFileDropEvent(count, paths));
+		event::Manager::Dispatch(WindowFileDropEvent(count, paths));
 	}
 
 	void Window::MaximizedCallback(GLFWwindow* window_handle, int maximized) {
-		Event::Manager::Dispatch(WindowMaximizedEvent(maximized));
+		event::Manager::Dispatch(WindowMaximizedEvent(maximized));
 	}
 
 	void Window::MinimizedCallback(GLFWwindow* window_handle, int minimized) {
-		Event::Manager::Dispatch(WindowMinimizedEvent(minimized));
+		event::Manager::Dispatch(WindowMinimizedEvent(minimized));
 	}
 }

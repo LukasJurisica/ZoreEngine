@@ -4,7 +4,7 @@
 
 #include <typeindex>
 
-namespace zore::Event {
+namespace zore::event {
 
 	class HandlerBase;
 

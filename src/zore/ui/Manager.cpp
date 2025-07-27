@@ -14,7 +14,7 @@ namespace zore::UI {
 	class EventListener {
 	public:
 		EventListener() {
-			Event::MultiHandler& handler = Event::MultiHandler::Get();
+			event::MultiHandler& handler = event::MultiHandler::Get();
 			handler.Register(&OnMouseMove, 100);
 			handler.Register(&OnMousePress, 100);
 			handler.Register(&OnMouseRelease, 100);

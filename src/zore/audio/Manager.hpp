@@ -2,9 +2,9 @@
 
 #include <string>
 
-namespace zore {
+namespace zore::audio {
 
-	class AudioEngine {
+	class Manager {
 	public:
 		static void Init();
 		static void Cleanup();

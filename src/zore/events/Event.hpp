@@ -1,6 +1,6 @@
 #pragma once
 
-namespace zore::Event {
+namespace zore::event {
 
 	//========================================================================
 	//	Event Base Class

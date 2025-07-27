@@ -34,6 +34,6 @@ namespace zore {
 		Shader m_text_shader;
 		ActionMap action_map;
 
-		Event::MultiHandler m_event_handler;
+		event::MultiHandler m_event_handler;
 	};
 }

@@ -61,18 +61,18 @@ namespace zore {
 		s_button_held_states[button] = action;
 		if (action == GLFW_PRESS) {
 			s_button_down_states[button] = true;
-			Event::Manager::Dispatch(MousePressedEvent(button, mods));
+			event::Manager::Dispatch(MousePressedEvent(button, mods));
 		}
 		else {
 			s_button_up_states[button] = true;
-			Event::Manager::Dispatch(MouseReleasedEvent(button));
+			event::Manager::Dispatch(MouseReleasedEvent(button));
 		}
 	}
 
 	void Mouse::ScrollCallback(GLFWwindow* windowHandle, double xOffset, double yOffset) {
 		if (Editor::WantsMouse())
 			return;
-		Event::Manager::Dispatch(MouseScrolledEvent(static_cast<float>(xOffset), static_cast<float>(yOffset)));
+		event::Manager::Dispatch(MouseScrolledEvent(static_cast<float>(xOffset), static_cast<float>(yOffset)));
 	}
 
 	void Mouse::MoveCallback(GLFWwindow* windowHandle, double xpos, double ypos) {
@@ -81,10 +81,10 @@ namespace zore {
 		delta = s_position - delta;
 		if (Editor::WantsMouse())
 			return;
-		Event::Manager::Dispatch(MouseMovedEvent(s_position.x, s_position.y, delta.x, delta.y));
+		event::Manager::Dispatch(MouseMovedEvent(s_position.x, s_position.y, delta.x, delta.y));
 	}
 
 	void Mouse::EnterCallback(GLFWwindow* window_handle, int entered) {
-		Event::Manager::Dispatch(MouseEnteredEvent(entered));
+		event::Manager::Dispatch(MouseEnteredEvent(entered));
 	}
 }
