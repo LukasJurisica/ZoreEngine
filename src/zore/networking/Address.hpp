@@ -8,21 +8,25 @@ namespace zore::net {
 
 	class Address {
 	public:
+		friend class Socket;
 		enum class Family { INVALID = -1, IPv4, IPv6 };
 
 	public:
 		Address(uint32_t ip, uint16_t port);
 		Address(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port);
-		Address(const uint8_t ip[16], uint16_t port);
+		//Address(const uint8_t ip[16], uint16_t port);
 		Address(const Address& other);
 		Address& operator=(const Address& other);
 		operator std::string() const;
 		~Address();
 
 		static Address Localhost(uint16_t port);
+		static Address Local();
+		static Address Public();
 		static Address Parse(const std::string& ip, uint16_t port);
 		static Address Resolve(const std::string& hostname, uint16_t port, Protocol protocol);
 
+		void SetPort(uint16_t port);
 		bool IsValid() const;
 		int GetFamily() const;
 		const sockaddr* GetSockAddress() const;

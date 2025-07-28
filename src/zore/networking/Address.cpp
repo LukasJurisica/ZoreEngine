@@ -1,5 +1,7 @@
 #include "zore/networking/Address.hpp"
 #include "zore/networking/Core.hpp"
+#include "zore/networking/Socket.hpp"
+#include "zore/networking/http/Client.hpp"
 #include "zore/Debug.hpp"
 
 #define sockaddr_ipv4(x) reinterpret_cast<sockaddr_in*>(x)
@@ -18,15 +20,15 @@ namespace zore::net {
 
 	Address::Address(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port) {
 		uint32_t ip = (static_cast<uint32_t>(a) << 24) |
-		              (static_cast<uint32_t>(b) << 16) |
-		              (static_cast<uint32_t>(c) << 8 ) |
-		              (static_cast<uint32_t>(d) << 0 ) ;
+			(static_cast<uint32_t>(b) << 16) |
+			(static_cast<uint32_t>(c) << 8) |
+			(static_cast<uint32_t>(d) << 0);
 		InitIPv4(ip, port);
 	}
 
-	Address::Address(const uint8_t ip[16], uint16_t port) {
-		InitIPv6(ip, port);
-	}
+	//Address::Address(const uint8_t ip[16], uint16_t port) {
+	//	InitIPv6(ip, port);
+	//}
 
 	Address::Address(const Address& other) {
 		if (other.m_storage)
@@ -65,6 +67,21 @@ namespace zore::net {
 		return Address(127, 0, 0, 1, port);
 	}
 
+	Address Address::Local() {
+		Socket sock(Protocol::UDP);
+		if (sock.Connect({8, 8, 8, 8, 53}) != Socket::Status::DONE)
+			return Address(nullptr);
+		return sock.GetSelfAddress();
+	}
+
+	Address Address::Public() {
+		using namespace zore::net::http;
+		Client client("www.sfml-dev.org", 80);
+		Request request(Request::Method::GET, "/ip-provider.php");
+		Response response = client.Make(request);
+		return Parse(response.GetBody(), 0);
+	}
+
 	Address Address::Parse(const std::string& ip, uint16_t port) {
 		if (ip.length() == 0)
 			return Localhost(port);
@@ -98,6 +115,17 @@ namespace zore::net {
 		return address;
 	}
 
+	void Address::SetPort(uint16_t port) {
+		if (m_storage == nullptr)
+			Logger::Error("Could not set port on address: Invalid Address Family.");
+		else if (m_family == Family::IPv4)
+			sockaddr_ipv4(m_storage)->sin_port = htons(port);
+		else if (m_family == Family::IPv6)
+			sockaddr_ipv6(m_storage)->sin6_port = htons(port);
+		else
+			Logger::Error("Could not set port on address: Invalid Address Family.");
+	}
+
 	bool Address::IsValid() const {
 		return m_family != Family::INVALID && m_storage != nullptr;
 	}
@@ -112,10 +140,10 @@ namespace zore::net {
 	}
 
 	sockaddr_length_t Address::GetSockAddressSize() const {
-		switch (m_storage->ss_family) {
-			case AF_INET: return sizeof(sockaddr_in);
-			case AF_INET6: return sizeof(sockaddr_in6);
-			default: return 0;
+		switch (m_family) {
+		case Family::IPv4: return sizeof(sockaddr_in);
+		case Family::IPv6: return sizeof(sockaddr_in6);
+		default: return 0;
 		}
 	}
 
@@ -167,9 +195,9 @@ namespace zore::net {
 
 	Address::Family Address::ConvertFamily(int family) {
 		switch (family) {
-			case AF_INET: return Family::IPv4;
-			case AF_INET6: return Family::IPv6;
-			default: return Family::INVALID;
+		case AF_INET: return Family::IPv4;
+		case AF_INET6: return Family::IPv6;
+		default: return Family::INVALID;
 		}
 	}
 }

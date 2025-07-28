@@ -8,6 +8,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #undef ERROR
+#undef DELETE
 
 #define SOCK_CONNECTION_REFUSED   WSAECONNREFUSED
 #define SOCK_CONNECTION_RESET     WSAECONNRESET

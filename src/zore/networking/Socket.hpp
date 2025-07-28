@@ -45,6 +45,9 @@ namespace zore::net {
 		Socket(socket_t socket_id, Protocol protocol, bool blocking = false);
 		~Socket();
 
+		Address GetSelfAddress() const;
+		Address GetPeerAddress() const;
+
 		Status Connect(const Address& address);
 		Status Send(Packet& packet);
 		Status Send(const void* data, uint32_t size);

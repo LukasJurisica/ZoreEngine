@@ -7,7 +7,7 @@
 #include <zore/ui/Font.hpp>
 #include <zore/Debug.hpp>
 
-#include <zore/networking/http/Client.hpp>
+#include <zore/networking/Address.hpp>
 
 using namespace zore;
 
@@ -45,11 +45,7 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 		s_instance->ReloadShaders();
 		});
 
-	using namespace zore::net::http;
-	Client client("www.sfml-dev.org", 80);
-	Request request(Request::Method::GET, "/ip-provider.php");
-	Response response = client.Make(request);
-	Logger::Log(response.GetBody());
+	Logger::Log(net::Address::Local(), net::Address::Public());
 }
 
 void DemoApplication::ReloadShaders() {

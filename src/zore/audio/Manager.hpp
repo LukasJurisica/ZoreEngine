@@ -9,6 +9,8 @@ namespace zore::audio {
 		static void Init();
 		static void Cleanup();
 
+		static void update();
+		static void SetVolume(float volume);
 		static void Play(const std::string& filename);
 	};
 }
