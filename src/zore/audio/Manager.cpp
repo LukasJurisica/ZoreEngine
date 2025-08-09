@@ -10,6 +10,8 @@ namespace zore::audio {
 	static ma_engine s_audio_engine;
 
 	void Manager::Init() {
+        ma_engine_config engine_config = ma_engine_config_init();
+
 		ENSURE(ma_engine_init(NULL, &s_audio_engine) == MA_SUCCESS, "Failed to initialize audio engine");
 		Logger::Info("Audio Engine Initialization Complete.");
 	}
@@ -17,6 +19,8 @@ namespace zore::audio {
 	void Manager::Cleanup() {
 		ma_engine_uninit(&s_audio_engine);
 		Logger::Info("Audio Engine Cleanup Complete.");
+
+        ma_sound;
 	}
 
 	void Manager::update() {
@@ -33,4 +37,16 @@ namespace zore::audio {
 		if (result != MA_SUCCESS)
 			Logger::Error("Failed to play sound:", filename, "Error Code:", result);
 	}
+
+    ma_engine* Manager::GetEngine() {
+        return s_audio_engine;
+    }
+
+    EngineConfig Manager::GetEngineConfig() {
+        return {
+            .format      = MA_DEFAULT_FORMAT,
+            .channels    = ma_engine_get_channels(&s_audio_engine),
+            .sample_rate = ma_engine_get_sample_rate(&s_audio_engine)
+        };
+    }
 }

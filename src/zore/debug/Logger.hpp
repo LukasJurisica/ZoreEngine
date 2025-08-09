@@ -1,6 +1,6 @@
 #pragma once
 
-#include <zore/ui/console.hpp>
+#include <zore/ui/Console.hpp>
 #include <format>
 #include <sstream>
 
