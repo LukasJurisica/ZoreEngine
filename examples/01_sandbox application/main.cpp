@@ -7,8 +7,6 @@
 #include <zore/ui/Font.hpp>
 #include <zore/Debug.hpp>
 
-#include <zore/networking/Address.hpp>
-
 using namespace zore;
 
 static bool s_display_console = false;
@@ -44,8 +42,6 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_F8, true, false, [](bool start) {
 		s_instance->ReloadShaders();
 		});
-
-	Logger::Log(net::Address::Local(), net::Address::Public());
 }
 
 void DemoApplication::ReloadShaders() {

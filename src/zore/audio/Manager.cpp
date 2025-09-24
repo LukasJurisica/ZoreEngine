@@ -39,7 +39,7 @@ namespace zore::audio {
 	}
 
     ma_engine* Manager::GetEngine() {
-        return s_audio_engine;
+        return &s_audio_engine;
     }
 
     EngineConfig Manager::GetEngineConfig() {
