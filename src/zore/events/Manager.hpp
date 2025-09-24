@@ -19,7 +19,7 @@ namespace zore::event {
 
 		template<typename EventType>
 		static inline void Dispatch(const EventType& event) {
-			static_assert(std::is_base_of<EventBase, EventType>::value, "EventType must derive from Event");
+			static_assert(std::is_base_of<EventBase, EventType>::value, "EventType must derive from EventBase");
 			Dispatch(typeid(EventType), event);
 		}
 

@@ -36,11 +36,11 @@ namespace zore {
 	};
 
 	struct WindowFileDropEvent : public event::EventBase {
-		WindowFileDropEvent(const std::vector<std::string>& files_paths) : paths(paths) {}
-		WindowFileDropEvent(int count, const char** files_paths) {
+		WindowFileDropEvent(const std::vector<std::string>& file_paths) : paths(file_paths) {}
+		WindowFileDropEvent(int count, const char** file_paths) {
 			paths.reserve(count);
 			for (int i = 0; i < count; i++)
-				paths.emplace_back(files_paths[i]);
+				paths.emplace_back(file_paths[i]);
 		}
 		std::vector<std::string> paths;
 	};

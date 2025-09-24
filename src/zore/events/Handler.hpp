@@ -28,10 +28,8 @@ namespace zore::event {
 	//========================================================================
 
 	template<typename EventType>
+		requires(std::is_base_of_v<EventBase, EventType>)
 	class Handler : public HandlerBase {
-	public:
-		static_assert(std::is_base_of<EventBase, EventType>::value, "EventType must derive from Event");
-
 	public:
 		explicit Handler() { Manager::Subscribe(typeid(EventType), nullptr); }
 		template <typename ClassType>
@@ -45,6 +43,7 @@ namespace zore::event {
 		void Register(bool(ClassType::* func)(const EventType&), ClassType* obj, int priority = 0) {
 			Register(std::bind(func, obj, std::placeholders::_1), priority);
 		}
+
 		void Register(Callback<EventType> callback, int priority = 0) {
 			m_priority = priority;
 			if (m_callback)
@@ -53,6 +52,7 @@ namespace zore::event {
 			if (m_callback)
 				Manager::Subscribe(typeid(EventType), this);
 		}
+
 		void Unregister() {
 			if (m_callback)
 				Manager::Unsubscribe(typeid(EventType), this);
@@ -72,10 +72,10 @@ namespace zore::event {
 
 	class MultiHandler {
 	public:
-		MultiHandler(int priority = 0) : m_priority(priority) {}
+		MultiHandler(int priority = 0) : m_priority(priority) { Manager::Subscribe(typeid(EventBase), nullptr); }
 		MultiHandler(const MultiHandler&) = delete;
 		MultiHandler& operator=(const MultiHandler&) = delete;
-		~MultiHandler() { for (HandlerBase* handler : m_handlers) delete handler; }
+		~MultiHandler() { Clear(); }
 
 		static MultiHandler& Get() {
 			static MultiHandler instance;
@@ -83,25 +83,33 @@ namespace zore::event {
 		}
 
 		template <typename EventType, typename ClassType>
+			requires(std::is_base_of_v<EventBase, EventType>)
 		inline void Register(bool(ClassType::* callback)(const EventType&), ClassType* obj) {
 			Register(callback, obj, m_priority);
 		}
 
 		template <typename EventType, typename ClassType>
+			requires(std::is_base_of_v<EventBase, EventType>)
 		inline void Register(bool(ClassType::* callback)(const EventType&), ClassType* obj, int priority) {
-			static_assert(std::is_base_of<EventBase, EventType>::value, "EventType must derive from Event");
 			m_handlers.emplace_back(new Handler<EventType>(callback, obj, priority));
 		}
 
 		template <typename EventType>
+			requires(std::is_base_of_v<EventBase, EventType>)
 		inline void Register(bool(*callback)(const EventType&)) {
 			Register(callback, m_priority);
 		}
 
 		template <typename EventType>
+			requires(std::is_base_of_v<EventBase, EventType>)
 		inline void Register(bool(*callback)(const EventType&), int priority) {
-			static_assert(std::is_base_of<EventBase, EventType>::value, "EventType must derive from Event");
 			m_handlers.emplace_back(new Handler<EventType>(callback, priority));
+		}
+		
+		inline void Clear() {
+			for (HandlerBase* handler : m_handlers)
+				delete handler;
+			m_handlers.clear();
 		}
 
 	private:

@@ -14,7 +14,7 @@ namespace zore::event {
 	using EventHandlerMapType = std::unordered_map<std::type_index, std::vector<HandlerBase*>>;
 
 	static EventHandlerMapType& EventHandlerMap() {
-		static std::unordered_map<std::type_index, std::vector<HandlerBase*>> s_event_handlers;
+		static EventHandlerMapType s_event_handlers;
 		return s_event_handlers;
 	}
 
