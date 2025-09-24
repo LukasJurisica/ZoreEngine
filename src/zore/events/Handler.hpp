@@ -72,7 +72,7 @@ namespace zore::event {
 
 	class MultiHandler {
 	public:
-		MultiHandler(int priority = 0) : m_priority(priority) {}
+		MultiHandler(int priority = 0) : m_priority(priority) { Manager::Subscribe(typeid(EventBase), nullptr); }
 		MultiHandler(const MultiHandler&) = delete;
 		MultiHandler& operator=(const MultiHandler&) = delete;
 		~MultiHandler() { Clear(); }
