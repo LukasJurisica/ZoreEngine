@@ -20,13 +20,10 @@ namespace zore {
 		io->IniFilename = "config/imgui.cfg";
 		if (enable_keyboard_navigation) // Enable Keyboard Controls
 			io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-		if (enable_docking) { // Enable Docking
+		if (enable_docking) // Enable Docking
 			io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-			io->ConfigDockingWithShift = true;
-		}
 		if (enable_multi_viewports) { // Enable Multi-Viewport / Platform Windows
 			io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-			//io->ConfigViewportsNoAutoMerge = true;
 			io->ConfigViewportsNoTaskBarIcon = true;
 		}
 
@@ -39,6 +36,10 @@ namespace zore {
 
 		ImGui_ImplGlfw_InitForOpenGL(Window::GetWindowHandle(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
+	}
+
+	ImGuiIO* Editor::GetIO() {
+		return io;
 	}
 
 	void Editor::Cleanup() {
