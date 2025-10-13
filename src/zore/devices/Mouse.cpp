@@ -1,10 +1,9 @@
-#include "zore/devices/Mouse.hpp"
-#include "zore/devices/Window.hpp"
-#include "zore/events/MouseEvents.hpp"
-#include "zore/events/Manager.hpp"
-#include "zore/ui/Editor.hpp"
-#include "zore/Debug.hpp"
-
+#include "zore/devices/mouse.hpp"
+#include "zore/devices/window.hpp"
+#include "zore/events/mouse_events.hpp"
+#include "zore/events/manager.hpp"
+#include "zore/ui/editor.hpp"
+#include "zore/debug.hpp"
 #include <GLFW/glfw3.h>
 #include <bitset>
 

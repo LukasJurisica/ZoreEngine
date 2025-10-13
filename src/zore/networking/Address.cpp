@@ -1,8 +1,8 @@
-#include "zore/networking/Address.hpp"
-#include "zore/networking/Core.hpp"
-#include "zore/networking/Socket.hpp"
-#include "zore/networking/http/Client.hpp"
-#include "zore/Debug.hpp"
+#include "zore/networking/address.hpp"
+#include "zore/networking/core.hpp"
+#include "zore/networking/socket.hpp"
+#include "zore/networking/http/client.hpp"
+#include "zore/debug.hpp"
 
 #define sockaddr_ipv4(x) reinterpret_cast<sockaddr_in*>(x)
 #define sockaddr_ipv6(x) reinterpret_cast<sockaddr_in6*>(x)

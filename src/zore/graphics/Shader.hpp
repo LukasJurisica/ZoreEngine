@@ -1,5 +1,6 @@
 #pragma once
-#include "zore/utils/DataTypes.hpp"
+
+#include "zore/utils/sized_integer.hpp"
 #include <unordered_map>
 #include <string>
 #include <vector>

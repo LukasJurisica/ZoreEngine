@@ -1,7 +1,7 @@
 #pragma once
 
-#include "zore/utils/datatypes.hpp"
-#include "zore/utils/Span.hpp"
+#include "zore/utils/sized_integer.hpp"
+#include "zore/utils/span.hpp"
 #include <vector>
 
 namespace zore::net {
@@ -12,7 +12,8 @@ namespace zore::net {
 
 	public:
 		Packet();
-		Packet(const uint8_t* payload, uint16_t length, uint8_t flags = 0);
+		Packet(const VoidSpan& span);
+		Packet(const void* payload, size_t length, uint8_t flags = 0);
 		~Packet() = default;
 
 		uint8_t* Data();
@@ -27,7 +28,7 @@ namespace zore::net {
 		void Reserve(size_t size);
         void Resize(size_t size);
 		void Append(const VoidSpan& span);
-		void Seek(uint16_t offset);
+		void Seek(size_t offset);
         uint16_t* ParseHeader();
 
 		//------------------------------------------------------------------------

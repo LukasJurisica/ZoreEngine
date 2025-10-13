@@ -1,10 +1,10 @@
 #pragma once
 
-#include "zore/Platform.hpp"
+#include "zore/platform.hpp"
 #include <format>
 
 #if defined(PLATFORM_WINDOWS)
-#include "zore/platform/win32/win32_Exception.hpp"
+#include "zore/platform/win32/win32_exception.hpp"
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #undef ERROR

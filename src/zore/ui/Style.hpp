@@ -1,7 +1,7 @@
 #pragma once
 
-#include "zore/utils/DataTypes.hpp"
-#include "zore/utils/Colour.hpp"
+#include "zore/utils/sized_integer.hpp"
+#include "zore/utils/colour.hpp"
 #include <string>
 
 namespace zore::UI {

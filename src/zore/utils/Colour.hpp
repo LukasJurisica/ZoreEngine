@@ -1,6 +1,6 @@
 #pragma once
 
-#include <zore/utils/DataTypes.hpp>
+#include "zore/utils/sized_integer.hpp"
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_float4.hpp>
 

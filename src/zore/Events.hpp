@@ -1,6 +1,6 @@
 #pragma once
 
-#include "zore/events/MouseEvents.hpp"
-#include "zore/events/KeyboardEvents.hpp"
-#include "zore/events/WindowEvents.hpp"
-#include "zore/events/Handler.hpp"
+#include "zore/events/mouse_events.hpp"
+#include "zore/events/keyboard_events.hpp"
+#include "zore/events/window_events.hpp"
+#include "zore/events/handler.hpp"

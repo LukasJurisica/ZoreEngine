@@ -1,8 +1,8 @@
-#include "zore/ui/Layer.hpp"
-#include "zore/graphics/RenderEngine.hpp"
-#include "zore/math/MathUtils.hpp"
-#include "zore/utils/UUID.hpp"
-#include "zore/utils/BitUtils.hpp"
+#include "zore/ui/layer.hpp"
+#include "zore/graphics/render_engine.hpp"
+#include "zore/math/math.hpp"
+#include "zore/utils/uuid.hpp"
+#include "zore/utils/bits.hpp"
 #include "zore/devices/Window.hpp"
 
 #define HOVERED_BIT 0x1

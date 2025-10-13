@@ -1,7 +1,6 @@
-#include "zore/platform/win32/win32_Core.hpp"
-#include "zore/core/Application.hpp"
-#include "zore/Debug.hpp"
-
+#include "zore/platform/win32/win32_core.hpp"
+#include "zore/core/application.hpp"
+#include "zore/debug.hpp"
 #include <WinDef.h>
 
 int WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {

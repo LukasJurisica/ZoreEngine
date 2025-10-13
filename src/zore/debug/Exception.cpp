@@ -1,4 +1,4 @@
-#include "zore/debug/Exception.hpp"
+#include "zore/debug/exception.hpp"
 
 namespace zore {
 

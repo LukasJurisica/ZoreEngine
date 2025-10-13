@@ -1,6 +1,6 @@
-#include "zore/ui/Manager.hpp"
-#include "zore/Events.hpp"
-#include "zore/Debug.hpp"
+#include "zore/ui/manager.hpp"
+#include "zore/events.hpp"
+#include "zore/debug.hpp"
 
 namespace zore::UI {
 

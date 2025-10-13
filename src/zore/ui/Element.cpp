@@ -1,8 +1,7 @@
-#include "zore/ui/Element.hpp"
-#include "zore/utils/UUID.hpp"
-#include "zore/math/MathUtils.hpp"
-#include "zore/Debug.hpp"
-
+#include "zore/ui/element.hpp"
+#include "zore/utils/uuid.hpp"
+#include "zore/math/math.hpp"
+#include "zore/debug.hpp"
 #include <algorithm>
 
 namespace zore::UI {
@@ -194,10 +193,10 @@ namespace zore::UI {
 
 	void Element::ComputeProportionalSize(LayoutParams& layout, int16_t axis) {
 		if (m_type == Type::LABEL)
-			m_size[axis] = static_cast<int16_t>(zm::Round(m_size[1 - axis] * m_text.length() * (12.f / 18.f)));
+			m_size[axis] = static_cast<int16_t>(std::round(m_size[1 - axis] * m_text.length() * (12.f / 18.f)));
 			// 12x18
 		else
-			m_size[axis] = static_cast<int16_t>(zm::Round(m_size[1 - axis] * m_style->m_aspect_ratio));
+			m_size[axis] = static_cast<int16_t>(std::round(m_size[1 - axis] * m_style->m_aspect_ratio));
 		layout.auto_params[axis].required_size += m_size[axis];
 	}
 }

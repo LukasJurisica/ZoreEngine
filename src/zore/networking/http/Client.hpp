@@ -1,8 +1,8 @@
 #pragma once
 
-#include "zore/networking/Socket.hpp"
-#include "zore/networking/http/Request.hpp"
-#include "zore/networking/http/Response.hpp"
+#include "zore/networking/socket.hpp"
+#include "zore/networking/http/request.hpp"
+#include "zore/networking/http/response.hpp"
 
 namespace zore::net::http {
 

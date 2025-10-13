@@ -1,7 +1,5 @@
-#include "zore/utils/datatypes.hpp"
+#include "zore/utils/sized_integer.hpp"
 #include "zore/platform.hpp"
-
-//#include "zore/intrinsics/BitOps.hpp"
 
 namespace zore::net {
     

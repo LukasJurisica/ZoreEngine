@@ -1,5 +1,5 @@
-#include "zore/graphics/Buffer.hpp"
-#include "zore/Debug.hpp"
+#include "zore/graphics/buffer.hpp"
+#include "zore/debug.hpp"
 #include <glad/glad.h>
 
 namespace zore {

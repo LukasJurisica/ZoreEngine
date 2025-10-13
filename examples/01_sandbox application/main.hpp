@@ -1,11 +1,10 @@
-#include <zore/core/Application.hpp>
-#include <zore/core/Camera.hpp>
-#include <zore/core/ActionMap.hpp>
-#include <zore/ui/Layer.hpp>
-
-#include <zore/Devices.hpp>
-#include <zore/Graphics.hpp>
-#include <zore/Events.hpp>
+#include <zore/core/application.hpp>
+#include <zore/core/camera.hpp>
+#include <zore/core/action_map.hpp>
+#include <zore/ui/layer.hpp>
+#include <zore/devices.hpp>
+#include <zore/graphics.hpp>
+#include <zore/events.hpp>
 
 namespace zore {
 

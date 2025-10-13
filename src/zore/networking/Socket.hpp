@@ -1,9 +1,8 @@
 #pragma once
 
-#include "zore/networking/Address.hpp"
-#include "zore/networking/Packet.hpp"
-#include "zore/networking/Types.hpp"
-
+#include "zore/networking/address.hpp"
+#include "zore/networking/packet.hpp"
+#include "zore/networking/types.hpp"
 #include <vector>
 
 namespace zore::net {
@@ -50,9 +49,9 @@ namespace zore::net {
 
 		Status Connect(const Address& address);
 		Status Send(Packet& packet);
-		Status Send(const void* data, uint32_t size);
+		Status Send(const void* data, size_t size);
 		Status Receive(Packet& packet);
-		Status Receive(void* data, uint32_t size, uint32_t& recieved);
+		Status Receive(void* data, size_t size, size_t& recieved);
         Status GetStatus() const;
 
 	private:

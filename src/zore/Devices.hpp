@@ -1,5 +1,5 @@
 #pragma once
 
-#include "zore/devices/Window.hpp"
-#include "zore/devices/Keyboard.hpp"
-#include "zore/devices/Mouse.hpp"
+#include "zore/devices/window.hpp"
+#include "zore/devices/keyboard.hpp"
+#include "zore/devices/mouse.hpp"

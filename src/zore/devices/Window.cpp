@@ -1,11 +1,10 @@
-#include "zore/Devices.hpp"
-#include "zore/graphics/RenderEngine.hpp"
-#include "zore/events/WindowEvents.hpp"
-#include "zore/events/Manager.hpp"
-#include "zore/utils/Time.hpp"
-#include "zore/debug/Profiler.hpp"
-#include "zore/Debug.hpp"
-
+#include "zore/devices.hpp"
+#include "zore/graphics/render_engine.hpp"
+#include "zore/events/window_events.hpp"
+#include "zore/events/manager.hpp"
+#include "zore/utils/time.hpp"
+#include "zore/debug/profiler.hpp"
+#include "zore/debug.hpp"
 #include <GLFW/glfw3.h>
 
 namespace zore {

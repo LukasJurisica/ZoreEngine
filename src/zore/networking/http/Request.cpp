@@ -1,5 +1,5 @@
-#include "zore/networking/http/Request.hpp"
-#include "zore/utils/String.hpp"
+#include "zore/networking/http/request.hpp"
+#include "zore/utils/string.hpp"
 #include <format>
 
 namespace zore::net::http {

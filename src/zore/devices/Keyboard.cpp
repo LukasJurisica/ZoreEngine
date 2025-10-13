@@ -1,9 +1,8 @@
-#include "zore/devices/Keyboard.hpp"
-#include "zore/events/KeyboardEvents.hpp"
-#include "zore/events/Manager.hpp"
-#include "zore/ui/Editor.hpp"
-#include "zore/Debug.hpp"
-
+#include "zore/devices/keyboard.hpp"
+#include "zore/events/keyboard_events.hpp"
+#include "zore/events/manager.hpp"
+#include "zore/ui/editor.hpp"
+#include "zore/debug.hpp"
 #include <GLFW/glfw3.h>
 #include <bitset>
 

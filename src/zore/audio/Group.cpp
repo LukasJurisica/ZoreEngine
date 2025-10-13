@@ -1,8 +1,7 @@
-#include "zore/audio/Group.hpp"
-#include "zore/audio/Manager.hpp"
-
+#include "zore/audio/group.hpp"
+#include "zore/audio/manager.hpp"
 #include <unordered_map>
-#include "miniaudio.h"
+#include <miniaudio.h>
 
 namespace zore::audio {
 

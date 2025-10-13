@@ -1,7 +1,6 @@
-#include "zore/ui/Editor.hpp"
-#include "zore/devices/Window.hpp"
-#include "zore/core/FileManager.hpp"
-
+#include "zore/ui/editor.hpp"
+#include "zore/devices/window.hpp"
+#include "zore/core/file_manager.hpp"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>

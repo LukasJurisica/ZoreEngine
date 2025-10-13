@@ -1,6 +1,6 @@
 #pragma once
-#include "zore/debug/Exception.hpp"
-#include "zore/platform/win32/win32_Core.hpp"
+#include "zore/debug/exception.hpp"
+#include "zore/platform/win32/win32_core.hpp"
 
 namespace zore {
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "zore/utils/DataTypes.hpp"
-#include "zore/Platform.hpp"
+#include "zore/utils/sized_integer.hpp"
+#include "zore/platform.hpp"
 
 #if defined(PLATFORM_WINDOWS)
 typedef uintptr_t socket_t;

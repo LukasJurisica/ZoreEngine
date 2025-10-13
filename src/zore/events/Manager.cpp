@@ -1,9 +1,8 @@
-#include "zore/events/Manager.hpp"
-#include "zore/events/Handler.hpp"
-#include "zore/Debug.hpp"
-
-#include <algorithm>
+#include "zore/events/manager.hpp"
+#include "zore/events/handler.hpp"
+#include "zore/debug.hpp"
 #include <unordered_map>
+#include <algorithm>
 
 namespace zore::event {
 

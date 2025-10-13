@@ -1,8 +1,14 @@
 #pragma once
 
-#include <zore/ui/Console.hpp>
+#include <zore/ui/console.hpp>
 #include <format>
 #include <sstream>
+#include <concepts>
+
+template<typename T>
+concept Loggable = requires(std::ostream & os, const T & value) {
+	{ os << value } -> std::same_as<std::ostream&>;
+};
 
 namespace zore {
 
@@ -13,28 +19,28 @@ namespace zore {
 
 	class Logger {
 	public:
-		template<typename... Args>
+		template<Loggable... Args>
 		static void Log(Args... args) {
 			std::stringstream result;
 			Append(result, args...);
 			Console::Print(result.str(), Console::LogLevel::LOG);
 		}
 
-		template<typename... Args>
+		template<Loggable... Args>
 		static void Info(Args... args) {
 			std::stringstream result;
 			Append(result, args...);
 			Console::Print(result.str(), Console::LogLevel::INFO);
 		}
 
-		template<typename... Args>
+		template<Loggable... Args>
 		static void Warn(Args... args) {
 			std::stringstream result;
 			Append(result, args...);
 			Console::Print(result.str(), Console::LogLevel::WARN);
 		}
 
-		template<typename... Args>
+		template<Loggable... Args>
 		static void Error(Args... args) {
 			std::stringstream result;
 			Append(result, args...);
@@ -42,12 +48,12 @@ namespace zore {
 		}
 
 	private:
-		template <typename T>
+		template <Loggable T>
 		inline static void Append(std::stringstream& result, const T& t) {
 			result << t;
 		};
 
-		template <typename T, typename... Args>
+		template <Loggable T, Loggable... Args>
 		inline static void Append(std::stringstream& result, const T& t, Args... args) {
 			Append(result, t);
 			result << " ";

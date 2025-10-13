@@ -5,3 +5,7 @@ VertexBuffer copy_assignment; copy_assignment = vbo;
 
 
 GL_TEXTURE_3D, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_CUBE_MAP_ARRAY
+
+Layer System (https://github.com/TheCherno/Architecture)
+Audio
+Textured UI Elements

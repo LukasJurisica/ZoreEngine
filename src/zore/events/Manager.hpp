@@ -1,7 +1,6 @@
 #pragma once
 
-#include "zore/events/Event.hpp"
-
+#include "zore/events/event.hpp"
 #include <typeindex>
 
 namespace zore::event {

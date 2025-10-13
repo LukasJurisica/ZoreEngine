@@ -1,6 +1,6 @@
-#include "zore/networking/Socket.hpp"
-#include "zore/networking/Core.hpp"
-#include "zore/Debug.hpp"
+#include "zore/networking/socket.hpp"
+#include "zore/networking/core.hpp"
+#include "zore/debug.hpp"
 #include <sys/types.h>
 
 namespace zore::net {
@@ -129,13 +129,13 @@ namespace zore::net {
         return Send(packet.Data(), packet.Size());
 	}
 
-    Socket::Status Socket::Send(const void* data, uint32_t size) {
+    Socket::Status Socket::Send(const void* data, size_t size) {
 		if (m_socket_id == INVALID_SOCKET)
 			return Status::DISCONNECTED;
 		if (!data || size == 0)
 			return Status::ERROR;
 
-		uint32_t sent = 0;
+		size_t sent = 0;
         while (sent < size) {
             int result = send(m_socket_id, static_cast<const char*>(data) + sent, size - sent, 0);
             if (result < 0) {
@@ -151,7 +151,7 @@ namespace zore::net {
 		if (m_socket_id == INVALID_SOCKET)
 			return Status::DISCONNECTED;
         packet.Clear();
-		uint32_t recieved;
+		size_t recieved;
 		Status status = Receive(packet.Header(), packet.HeaderSize(), recieved);
         if (status != Status::DONE || recieved != packet.HeaderSize())
             return Status::ERROR;
@@ -160,7 +160,7 @@ namespace zore::net {
 		return Receive(packet.Payload(), packet.PayloadSize(), recieved);
 	}
 
-    Socket::Status Socket::Receive(void* data, uint32_t size, uint32_t& recieved) {
+    Socket::Status Socket::Receive(void* data, size_t size, size_t& recieved) {
 		recieved = 0;
 		if (m_socket_id == INVALID_SOCKET)
 			return Status::DISCONNECTED;

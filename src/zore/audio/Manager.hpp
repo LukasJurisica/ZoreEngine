@@ -1,6 +1,6 @@
 #pragma once
 
-#include "miniaudio.h"
+#include <miniaudio.h>
 #include <string>
 
 namespace zore::audio {

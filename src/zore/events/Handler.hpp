@@ -1,7 +1,6 @@
 #pragma once
 
-#include "zore/events/Manager.hpp"
-
+#include "zore/events/manager.hpp"
 #include <functional>
 #include <vector>
 

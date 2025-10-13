@@ -1,7 +1,6 @@
 #pragma once
 
-#include "zore/graphics/Texture.hpp"
-
+#include "zore/graphics/texture.hpp"
 #include <string>
 
 namespace zore::UI {

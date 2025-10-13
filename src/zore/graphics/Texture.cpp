@@ -1,6 +1,5 @@
-#include "zore/graphics/Texture.hpp"
-#include "zore/Debug.hpp"
-
+#include "zore/graphics/texture.hpp"
+#include "zore/debug.hpp"
 #include <stb/stb_image.h>
 #include <unordered_map>
 #include <glad/glad.h>
@@ -241,7 +240,7 @@ namespace zore {
 	void Texture2DArray::Set(const std::vector<std::string>& filenames, const std::string& root, Texture::Format format) {
 		// Load the first image, and initialize the Texture2D Array
 		Image image = LoadFromFile(root + filenames[0], format);
-		Set(nullptr, image.width, image.height, filenames.size(), format);
+		Set(nullptr, image.width, image.height, static_cast<uint32_t>(filenames.size()), format);
 		Update(image.data, 0, 1);
 		FreeImage(image);
 

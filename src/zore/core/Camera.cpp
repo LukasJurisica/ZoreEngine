@@ -1,5 +1,5 @@
-#include "zore/core/Camera.hpp"
-#include "zore/devices/Window.hpp"
+#include "zore/core/camera.hpp"
+#include "zore/devices/window.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 

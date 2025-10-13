@@ -18,8 +18,8 @@ namespace zore::audio {
         Status GetStatus() const { return m_status; }
 
 	private:
-        void* m_data_source;
-        void* m_data;
+        void* m_data_source = nullptr;
+        void* m_data = nullptr;
         Status m_status;
         Mode m_mode;
 	};

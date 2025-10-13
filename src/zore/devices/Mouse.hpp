@@ -1,5 +1,5 @@
 #pragma once
-#include "zore/devices/MouseCodes.hpp"
+#include "zore/devices/mouse_codes.hpp"
 #include <glm/ext/vector_float2.hpp>
 
 struct GLFWwindow;

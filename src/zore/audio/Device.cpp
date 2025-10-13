@@ -1,4 +1,4 @@
-#include "zore/audio/Device.hpp"
+#include "zore/audio/device.hpp"
 
 namespace zore::audio {
 

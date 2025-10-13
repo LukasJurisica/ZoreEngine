@@ -1,7 +1,6 @@
-#include "zore/ui/Style.hpp"
-#include "zore/math/MathUtils.hpp"
-#include "zore/Debug.hpp"
-
+#include "zore/ui/style.hpp"
+#include "zore/math/math.hpp"
+#include "zore/debug.hpp"
 #include <unordered_map>
 
 namespace zore::UI {
@@ -36,7 +35,7 @@ namespace zore::UI {
 
 	int16_t Unit::PercentageAsInt(float value) {
 		static constexpr float upper_bound = INT16_MAX_VALUE / 100.f;
-		return static_cast<int16_t>(zm::Round(upper_bound * zm::Clamp(value, 0.f, 100.f)));
+		return static_cast<int16_t>(std::round(upper_bound * zm::Clamp(value, 0.f, 100.f)));
 	}
 
 	//========================================================================

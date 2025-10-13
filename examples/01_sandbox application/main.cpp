@@ -1,17 +1,51 @@
 #include "main.hpp"
-#include <zore/core/FileManager.hpp>
-#include <zore/utils/ConfigManager.hpp>
-#include <zore/audio/Manager.hpp>
-#include <zore/ui/Manager.hpp>
-#include <zore/ui/Editor.hpp>
-#include <zore/ui/Font.hpp>
-#include <zore/Debug.hpp>
+#include <zore/core/file_manager.hpp>
+#include <zore/utils/config_manager.hpp>
+#include <zore/audio/manager.hpp>
+#include <zore/ui/manager.hpp>
+#include <zore/ui/editor.hpp>
+#include <zore/ui/font.hpp>
+#include <zore/debug.hpp>
+
+#include <zore/math/vector.hpp>
+#include <zore/utils/time.hpp>
+#include <zore/math/white_noise.hpp>
 
 using namespace zore;
 
 static bool s_display_console = false;
 static bool s_quit = false;
 static DemoApplication* s_instance = nullptr;
+
+void BenchMark() {
+	const int count = 100000;
+	Timer timer;
+
+	zm::vec4* zm_a = new zm::vec4[count * 2];
+	zm::vec4* zm_b = new zm::vec4[count * 2];
+
+	glm::vec4* glm_a = new glm::vec4[count * 2];
+	glm::vec4* glm_b = new glm::vec4[count * 2];
+
+	for (int i = 0; i < count; i++) {
+		zm_a[i] = zm::WhiteNoise::Eval4(zm::vec2(i, 0));
+		zm_b[i] = zm::WhiteNoise::Eval4(i * 2 + 1);
+		glm_a[i] = glm::vec4(zm_a[i].x, zm_a[i].y, zm_a[i].z, zm_a[i].w);
+		glm_b[i] = glm::vec4(zm_b[i].x, zm_b[i].y, zm_b[i].z, zm_b[i].w);
+	}
+
+	Logger::Log(count, " Multiplications");
+	timer.Reset();
+	for (int i = 0; i < count; i++) {
+		glm_a[i] = glm_a[i] * glm_b[i];
+	}
+	Logger::Log("GLM Time: ", timer.Time());
+	timer.Reset();
+	for (int i = 0; i < count; i++) {
+		zm_a[i] = zm_a[i] * zm_b[i];
+	}
+	Logger::Log(" ZM Time: ", timer.Time());
+}
 
 DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f) {
 	FileManager::Init("/examples/01_sandbox application/");
@@ -42,6 +76,14 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_F8, true, false, [](bool start) {
 		s_instance->ReloadShaders();
 		});
+
+
+	BenchMark();
+
+	zm::simd::int32_4 f(1, 2, 3, 4);
+	zm::simd::float32_4 g = zm::simd::float32_4(f);
+	zm::simd::int32_4 h = zm::simd::int32_4(g);
+	Logger::Log(g.extract(0), g.extract(1), g.extract(2), g.extract(3));
 }
 
 void DemoApplication::ReloadShaders() {

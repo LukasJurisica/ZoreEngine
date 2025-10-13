@@ -1,5 +1,4 @@
-#include "zore/devices/Clipboard.hpp"
-
+#include "zore/devices/clipboard.hpp"
 #include <GLFW/glfw3.h>
 
 namespace zore {

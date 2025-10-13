@@ -1,6 +1,6 @@
 #pragma once
 
-#include "zore/networking/http/Status.hpp"
+#include "zore/networking/http/status.hpp"
 #include <unordered_map>
 #include <string>
 

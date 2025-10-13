@@ -1,6 +1,6 @@
 #pragma once
-#include "zore/debug/Exception.hpp"
-#include "zore/debug/Logger.hpp"
+#include "zore/debug/exception.hpp"
+#include "zore/debug/logger.hpp"
 
 #define ENSURE(expr, msg) (expr || zore::Exception::AssertionException(__LINE__, __FILE__, msg))
 

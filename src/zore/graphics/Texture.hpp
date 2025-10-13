@@ -1,5 +1,6 @@
 #pragma once
-#include "zore/utils/DataTypes.hpp"
+
+#include "zore/utils/sized_integer.hpp"
 #include <vector>
 #include <string>
 

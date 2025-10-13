@@ -1,6 +1,6 @@
-#include "zore/networking/http/Response.hpp"
-#include "zore/utils/String.hpp"
-#include "zore/Debug.hpp"
+#include "zore/networking/http/response.hpp"
+#include "zore/utils/string.hpp"
+#include "zore/debug.hpp"
 
 namespace zore::net::http {
 

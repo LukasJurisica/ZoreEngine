@@ -1,7 +1,6 @@
-#include "zore/audio/Source.hpp"
-#include "zore/audio/Manager.hpp"
-#include "zore/Debug.hpp"
-
+#include "zore/audio/source.hpp"
+#include "zore/audio/manager.hpp"
+#include "zore/debug.hpp"
 #include <miniaudio.h>
 
 namespace zore::audio {

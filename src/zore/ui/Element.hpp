@@ -1,7 +1,7 @@
 #pragma once
 
-#include "zore/ui/Style.hpp"
-#include "zore/utils/Memory.hpp"
+#include "zore/ui/style.hpp"
+#include "zore/utils/memory.hpp"
 #include <vector>
 
 namespace zore::UI {

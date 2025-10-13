@@ -1,8 +1,7 @@
-#include "zore/ui/Font.hpp"
-
+#include "zore/ui/font.hpp"
+#include "zore/debug.hpp"
 #include <unordered_map>
 #include <fstream>
-#include <zore/Debug.hpp>
 
 namespace zore::UI {
 

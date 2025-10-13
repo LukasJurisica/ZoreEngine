@@ -1,4 +1,4 @@
-#include "zore/platform/win32/win32_Exception.hpp"
+#include "zore/platform/win32/win32_exception.hpp"
 
 namespace zore {
 

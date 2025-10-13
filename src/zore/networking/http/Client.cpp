@@ -1,6 +1,6 @@
-#include "zore/networking/http/Client.hpp"
-#include "zore/networking/Core.hpp"
-#include "zore/Debug.hpp"
+#include "zore/networking/http/client.hpp"
+#include "zore/networking/core.hpp"
+#include "zore/debug.hpp"
 
 #define MAX_RESPONSE_SIZE 1024
 
@@ -9,8 +9,8 @@ namespace zore::net::http {
 	Client::Client() : m_socket(Protocol::TCP, true) {}
 
 	Client::Client(const std::string& host, uint16_t port) : m_socket(Protocol::TCP, true) {
-		m_socket.Connect(Address::Resolve(host, port, Protocol::TCP));
 		m_host = host;
+		m_socket.Connect(Address::Resolve(host, port, Protocol::TCP));
 	}
 
 	bool Client::Connect(const std::string& host, uint16_t port) {
@@ -26,12 +26,13 @@ namespace zore::net::http {
 				request.SetField("Content-Type", "application/x-www-form-urlencoded", false);
 			std::string req = request.Build();
 
-			if (m_socket.Send(req.c_str(), static_cast<uint32_t>(req.length())) != Socket::Status::DONE)
+			Packet packet(req);
+			if (m_socket.Send(packet) != Socket::Status::DONE)
 				Logger::Error(GetLastError("send"));
 
 			std::string response;
 			char buffer[MAX_RESPONSE_SIZE];
-			uint32_t response_size;
+			size_t response_size;
 			while (m_socket.Receive(buffer, MAX_RESPONSE_SIZE, response_size) == Socket::Status::DONE)
 				response += std::string(buffer, response_size);
 			return Response(response);

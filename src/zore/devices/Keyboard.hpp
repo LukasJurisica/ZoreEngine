@@ -1,5 +1,5 @@
 #pragma once
-#include "zore/devices/KeyCodes.hpp"
+#include "zore/devices/key_codes.hpp"
 
 struct GLFWwindow;
 

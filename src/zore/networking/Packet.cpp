@@ -1,5 +1,5 @@
-#include "zore/networking/Packet.hpp"
-#include "zore/networking/Utils.hpp"
+#include "zore/networking/packet.hpp"
+#include "zore/networking/utils.hpp"
 
 namespace zore::net {
 
@@ -7,7 +7,9 @@ namespace zore::net {
        Resize(HeaderSize());
     }
 
-	Packet::Packet(const uint8_t* payload, uint16_t length, uint8_t flags) : m_position(0) {
+	Packet::Packet(const VoidSpan& span) : Packet(span.Data(), span.Size()) {}
+
+	Packet::Packet(const void* payload, size_t length, uint8_t flags) : m_position(0) {
 		if (payload && (length > 0)) {
 			Resize(HeaderSize() + length);
 			std::memcpy(m_data.data() + HeaderSize(), payload, length);
@@ -61,7 +63,7 @@ namespace zore::net {
 			m_data.insert(m_data.end(), span.Data<uint8_t>(), span.Data<uint8_t>() + span.SizeBytes());
 	}
 
-	void Packet::Seek(uint16_t offset) {
+	void Packet::Seek(size_t offset) {
 		m_position = (offset < Size()) ? offset : Size();
 	}
 

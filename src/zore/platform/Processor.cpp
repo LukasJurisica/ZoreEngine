@@ -1,6 +1,6 @@
-#include "zore/platform/Processor.hpp"
-#include "zore/Platform.hpp"
-#include "zore/Debug.hpp"
+#include "zore/platform/processor.hpp"
+#include "zore/platform.hpp"
+#include "zore/debug.hpp"
 
 #if defined(PLATFORM_WINDOWS)
 #include <intrin.h>

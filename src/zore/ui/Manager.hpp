@@ -1,7 +1,7 @@
 #pragma once
 
-#include "zore/ui/Layer.hpp"
-#include "zore/core/ActionMap.hpp"
+#include "zore/ui/layer.hpp"
+#include "zore/core/action_map.hpp"
 
 namespace zore::UI {
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "zore/ui/Element.hpp"
-#include "zore/graphics/Buffer.hpp"
+#include "zore/ui/element.hpp"
+#include "zore/graphics/buffer.hpp"
 
 namespace zore::UI {
 

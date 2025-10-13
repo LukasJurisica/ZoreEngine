@@ -1,11 +1,11 @@
-#include "zore/core/Application.hpp"
-#include "zore/platform/Processor.hpp"
-#include "zore/core/FileManager.hpp"
-#include "zore/devices/Window.hpp"
-#include "zore/networking/Manager.hpp"
+#include "zore/core/application.hpp"
+#include "zore/platform/processor.hpp"
+#include "zore/core/file_manager.hpp"
+#include "zore/devices/window.hpp"
+#include "zore/networking/manager.hpp"
 #include "zore/audio/manager.hpp"
-#include "zore/ui/Editor.hpp"
-#include "zore/Debug.hpp"
+#include "zore/ui/editor.hpp"
+#include "zore/debug.hpp"
 
 namespace zore {
 
