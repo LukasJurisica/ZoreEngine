@@ -1,5 +1,5 @@
 build/
-config/
+config/*
 .vscode/
 !config/path_config.h.in
 ZoreEngine.lnk
