@@ -104,10 +104,10 @@ void DemoApplication::Run() {
 
 	// Initialize Font
 	UI::Font& font = UI::Font::Create("assets/fonts/ZoreFont.zbt", Texture::Format::R8U);
-	Texture::SetNamedTextureSlot("font", 1);
+	Texture::Base::SetNamedTextureSlot("font", 1);
 	font.GetTextureArray().Bind("font");
-	TextureSampler sampler;
-	sampler.SetFilters(TextureSampler::Filter::NEAREST, TextureSampler::Filter::NEAREST);
+	Texture::Sampler sampler;
+	sampler.SetFilters(Texture::Sampler::Filter::NEAREST, Texture::Sampler::Filter::NEAREST);
 	sampler.Bind(1);
 
 	std::unordered_map <int, Shader*> ui_shaders;
@@ -145,12 +145,12 @@ void DemoApplication::CreateSimpleUI() {
 		.SetHeight(UI::Unit::PC(perc * 4), 4.f)
 		.SetMargin(AUTO(), UI::Unit::PC(perc))
 		.SetPadding(3_ph, 6_ph, 3_ph, 3_ph)
-		.SetColour(0xFFFFFFFF);
+		.SetColour(Colour::nhsv(0.f, 0.f, 1.f));
 
 	UI::Style& standard_text_style = UI::Style::Create("standard_text")
 		.SetHeight(100_ph)
 		.SetMargin(AUTO(), 0_px)
-		.SetColour(0xAAAAAAFF);
+		.SetColour(Colour::nhsv(0.f, 0.f, 0.65f));
 
 	// Main Menu Demo UI
 	UI::Layer& main_menu = UI::Manager::CreateLayer("main_menu");

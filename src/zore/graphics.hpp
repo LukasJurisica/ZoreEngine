@@ -6,3 +6,5 @@
 #include "zore/graphics/shader.hpp"
 #include "zore/graphics/texture.hpp"
 #include "zore/graphics/vertex_layout.hpp"
+#include "zore/graphics/compute_shader.hpp"
+#include "zore/graphics/memory_barrier.hpp"

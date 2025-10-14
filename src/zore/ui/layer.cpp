@@ -152,7 +152,7 @@ namespace zore::UI {
 		int idx = 0;
 
 		// Only draw the element if it has a non-zero alpha value
-		if (c.a() > 0) {
+		if (c.a > 0) {
 			switch (element->GetType()) {
 			case Element::Type::PANEL:
 				s_coloured_quads.push_back({ x, y, w, h, depth, c });

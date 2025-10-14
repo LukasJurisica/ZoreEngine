@@ -107,13 +107,21 @@ namespace zm {
 	}
 
 	// Wraps value within the range [min, max]
-	template <zore::numeric T>
+	template <std::floating_point T>
 	inline T WrapClamp(T value, T min, T max) {
 		T delta = max - min;
-		while (value < min)
+		value = std::fmod(value, delta);
+		if (value < 0)
 			value += delta;
-		while (value >= max)
-			value -= delta;
-		return value;
+		return value + min;
+	}
+
+	template <std::integral T>
+	inline T WrapClamp(T value, T min, T max) {
+		T delta = max - min;
+		value = value % delta;
+		if (value < 0)
+			value += delta;
+		return value + min;
 	}
 }

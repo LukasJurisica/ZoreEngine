@@ -1,0 +1,55 @@
+#include "zore/graphics/buffer.hpp"
+#include "zore/debug.hpp"
+#include <glad/glad.h>
+
+namespace zore {
+
+	static constexpr uint32_t INVALID_BUFFER_ID = ~0;
+
+	//========================================================================
+	//	OpenGL Vertex Buffer
+	//========================================================================
+
+	VertexBuffer::VertexBuffer(bool instanced) : m_id(INVALID_BUFFER_ID), m_stride(0), m_index(instanced ? 1 : 0) {}
+
+	VertexBuffer::VertexBuffer(const VoidSpan& span, bool instanced) : m_id(0), m_stride(static_cast<uint32_t>(span.ElementSize())), m_index(instanced ? 1 : 0) {
+		glCreateBuffers(1, &m_id);
+		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
+	}
+
+	VertexBuffer::VertexBuffer(const void* data, uint32_t size, uint32_t stride, bool instanced) : m_id(0), m_stride(stride), m_index(instanced ? 1 : 0) {
+		glCreateBuffers(1, &m_id);
+		glNamedBufferData(m_id, size, data, GL_STATIC_DRAW);
+	}
+
+	VertexBuffer::~VertexBuffer() {
+		glDeleteBuffers(1, &m_id);
+	}
+
+	uint32_t VertexBuffer::GetID() const {
+		return m_id;
+	}
+
+	void VertexBuffer::Set(const VoidSpan& span) {
+		Set(span.Data(), static_cast<uint32_t>(span.SizeBytes()), static_cast<uint32_t>(span.ElementSize()));
+	}
+
+	void VertexBuffer::Set(const void* data, uint32_t size, uint32_t stride) {
+		if (m_id == INVALID_BUFFER_ID)
+			glCreateBuffers(1, &m_id);
+		if (stride > 0)
+			m_stride = stride;
+		glNamedBufferData(m_id, size, data, GL_STATIC_DRAW);
+	}
+
+	void VertexBuffer::Update(const void* data, uint32_t size, uint32_t offset) {
+		void* ptr = glMapNamedBufferRange(m_id, offset, size, GL_MAP_WRITE_BIT);
+		memcpy(ptr, data, size);
+		glUnmapNamedBuffer(m_id);
+	}
+
+	void VertexBuffer::Bind() const {
+		DEBUG_ENSURE(m_id != INVALID_BUFFER_ID, "Attempted to bind an Unitialized VertexBuffer");
+		glBindVertexBuffer(m_index, m_id, 0, m_stride);
+	}
+}

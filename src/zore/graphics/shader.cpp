@@ -63,74 +63,22 @@ namespace zore {
 		}
 		m_id = glCreateProgram();
 
-		std::vector<StageData> stages;
 		std::string source;
 		FileManager::ReadContent(source, s_shader_folder + m_filename, IS_DEBUG);
-		size_t left = 0;
-		size_t right = std::string::npos;
+		size_t right = source.size();
+		size_t left = source.rfind("#shaderstage", right);
 
 		// Parse Shader file, and create shader stages
-		do {
-			left = source.rfind("#shaderstage", right);
-			if (left == std::string::npos) // No shaderstage found
-				break;
-
-			size_t start = source.find("\n", left);
-			CreateShaderStage(stages.emplace_back(String::SubStrRange(source, left + 13, start), String::SubStrRange(source, start + 1, right)));
-
+		std::vector<uint32_t> stages;
+		while (left != std::string::npos) {
+			stages.push_back(CreateShaderStage(std::string_view(source.data() + left, right - left)));
+			source[left] = '\0';
 			right = left - 1;
-		} while (left > 0);
-
-		Link(stages);
-		return *this;
-	}
-
-	void Shader::Bind() const {
-		if (s_active != this) {
-			glUseProgram(m_id);
-			s_active = this;
+			left = source.rfind("#shaderstage", right);
 		}
-	}
 
-	Shader::StageData::StageData(const std::string& stage, const std::string& source) : m_name(stage), m_source(source), m_id(0) {
-		if (stage == "vertex")
-			m_type = Stage::VERTEX;
-		else if (stage == "geometry")
-			m_type = Stage::GEOMETRY;
-		else if (stage == "fragment")
-			m_type = Stage::FRAGMENT;
-		else if (stage == "compute")
-			m_type = Stage::COMPUTE;
-		else
-			m_type = Stage::INVALID;
-	}
-
-	void Shader::CreateShaderStage(StageData& stage) {
-		ENSURE(stage.m_type != Stage::INVALID, "Invalid Shader Stage requested (" + stage.m_name + ") in file: " + m_filename);
-		
-		// Add defines and version to shader source
-		stage.m_source = s_version + m_defines[stage.m_type] + stage.m_source;
-
-		// Create and compile shader stages
-		static const uint32_t GLStages[] = { GL_VERTEX_SHADER, GL_GEOMETRY_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER, GL_INVALID_ENUM };
-		stage.m_id = glCreateShader(GLStages[static_cast<uint32_t>(stage.m_type)]);
-		const char* source = stage.m_source.c_str();
-		glShaderSource(stage.m_id, 1, &source, nullptr);
-		glCompileShader(stage.m_id);
-
-		// Check if shader stage was created successfully
-		int32_t status;
-		glGetShaderiv(stage.m_id, GL_COMPILE_STATUS, &status);
-		if (status != GL_TRUE) {
-			char buffer[SHADER_ERROR_BUFFER_LENGTH];
-			glGetShaderInfoLog(stage.m_id, SHADER_ERROR_BUFFER_LENGTH, nullptr, buffer);
-			throw ZORE_EXCEPTION("Error compiling " + stage.m_name + " shader: " + m_filename + "\n" + std::string(buffer));
-		}
-	}
-
-	void Shader::Link(std::vector<StageData>& stages) {
-		for (StageData& stage : stages)
-			glAttachShader(m_id, stage.m_id);
+		for (uint32_t stage_id : stages)
+			glAttachShader(m_id, stage_id);
 
 		glLinkProgram(m_id);
 		// Check if shaders were linked successfully
@@ -143,23 +91,19 @@ namespace zore {
 		}
 
 		// Cleanup resources from shader stages
-		for (StageData& stage : stages) {
-			glDetachShader(m_id, stage.m_id);
-			glDeleteShader(stage.m_id);
+		for (uint32_t stage_id : stages) {
+			glDetachShader(m_id, stage_id);
+			glDeleteShader(stage_id);
 		}
+		stages.clear();
+		return *this;
 	}
 
-	uint32_t Shader::GetUniformLocation(const std::string& name) {
-		Bind();
-		auto iter = m_uniforms.find(name);
-		if (iter == m_uniforms.end()) {
-			uint32_t loc = glGetUniformLocation(m_id, name.c_str());
-			if (loc == -1)
-				Logger::Warn("Invalid uniform name: " + name);
-			m_uniforms.insert({ name, loc });
-			return loc;
+	void Shader::Bind() const {
+		if (s_active != this) {
+			glUseProgram(m_id);
+			s_active = this;
 		}
-		return iter->second;
 	}
 
 	// glUniform{1|2|3|4}{f|i|ui}
@@ -233,5 +177,61 @@ namespace zore {
 
 	void Shader::SetUniformBufferIndex(const std::string& name, uint32_t index) {
 		glUniformBlockBinding(m_id, glGetUniformBlockIndex(m_id, name.c_str()), index);
+	}
+	
+	Shader::Stage Shader::ValidateShaderStage(const std::string_view& name) {
+		Stage stage = GetStage(name);
+		ENSURE(stage != Stage::INVALID, std::format("Invalid ({}) Shader Stage requested in file: {}", name, m_filename));
+		ENSURE(stage != Stage::COMPUTE, std::format("Invalid ({}) Shader stage requested in render shader: {}", name, m_filename));
+		return stage;
+	}
+
+	Shader::Stage Shader::GetStage(const std::string_view& name) {
+		if (name == "vertex")
+			return Stage::VERTEX;
+		else if (name == "geometry")
+			return Stage::GEOMETRY;
+		else if (name == "fragment")
+			return Stage::FRAGMENT;
+		else if (name == "compute")
+			return Stage::COMPUTE;
+		else
+			return Stage::INVALID;
+	}
+
+	uint32_t Shader::CreateShaderStage(const std::string_view& content) {
+		size_t start = content.find("\n", 0);
+		std::string_view stage_name = std::string_view(content.data() + 13, start - 13);
+		Stage stage = ValidateShaderStage(stage_name);
+		std::string source = s_version + m_defines[stage] + std::string(content.data() + start + 1, content.size() - start - 1);
+
+		static const uint32_t GLStages[] = { GL_VERTEX_SHADER, GL_GEOMETRY_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER, GL_INVALID_ENUM };
+		uint32_t stage_id = glCreateShader(GLStages[static_cast<uint32_t>(stage)]);
+		const char* source_c = source.c_str();
+		glShaderSource(stage_id, 1, &source_c, nullptr);
+		glCompileShader(stage_id);
+
+		// Check if shader stage was created successfully
+		int32_t status;
+		glGetShaderiv(stage_id, GL_COMPILE_STATUS, &status);
+		if (status != GL_TRUE) {
+			char buffer[SHADER_ERROR_BUFFER_LENGTH];
+			glGetShaderInfoLog(stage_id, SHADER_ERROR_BUFFER_LENGTH, nullptr, buffer);
+			throw ZORE_EXCEPTION(std::format("Error compiling {} shader: {}\n{}", stage_name, m_filename, buffer));
+		}
+		return stage_id;
+	}
+
+	uint32_t Shader::GetUniformLocation(const std::string& name) {
+		Bind();
+		auto iter = m_uniforms.find(name);
+		if (iter == m_uniforms.end()) {
+			uint32_t loc = glGetUniformLocation(m_id, name.c_str());
+			if (loc == -1)
+				Logger::Warn("Invalid uniform name: " + name);
+			m_uniforms.insert({ name, loc });
+			return loc;
+		}
+		return iter->second;
 	}
 }
