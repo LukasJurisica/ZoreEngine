@@ -7,3 +7,5 @@ mkdir build
 cd build
 cmake ../
 ```
+
+You can get started quickly with the [Zore Engine Template Project](https://github.com/LukasJurisica/ZoreEngine-Template)
