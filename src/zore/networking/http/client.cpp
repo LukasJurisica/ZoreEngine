@@ -1,5 +1,5 @@
 #include "zore/networking/http/client.hpp"
-#include "zore/networking/core.hpp"
+#include "zore/networking/networking_core.hpp"
 #include "zore/debug.hpp"
 
 #define MAX_RESPONSE_SIZE 1024
@@ -32,7 +32,7 @@ namespace zore::net::http {
 
 			std::string response;
 			char buffer[MAX_RESPONSE_SIZE];
-			size_t response_size;
+			uint32_t response_size;
 			while (m_socket.Receive(buffer, MAX_RESPONSE_SIZE, response_size) == Socket::Status::DONE)
 				response += std::string(buffer, response_size);
 			return Response(response);

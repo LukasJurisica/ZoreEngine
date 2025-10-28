@@ -1,5 +1,5 @@
-#include "zore/audio/group.hpp"
-#include "zore/audio/manager.hpp"
+#include "zore/audio/audio_group.hpp"
+#include "zore/audio/audio_manager.hpp"
 #include <unordered_map>
 #include <miniaudio.h>
 

@@ -2,8 +2,6 @@
 #include "zore/graphics/shader.hpp"
 #include "zore/devices/window.hpp"
 #include "zore/debug.hpp"
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -42,8 +40,6 @@ namespace zore {
 			glEnable(GL_DEBUG_OUTPUT);
 			glDebugMessageCallback(MessageCallback, 0);
 		}
-
-		stbi_set_flip_vertically_on_load(true);
 	}
 
 	void RenderEngine::ResetViewport() {

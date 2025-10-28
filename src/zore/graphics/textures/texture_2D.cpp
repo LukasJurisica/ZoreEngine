@@ -5,6 +5,10 @@
 
 namespace zore {
 
+	//========================================================================
+	//	Texture2D
+	//========================================================================
+
     Texture2D::Texture2D(Texture::Format format) : Texture::Base(format) {}
 
 	Texture2D::Texture2D(void* data, uint32_t width, uint32_t height, Texture::Format format) : Texture::Base(format) {

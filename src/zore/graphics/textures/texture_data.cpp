@@ -1,8 +1,13 @@
 #include "zore/graphics/textures/texture_data.hpp"
 #include "zore/graphics/textures/texture_base.hpp"
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
 namespace zore::Texture {
+
+    //========================================================================
+    //	Texture Data
+    //========================================================================
 
     Data::Data(const std::string& path, Format requested_format) {
         Load(path, requested_format);
@@ -36,6 +41,7 @@ namespace zore::Texture {
     void Data::Load(const std::string& path, Format requested_format) {
         if (data)
             Free();
+        stbi_set_flip_vertically_on_load(true);
         data = stbi_load(path.c_str(), &width, &height, &channels, GetChannelCount(requested_format));
     }
 

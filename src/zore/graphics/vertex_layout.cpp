@@ -6,7 +6,7 @@
 namespace zore {
 
 	//========================================================================
-	//	Vertex Buffer Layout Element Struct
+	//	Vertex Buffer Layout Element
 	//========================================================================
 
 	VertexElement::VertexElement(std::string name, VertexDataType type, unsigned int count, bool normalize) :
@@ -15,7 +15,7 @@ namespace zore {
 	}
 
 	//========================================================================
-	//	Vertex Buffer Layout Class
+	//	Vertex Buffer Layout
 	//========================================================================
 
 	VertexLayout::VertexLayout() {

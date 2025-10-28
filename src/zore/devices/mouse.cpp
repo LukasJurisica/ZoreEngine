@@ -1,7 +1,7 @@
 #include "zore/devices/mouse.hpp"
 #include "zore/devices/window.hpp"
 #include "zore/events/mouse_events.hpp"
-#include "zore/events/manager.hpp"
+#include "zore/events/event_manager.hpp"
 #include "zore/ui/editor.hpp"
 #include "zore/debug.hpp"
 #include <GLFW/glfw3.h>
@@ -10,7 +10,7 @@
 namespace zore {
 
 	//========================================================================
-	//	Mouse Class
+	//	Mouse
 	//========================================================================
 
 	static glm::vec2 s_position = { 0, 0 };

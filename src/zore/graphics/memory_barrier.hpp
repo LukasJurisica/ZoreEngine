@@ -24,6 +24,10 @@ namespace zore {
 		COMMAND
 	};
 
+	//========================================================================
+	//	Memory Barrier
+	//========================================================================
+
 	class MemoryBarrier {
 	public:
 		MemoryBarrier(Barrier barrier);

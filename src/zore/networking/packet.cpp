@@ -1,5 +1,5 @@
 #include "zore/networking/packet.hpp"
-#include "zore/networking/utils.hpp"
+#include "zore/networking/networking_utils.hpp"
 
 namespace zore::net {
 
@@ -7,9 +7,9 @@ namespace zore::net {
        Resize(HeaderSize());
     }
 
-	Packet::Packet(const VoidSpan& span) : Packet(span.Data(), span.Size()) {}
+	Packet::Packet(const VoidSpan& span) : Packet(span.Data(), static_cast<uint32_t>(span.Size())) {}
 
-	Packet::Packet(const void* payload, size_t length, uint8_t flags) : m_position(0) {
+	Packet::Packet(const void* payload, uint32_t length, uint8_t flags) : m_position(0) {
 		if (payload && (length > 0)) {
 			Resize(HeaderSize() + length);
 			std::memcpy(m_data.data() + HeaderSize(), payload, length);
@@ -30,19 +30,19 @@ namespace zore::net {
         return m_data.data() + HeaderSize();
     }
 
-	size_t Packet::Size() const {
-		return m_data.size();
+	uint32_t Packet::Size() const {
+		return static_cast<uint32_t>(m_data.size());
 	}
 
-	size_t Packet::HeaderSize() const {
+	uint32_t Packet::HeaderSize() const {
 		return sizeof(uint16_t) * 3 + sizeof(uint8_t) * 2;
 	}
 
-	size_t Packet::PayloadSize() const {
+	uint32_t Packet::PayloadSize() const {
 		return Size() - HeaderSize();
 	}
 
-	size_t Packet::Remaining() const {
+	uint32_t Packet::Remaining() const {
 		return Size() - m_position;
 	}
 
@@ -50,11 +50,11 @@ namespace zore::net {
 		Resize(HeaderSize());
 	}
 
-	void Packet::Reserve(size_t size) {
+	void Packet::Reserve(uint32_t size) {
 		m_data.reserve(size);
 	}
 
-    void Packet::Resize(size_t size) {
+    void Packet::Resize(uint32_t size) {
         m_data.resize(size < HeaderSize() ? HeaderSize() : size);
     }
 
@@ -63,7 +63,7 @@ namespace zore::net {
 			m_data.insert(m_data.end(), span.Data<uint8_t>(), span.Data<uint8_t>() + span.SizeBytes());
 	}
 
-	void Packet::Seek(size_t offset) {
+	void Packet::Seek(uint32_t offset) {
 		m_position = (offset < Size()) ? offset : Size();
 	}
 

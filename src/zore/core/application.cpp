@@ -2,8 +2,8 @@
 #include "zore/platform/processor.hpp"
 #include "zore/core/file_manager.hpp"
 #include "zore/devices/window.hpp"
-#include "zore/networking/manager.hpp"
-#include "zore/audio/manager.hpp"
+#include "zore/networking/networking_manager.hpp"
+#include "zore/audio/audio_manager.hpp"
 #include "zore/ui/editor.hpp"
 #include "zore/debug.hpp"
 

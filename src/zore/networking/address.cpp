@@ -1,5 +1,5 @@
 #include "zore/networking/address.hpp"
-#include "zore/networking/core.hpp"
+#include "zore/networking/networking_core.hpp"
 #include "zore/networking/socket.hpp"
 #include "zore/networking/http/client.hpp"
 #include "zore/debug.hpp"

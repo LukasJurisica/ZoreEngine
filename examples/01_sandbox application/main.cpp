@@ -1,7 +1,7 @@
 #include "main.hpp"
 #include <zore/core/file_manager.hpp>
 #include <zore/utils/config_manager.hpp>
-#include <zore/audio/manager.hpp>
+#include <zore/audio/audio_manager.hpp>
 #include <zore/ui/manager.hpp>
 #include <zore/ui/editor.hpp>
 #include <zore/ui/font.hpp>
@@ -9,7 +9,7 @@
 
 #include <zore/math/vector.hpp>
 #include <zore/utils/time.hpp>
-#include <zore/math/white_noise.hpp>
+#include <zore/math/noise/white_noise.hpp>
 
 using namespace zore;
 

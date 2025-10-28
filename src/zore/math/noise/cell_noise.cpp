@@ -1,5 +1,6 @@
-#include "zore/math/cell_noise.hpp"
-#include "zore/math/white_noise.hpp"
+#include "zore/math/noise/cell_noise.hpp"
+#include "zore/math/noise/white_noise.hpp"
+#include "zore/math/math.hpp"
 #include "zore/debug.hpp"
 
 namespace zm {
@@ -43,7 +44,7 @@ namespace zm {
 			for (int y = -1; y < 1; y++) {
 				zm::vec2 l = zm::vec2(x, y);
 				zm::vec2 v;
-				zm::WhiteNoise::GetMultiNoise(i.x + x, i.y + y, seed, &v.x, 2);
+				v = zm::WhiteNoise::Eval2(zm::vec2(i.x + x, i.y + y));
 				v = zm::vec2(zm::Clamp(v.x * mult, low, high), zm::Clamp(v.y * mult, low, high));
 				zm::vec2 r = l + v - f;
 				float d = zm::Dot(r, r);

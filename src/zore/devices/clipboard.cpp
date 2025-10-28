@@ -3,6 +3,10 @@
 
 namespace zore {
 
+	//========================================================================
+	//	Clipboard
+	//========================================================================
+
 	std::string Clipboard::Get() {
 		return glfwGetClipboardString(nullptr);
 	}

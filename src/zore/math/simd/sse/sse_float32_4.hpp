@@ -16,6 +16,7 @@ namespace zm::simd {
 		ALWAYS_INLINE explicit float32_4() : v(_mm_setzero_ps()) {}
 		ALWAYS_INLINE explicit float32_4(float s) : v(_mm_set_ps1(s)) {}
 		ALWAYS_INLINE explicit float32_4(float x, float y, float z, float w) : v(_mm_set_ps(w, z, y, x)) {}
+		ALWAYS_INLINE explicit float32_4(const float* o) { load(o); }
 		ALWAYS_INLINE explicit float32_4(const __m128& o) : v(o) {}
 		ALWAYS_INLINE explicit float32_4(const int32_4& o) : v(_mm_cvtepi32_ps(reinterpret_cast<const __m128i&>(o))) {}
 		ALWAYS_INLINE explicit float32_4(const uint32_4& o) : v(internal::cvt_epu32_ps(reinterpret_cast<const __m128i&>(o))) {}
@@ -34,23 +35,51 @@ namespace zm::simd {
 		ALWAYS_INLINE float32_4  operator>  (const float32_4& o) const { return float32_4(_mm_cmpgt_ps(v, o.v)); }
 		ALWAYS_INLINE float32_4  operator>= (const float32_4& o) const { return float32_4(_mm_cmpge_ps(v, o.v)); }
 		// Bit Operations -----------------
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4  operator&  (const T o) const { return float32_4(_mm_and_ps(v, _mm_set_ps1(static_cast<float>(o)))); }
 		ALWAYS_INLINE float32_4  operator&  (const float32_4& o) const { return float32_4(_mm_and_ps(v, o.v)); }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4& operator&= (const T o) { v = _mm_and_ps(v, _mm_set_ps1(static_cast<float>(o))); return *this; }
 		ALWAYS_INLINE float32_4  operator&= (const float32_4& o) { v = _mm_and_ps(v, o.v); return *this; }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4  operator|  (const T o) const { return float32_4(_mm_or_ps(v, _mm_set_ps1(static_cast<float>(o)))); }
 		ALWAYS_INLINE float32_4  operator|  (const float32_4& o) const { return float32_4(_mm_or_ps(v, o.v)); }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4& operator|= (const T o) { v = _mm_or_ps(v, _mm_set_ps1(static_cast<float>(o))); return *this; }
 		ALWAYS_INLINE float32_4  operator|= (const float32_4& o) { v = _mm_or_ps(v, o.v); return *this; }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4  operator^  (const T o) const { return float32_4(_mm_xor_ps(v, _mm_set_ps1(static_cast<float>(o)))); }
 		ALWAYS_INLINE float32_4  operator^  (const float32_4& o) const { return float32_4(_mm_xor_ps(v, o.v)); }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4& operator^= (const T o) { v = _mm_xor_ps(v, _mm_set_ps1(static_cast<float>(o))); return *this; }
 		ALWAYS_INLINE float32_4  operator^= (const float32_4& o) { v = _mm_xor_ps(v, o.v); return *this; }
 		ALWAYS_INLINE float32_4  operator~  () { return float32_4(internal::bit_not(v)); }
 		// Arithmetic ---------------------
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4  operator+  (const T o) const { return float32_4(_mm_add_ps(v, _mm_set_ps1(static_cast<float>(o)))); }
 		ALWAYS_INLINE float32_4  operator+  () const { return float32_4(v); }
 		ALWAYS_INLINE float32_4  operator+  (const float32_4& o) const { return float32_4(_mm_add_ps(v, o.v)); }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4& operator+= (const T o) { v = _mm_add_ps(v, _mm_set_ps1(static_cast<float>(o))); return *this; }
 		ALWAYS_INLINE float32_4& operator+= (const float32_4& o) { v = _mm_add_ps(v, o.v); return *this; }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4  operator-  (const T o) const { return float32_4(_mm_sub_ps(v, _mm_set_ps1(static_cast<float>(o)))); }
 		ALWAYS_INLINE float32_4  operator-  () const { return float32_4(_mm_xor_ps(v, _mm_set_ps1(-0.0f))); }
 		ALWAYS_INLINE float32_4  operator-  (const float32_4& o) const { return float32_4(_mm_sub_ps(v, o.v)); }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4& operator-= (const T o) { v = _mm_sub_ps(v, _mm_set_ps1(static_cast<float>(o))); return *this; }
 		ALWAYS_INLINE float32_4& operator-= (const float32_4& o) { v = _mm_sub_ps(v, o.v); return *this; }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4  operator*  (const T o) const { return float32_4(_mm_mul_ps(v, _mm_set_ps1(static_cast<float>(o)))); }
 		ALWAYS_INLINE float32_4  operator*  (const float32_4& o) const { return float32_4(_mm_mul_ps(v, o.v)); }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4& operator*= (const T o) { v = _mm_mul_ps(v, _mm_set_ps1(static_cast<float>(o))); return *this; }
 		ALWAYS_INLINE float32_4& operator*= (const float32_4& o) { v = _mm_mul_ps(v, o.v); return *this; }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4  operator/  (const T o) const { return float32_4(_mm_div_ps(v, _mm_set_ps1(static_cast<float>(o)))); }
 		ALWAYS_INLINE float32_4  operator/  (const float32_4& o) const { return float32_4(_mm_div_ps(v, o.v)); }
+		template<zore::numeric T>
+		ALWAYS_INLINE float32_4& operator/= (const T o) { v = _mm_div_ps(v, _mm_set_ps1(static_cast<float>(o))); return *this; }
 		ALWAYS_INLINE float32_4& operator/= (const float32_4& o) { v = _mm_div_ps(v, o.v); return *this; }
 		// Other --------------------------
 		ALWAYS_INLINE float extract(int index) { return internal::extract(v, index); }
@@ -63,7 +92,7 @@ namespace zm::simd {
 		ALWAYS_INLINE float32_4 shuffle(const float32_4& o) const { return float32_4(internal::shuffle<x, y, z, w>(v, o.v)); }
 		template<int x, int y, int z, int w>
 		ALWAYS_INLINE float32_4 blend(const float32_4& o) const { return float32_4(internal::blend<x, y, z, w>(v, o.v)); }
-		ALWAYS_INLINE static int size() { return 4; }
+		ALWAYS_INLINE static constexpr int size() { return 4; }
 
 	public:
 		__m128 v;
@@ -95,6 +124,13 @@ namespace zm::simd {
 	ALWAYS_INLINE float dot(const float32_4& a, const float32_4& b) { return a.dot(b); }
 	ALWAYS_INLINE int mask(const float32_4& a) { return _mm_movemask_ps(a.v); }
 	ALWAYS_INLINE void transpose(float32_4& a, float32_4& b, float32_4& c, float32_4& d) { _MM_TRANSPOSE4_PS(a.v, b.v, c.v, d.v); }
-
+	// Trigonometry -------------------
+	ALWAYS_INLINE float32_4 sin(const float32_4& a) { return float32_4(_mm_sin_ps(a.v)); }
+	ALWAYS_INLINE float32_4 cos(const float32_4& a) { return float32_4(_mm_cos_ps(a.v)); }
+	ALWAYS_INLINE float32_4 tan(const float32_4& a) { return float32_4(_mm_tan_ps(a.v)); }
+	ALWAYS_INLINE float32_4 asin(const float32_4& a) { return float32_4(_mm_asin_ps(a.v)); }
+	ALWAYS_INLINE float32_4 acos(const float32_4& a) { return float32_4(_mm_acos_ps(a.v)); }
+	ALWAYS_INLINE float32_4 atan(const float32_4& a) { return float32_4(_mm_atan_ps(a.v)); }
+	ALWAYS_INLINE float32_4 atan2(const float32_4& a, const float32_4& b) { return float32_4(_mm_atan2_ps(a.v, b.v)); }
 #endif
 }

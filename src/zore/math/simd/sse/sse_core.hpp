@@ -1,18 +1,21 @@
 #pragma once
 
-#include "zore/math/simd/core.hpp"
+#include "zore/math/simd/simd_core.hpp"
+#include "zore/utils/concepts.hpp"
 
-#if SIMD_SSE >= ENCODE_VERSION(4, 2, 0)
-#include <nmmintrin.h>
-#elif SIMD_SSE >= ENCODE_VERSION(4, 1, 0)
-#include <smmintrin.h>
-#elif SIMD_SSE >= ENCODE_VERSION(3, 0, 0)
-#include <pmmintrin.h>
-#elif SIMD_SSE >= ENCODE_VERSION(2, 0, 0)
-#include <emmintrin.h>
-#elif SIMD_SSE >= ENCODE_VERSION(1, 0, 0)
-#include <xmmintrin.h>
-#endif
+//#if SIMD_SSE >= ENCODE_VERSION(4, 2, 0)
+//#include <nmmintrin.h>
+//#elif SIMD_SSE >= ENCODE_VERSION(4, 1, 0)
+//#include <smmintrin.h>
+//#elif SIMD_SSE >= ENCODE_VERSION(3, 0, 0)
+//#include <pmmintrin.h>
+//#elif SIMD_SSE >= ENCODE_VERSION(2, 0, 0)
+//#include <emmintrin.h>
+//#elif SIMD_SSE >= ENCODE_VERSION(1, 0, 0)
+//#include <xmmintrin.h>
+//#endif
+
+#include <immintrin.h>
 
 #if SIMD_SSE >= ENCODE_VERSION(1, 0, 0)
 #define _MM_BLEND(w, z, y, x) (((w) << 3) | ((z) << 2) | ((y) << 1) | ((x)))

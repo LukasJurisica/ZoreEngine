@@ -3,6 +3,11 @@
 #include "zore/graphics/textures/texture_base.hpp"
 
 namespace zore {
+
+    //========================================================================
+    //	Texture2D
+    //========================================================================
+
     class Texture2D : public Texture::Base {
     public:
         Texture2D(Texture::Format format = Texture::Format::RGBA);

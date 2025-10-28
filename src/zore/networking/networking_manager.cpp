@@ -1,5 +1,5 @@
-#include "zore/networking/manager.hpp"
-#include "zore/networking/core.hpp"
+#include "zore/networking/networking_manager.hpp"
+#include "zore/networking/networking_core.hpp"
 #include "zore/debug.hpp"
 
 namespace zore::net {

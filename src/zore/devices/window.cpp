@@ -1,17 +1,13 @@
 #include "zore/devices.hpp"
 #include "zore/graphics/render_engine.hpp"
 #include "zore/events/window_events.hpp"
-#include "zore/events/manager.hpp"
+#include "zore/events/event_manager.hpp"
 #include "zore/utils/time.hpp"
 #include "zore/debug/profiler.hpp"
 #include "zore/debug.hpp"
 #include <GLFW/glfw3.h>
 
 namespace zore {
-
-	//========================================================================
-	//	Window Class
-	//========================================================================
 
 	static glm::ivec2 s_size = { 0, 0 };
 	static glm::ivec2 s_min_size = { GLFW_DONT_CARE, GLFW_DONT_CARE };
@@ -21,6 +17,10 @@ namespace zore {
 	static bool s_fullscreen = false;
 	static bool s_cursor_hidden = false;
 	static bool s_transparent = false;
+
+	//========================================================================
+	//	Window
+	//========================================================================
 
 	void Window::Init(bool transparent) {
 		ENSURE(!s_window_handle, "The function Window::Init() should not be invoked by the client application.");

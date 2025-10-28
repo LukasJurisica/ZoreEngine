@@ -1,5 +1,5 @@
-#include "zore/audio/source.hpp"
-#include "zore/audio/manager.hpp"
+#include "zore/audio/audio_source.hpp"
+#include "zore/audio/audio_manager.hpp"
 #include "zore/debug.hpp"
 #include <miniaudio.h>
 

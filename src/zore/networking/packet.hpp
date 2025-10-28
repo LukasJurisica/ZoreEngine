@@ -13,22 +13,22 @@ namespace zore::net {
 	public:
 		Packet();
 		Packet(const VoidSpan& span);
-		Packet(const void* payload, size_t length, uint8_t flags = 0);
+		Packet(const void* payload, uint32_t length, uint8_t flags = 0);
 		~Packet() = default;
 
 		uint8_t* Data();
         uint16_t* Header();
         uint8_t* Payload();
-		size_t Size() const;
-		size_t HeaderSize() const;
-		size_t PayloadSize() const;
-		size_t Remaining() const;
+		uint32_t Size() const;
+		uint32_t HeaderSize() const;
+		uint32_t PayloadSize() const;
+		uint32_t Remaining() const;
 
 		void Clear();
-		void Reserve(size_t size);
-        void Resize(size_t size);
+		void Reserve(uint32_t size);
+        void Resize(uint32_t size);
 		void Append(const VoidSpan& span);
-		void Seek(size_t offset);
+		void Seek(uint32_t offset);
         uint16_t* ParseHeader();
 
 		//------------------------------------------------------------------------
@@ -67,7 +67,7 @@ namespace zore::net {
         void SetHeader(uint16_t packet_id, uint16_t sequence_id, uint8_t version, uint8_t flags);
 
 	private:
-		size_t m_position;
+		uint32_t m_position;
 		std::vector <uint8_t> m_data;
 	};
 }

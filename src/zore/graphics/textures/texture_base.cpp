@@ -7,6 +7,10 @@ namespace zore::Texture {
 
     std::unordered_map<std::string, unsigned int> s_named_texture_slots;
 
+	//========================================================================
+	//	Texture Base
+	//========================================================================
+
 	Base::Base(Format format) : m_id(GL_INVALID_NAME), m_format(format), m_slot(0) {}
 
 	Base::Base(Base&& other) noexcept {

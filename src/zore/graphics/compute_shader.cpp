@@ -11,7 +11,6 @@ namespace zore {
 
 	Shader::Stage ComputeShader::ValidateShaderStage(const std::string_view& name) {
 		Stage stage = GetStage(name);
-		ENSURE(stage != Stage::INVALID, std::format("Invalid ({}) Shader Stage requested in file: {}", name, m_filename));
 		ENSURE(stage == Stage::COMPUTE, std::format("Invalid ({}) Shader Stage requested in compute shader: {}", name, m_filename));
 		return stage;
 	}

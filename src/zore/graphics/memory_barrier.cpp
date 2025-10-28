@@ -22,6 +22,10 @@ namespace zore {
 		GL_COMMAND_BARRIER_BIT
 	};
 
+	//========================================================================
+	//	Memory Barrier
+	//========================================================================
+
 	MemoryBarrier::MemoryBarrier(Barrier barrier) : m_barrier(0) {
 		Add(barrier);
 		Apply();

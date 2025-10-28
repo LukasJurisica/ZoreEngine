@@ -5,6 +5,10 @@
 
 namespace zore {
 
+	//========================================================================
+	//	Texture2D Array
+	//========================================================================
+
     Texture2DArray::Texture2DArray(Texture::Format format) : Texture::Base(format) {}
 
 	Texture2DArray::Texture2DArray(void* data, uint32_t width, uint32_t height, uint32_t layers, Texture::Format format) : Texture::Base(format) {

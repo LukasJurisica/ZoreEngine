@@ -1,6 +1,6 @@
 #include "zore/devices/keyboard.hpp"
 #include "zore/events/keyboard_events.hpp"
-#include "zore/events/manager.hpp"
+#include "zore/events/event_manager.hpp"
 #include "zore/ui/editor.hpp"
 #include "zore/debug.hpp"
 #include <GLFW/glfw3.h>
@@ -9,7 +9,7 @@
 namespace zore {
 
 	//========================================================================
-	//	Keyboard class
+	//	Keyboard
 	//========================================================================
 
 	static std::bitset<KEY_COUNT> s_key_held_states;

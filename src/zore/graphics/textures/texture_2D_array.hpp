@@ -5,6 +5,10 @@
 
 namespace zore {
 
+    //========================================================================
+    //	Texture2D Array
+    //========================================================================
+
     class Texture2DArray : public Texture::Base {
     public:
         Texture2DArray(Texture::Format format = Texture::Format::RGBA);

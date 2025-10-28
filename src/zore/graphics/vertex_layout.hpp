@@ -9,7 +9,7 @@ namespace zore {
 	class Shader;
 
 	//========================================================================
-	//	Vertex Buffer Layout Class
+	//	Vertex Buffer Layout Element
 	//========================================================================
 
 	enum class VertexDataType { BOOL, INT_8, UINT_8, INT_16, UINT_16, INT_32, UINT_32, FLOAT, DOUBLE };
@@ -24,7 +24,7 @@ namespace zore {
 	};
 
 	//========================================================================
-	//	Vertex Buffer Layout Class
+	//	Vertex Buffer Layout
 	//========================================================================
 
 	class VertexLayout {

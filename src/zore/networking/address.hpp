@@ -1,6 +1,6 @@
 #pragma once
 
-#include "zore/networking/types.hpp"
+#include "zore/networking/networking_types.hpp"
 #include <string>
 #include <ostream>
 

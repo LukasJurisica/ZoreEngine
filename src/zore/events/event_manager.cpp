@@ -1,5 +1,5 @@
-#include "zore/events/manager.hpp"
-#include "zore/events/handler.hpp"
+#include "zore/events/event_manager.hpp"
+#include "zore/events/event_handler.hpp"
 #include "zore/debug.hpp"
 #include <unordered_map>
 #include <algorithm>
