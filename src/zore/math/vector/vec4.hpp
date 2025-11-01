@@ -15,7 +15,7 @@ namespace zm {
 	struct alignas(sizeof(T) * 4) vec4_base {
 	public:
 		// Constructors -------------------
-		ALWAYS_INLINE explicit vec4_base() : data() {}
+		ALWAYS_INLINE vec4_base() : data() {}
 		template <zore::numeric U>
 		ALWAYS_INLINE vec4_base(U s) : data(static_cast<T>(s), static_cast<T>(s), static_cast<T>(s), static_cast<T>(s)) {}
 		template <zore::numeric U>

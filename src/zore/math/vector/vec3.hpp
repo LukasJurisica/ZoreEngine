@@ -15,7 +15,7 @@ namespace zm {
 	struct vec3_base {
 	public:
 		// Constructors -------------------
-		ALWAYS_INLINE explicit vec3_base() : data() {}
+		ALWAYS_INLINE vec3_base() : data() {}
 		template <zore::numeric U>
 		ALWAYS_INLINE vec3_base(U s) : data(static_cast<T>(s), static_cast<T>(s), static_cast<T>(s)) {}
 		template <zore::numeric U>
