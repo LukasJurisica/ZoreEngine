@@ -3,7 +3,7 @@
 #include "zore/math/math.hpp"
 #include "zore/utils/uuid.hpp"
 #include "zore/utils/bits.hpp"
-#include "zore/devices/Window.hpp"
+#include "zore/devices/window.hpp"
 
 #define HOVERED_BIT 0x1
 #define PRESSED_BIT 0x2

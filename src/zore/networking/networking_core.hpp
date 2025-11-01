@@ -30,6 +30,16 @@
 #include <errno.h>
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
+#elif defined(PLATFORM_MACOS)
+#include "zore/platform/macos/macos_core.hpp"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <errno.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
 #endif
 
 namespace zore::net {
@@ -42,6 +52,11 @@ namespace zore::net {
 		int error_code = errno;
 		std::string error_message(' ', strerrorlen_s(error_code));
 		strerror_s(error_message.data(), error_message.length(), error_code);
+#elif defined(PLATFORM_MACOS)
+		int error_code = errno;
+        char buffer[256];
+        strerror_r(error_code, buffer, sizeof(buffer));
+        std::string error_message = std::string(buffer);
 #endif
 		return std::format("Socket error {} executing \"{}\": {}", error_code, function, error_message);
 	}

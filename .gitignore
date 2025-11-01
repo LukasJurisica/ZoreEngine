@@ -1,6 +1,7 @@
 build/
 config/*
 .vscode/
+.DS_store
 !config/path_config.h.in
 ZoreEngine.lnk
 logs/

@@ -18,8 +18,6 @@ namespace zore::audio {
 	void Manager::Cleanup() {
 		ma_engine_uninit(&s_audio_engine);
 		Logger::Info("Audio Engine Cleanup Complete.");
-
-        ma_sound;
 	}
 
 	void Manager::update() {

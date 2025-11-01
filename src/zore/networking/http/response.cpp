@@ -26,6 +26,7 @@ namespace zore::net::http {
         auto it = m_fields.find(key);
         if (it != m_fields.end())
             return it->second;
-        return "";
+        static const std::string empty;
+        return empty;
     }
 }

@@ -1,5 +1,5 @@
-#include "zore/math/Spline.hpp"
-#include "zore/Debug.hpp"
+#include "zore/math/spline.hpp"
+#include "zore/debug.hpp"
 
 #include <glm/mat4x4.hpp>
 

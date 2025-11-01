@@ -26,7 +26,15 @@ namespace zore {
 		static void Cleanup();
 
 	protected:
-		Application(const LaunchOptions& options = {});
+		Application(const LaunchOptions& options = { 
+            .enable_audio = false,
+            .enable_networking = false,
+            .transparent_window = false,
+            .enable_editor_ui = true,
+            .enable_docking = false,
+            .enable_multi_viewports = false,
+            .enable_keyboard_navigation = false
+        });
 		virtual ~Application() = default;
 
 	private:

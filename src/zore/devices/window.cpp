@@ -44,7 +44,13 @@ namespace zore {
 		glfwWindowHint(GLFW_CENTER_CURSOR, true);
 
 		// Set OpenGL Hints
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+        #if defined(ZORE_RENDERER_OPENGL)
+        int api = GLFW_OPENGL_API;
+        #else
+        int api = GLFW_NO_API;
+        #endif
+
+		glfwWindowHint(GLFW_CLIENT_API, api);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 		glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, s_transparent); // Set Transparent Framebuffer

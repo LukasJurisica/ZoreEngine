@@ -11,7 +11,7 @@ namespace zm {
 	static inline constexpr int32_t PRIME_X =  501125321;
 	static inline constexpr int32_t PRIME_Y = 1136930381;
 	static inline constexpr int32_t PRIME_Z = 1720413743;
-	static inline constexpr int32_t PRIME_W = 2860486313;
+	static inline constexpr int32_t PRIME_W = 2106945901;
 	static inline constexpr int32_t PRIME_S =  668265261;
 	static inline constexpr float MAXINT_RECIP  = 1.f / 2147483648.f;
 	static inline constexpr float MAXUINT_RECIP = 1.f / 4294967296.f;

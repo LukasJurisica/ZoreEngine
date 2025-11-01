@@ -84,7 +84,7 @@ namespace zore::net {
 
 	Address Socket::GetSelfAddress() const {
 		sockaddr_in address;
-		int address_size = sizeof(address);
+		socklen_t address_size = sizeof(address);
 		if (getsockname(m_socket_id, reinterpret_cast<sockaddr*>(&address), &address_size) == SOCKET_ERROR) {
 			Logger::Error(GetLastError("getsockname"));
 			return Address(nullptr);
@@ -94,7 +94,7 @@ namespace zore::net {
 
 	Address Socket::GetPeerAddress() const {
 		sockaddr_in address;
-		int address_size = sizeof(address);
+		socklen_t address_size = sizeof(address);
 		if (getpeername(m_socket_id, reinterpret_cast<sockaddr*>(&address), &address_size) == SOCKET_ERROR) {
 			Logger::Error(GetLastError("getpeername"));
 			return Address(nullptr);

@@ -14,6 +14,7 @@ namespace zm {
 	//  int32 4 SIMD Vector
 	//========================================================================
 
+#if SIMD_INT32_4 == true
 	template<>
 	struct alignas(16) vec4_base<int32_t> {
 	public:
@@ -65,11 +66,13 @@ namespace zm {
 			simd::int32_4 v;
 		};
 	};
+#endif
 
 	//========================================================================
 	//  uint32 4 SIMD Vector
 	//========================================================================
 
+#if SIMD_UINT32_4 == true
 	template<>
 	struct alignas(16) vec4_base<uint32_t> {
 	public:
@@ -121,11 +124,13 @@ namespace zm {
 			simd::uint32_4 v;
 		};
 	};
+#endif
 
 	//========================================================================
 	//  float32 4 SIMD Vector
 	//========================================================================
 
+#if SIMD_FLOAT32_4 == true
 	template<>
 	struct alignas(16) vec4_base<float> {
 	public:
@@ -189,4 +194,5 @@ namespace zm {
 	ALWAYS_INLINE vec4_base<float> Round(const vec4_base<float>& a) { return vec4_base<float>(simd::round(a.v)); }
 	template <>
 	ALWAYS_INLINE vec4_base<float> Fract(const vec4_base<float>& a) { return vec4_base<float>(simd::fract(a.v)); }
+#endif
 }

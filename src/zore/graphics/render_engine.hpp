@@ -19,6 +19,7 @@ namespace zore {
 	class RenderEngine {
 	public:
 		static void Init();
+        static void Cleanup();
 
 		static void ResetViewport();
 		static void SetIndexType(IndexType type);
@@ -43,11 +44,9 @@ namespace zore {
 		static void DrawIndexed(uint32_t count, uint32_t offset = 0u);
 		static void DrawLinearInstanced(uint32_t vertexCount, uint32_t modelCount, uint32_t offset = 0u);
 		static void DrawIndexedInstanced(uint32_t indexCount, uint32_t modelCount, uint32_t offset = 0u);
-
-	private:
-		static void SetGLFeature(uint32_t feature, bool& current, bool value);
 	};
 
+    /*
 	//========================================================================
 	//	Multidraw Command Buffer Class
 	//========================================================================
@@ -79,4 +78,5 @@ namespace zore {
 	private:
 		uint32_t m_id;
 	};
+    */
 }

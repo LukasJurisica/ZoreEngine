@@ -57,12 +57,12 @@ namespace zore {
 
 	// TODO: Implement global unique identifier class
 
-    class guid {
-    public:
-        static guid Generate() {
+    // class guid {
+    // public:
+    //     static guid Generate() {
 
-        }
-    };
+    //     }
+    // };
 
     typedef luid uuid_32;
     typedef wuid uuid_64;

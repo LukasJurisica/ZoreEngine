@@ -24,6 +24,13 @@ namespace zore {
 			Logger::Info("GL INFO:", message);
 	}
 
+	static void SetGLFeature(uint32_t feature, bool& current, bool value) {
+		if (current != value) {
+			value ? glEnable(feature) : glDisable(feature);
+			current = value;
+		}
+	}
+
 	//========================================================================
 	//	Render Engine Interface
 	//========================================================================
@@ -163,13 +170,7 @@ namespace zore {
 			glDrawElementsInstanced(s_topology, index_count, s_index_type, reinterpret_cast<void*>(offset * s_index_size), model_count);
 	}
 
-	void RenderEngine::SetGLFeature(uint32_t feature, bool& current, bool value) {
-		if (current != value) {
-			value ? glEnable(feature) : glDisable(feature);
-			current = value;
-		}
-	}
-
+    /*
 	//========================================================================
 	//	Multidraw Command Buffer Class
 	//========================================================================
@@ -213,4 +214,5 @@ namespace zore {
 			offset += data[i].m_instance_count;
 		}
 	}
+    */
 }

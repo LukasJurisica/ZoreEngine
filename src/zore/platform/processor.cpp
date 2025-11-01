@@ -6,6 +6,8 @@
 #include <intrin.h>
 #elif defined(PLATFORM_LINUX)
 #include <cpuid.h>
+#elif defined(PLATFORM_MACOS)
+#include <sys/sysctl.h>
 #endif
 
 namespace zore {
@@ -50,6 +52,8 @@ namespace zore {
 		return data[0];
 #elif defined(PLATFORM_LINUX)
 		return __get_cpuid_max(0, nullptr);
+#elif defined(PLATFORM_MACOS)
+        return 0; // Not implemented, use sysctl calls if needed
 #endif
 	}
 
@@ -58,6 +62,8 @@ namespace zore {
 		__cpuid(info, function_id);
 #elif defined(PLATFORM_LINUX)
 		__get_cpuid(function_id, &info[0], &info[1], &info[2], &info[3]);
-#endif
+#elif defined(PLATFORM_MACOS)
+        // Not implemented, use sysctl calls if needed
+#endif  
 	}
 }

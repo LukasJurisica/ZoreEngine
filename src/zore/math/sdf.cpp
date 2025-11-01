@@ -1,5 +1,3 @@
-#pragma once
-
 #include "zore/math/sdf.hpp"
 #include "zore/math/math.hpp"
 #include "zore/math/vector.hpp"
