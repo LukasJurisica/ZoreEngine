@@ -35,8 +35,6 @@ namespace zore {
 
 		Create();
 		Logger::Info("Window Creation Complete.");
-		RenderEngine::Init();
-		Logger::Info("Render Engine Initialization Complete.");
 		Update();
 	}
 
@@ -44,21 +42,21 @@ namespace zore {
 		glfwWindowHint(GLFW_CENTER_CURSOR, true);
 
 		// Set OpenGL Hints
-        #if defined(ZORE_RENDERER_OPENGL)
-        int api = GLFW_OPENGL_API;
-        #else
-        int api = GLFW_NO_API;
-        #endif
-
-		glfwWindowHint(GLFW_CLIENT_API, api);
+#if defined(ZORE_RENDERER_OPENGL)
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+#else
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+#endif
 		glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, s_transparent); // Set Transparent Framebuffer
 
 		// Create GLFW window
 		s_window_handle = glfwCreateWindow(s_size.x, s_size.y, "Zore Engine Window", nullptr, nullptr);
 		ENSURE(s_window_handle, "Failed to create GLFW window.");
+#if defined(ZORE_RENDERER_OPENGL)
 		glfwMakeContextCurrent(s_window_handle);
+#endif
 		Centre();
 
 		// Enable Various features
@@ -92,7 +90,9 @@ namespace zore {
 	}
 
 	void Window::Update() {
+#if defined(ZORE_RENDERER_OPENGL)
 		glfwSwapBuffers(s_window_handle);
+#endif
 		Time::NewFrame();
 		Keyboard::ClearState(false);
 		Mouse::ClearState(false);

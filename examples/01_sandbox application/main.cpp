@@ -1,3 +1,4 @@
+
 #include "main.hpp"
 #include <zore/core/file_manager.hpp>
 #include <zore/utils/config_manager.hpp>
@@ -45,12 +46,12 @@ void BenchMark() {
 		zm_a[i] = zm_a[i] * zm_b[i];
 	}
 	Logger::Log(" ZM Time: ", timer.Time());
-    */
+	*/
 }
 
 DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f) {
 	FileManager::Init("/examples/01_sandbox application/");
-	RenderEngine::SetVSync(false);
+	//RenderEngine::SetVSync(false);
 	m_camera.SetHeight(static_cast<float>(Window::GetSize().y));
 	m_camera.SetPosition({ Window::GetSize().x >> 1, Window::GetSize().y >> 1 });
 	m_camera.Invert(false, true);
@@ -64,27 +65,28 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	m_event_handler.Register(&DemoApplication::OnWindowResize, this);
 
 	// Initialize UI
-	CreateSimpleUI();
-	UI::Manager::Bind(action_map);
-	UI::Manager::Bind("main_menu");
-	glm::ivec2 resolution = Window::GetSize();
-	UI::Layer::Resize(resolution.x, resolution.y);
+	//CreateSimpleUI();
+	//UI::Manager::Bind(action_map);
+	//UI::Manager::Bind("main_menu");
+	//glm::ivec2 resolution = Window::GetSize();
+	//UI::Layer::Resize(resolution.x, resolution.y);
 
-	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
-		s_display_console = !s_display_console;
-		});
+	//action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
+	//	s_display_console = !s_display_console;
+	//	});
 
-	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_F8, true, false, [](bool start) {
-		s_instance->ReloadShaders();
-		});
+	//action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_F8, true, false, [](bool start) {
+	//	s_instance->ReloadShaders();
+	//	});
 }
 
 void DemoApplication::ReloadShaders() {
-	m_panel_shader.Compile();
-	m_text_shader.Compile();
+	//m_panel_shader.Compile();
+	//m_text_shader.Compile();
 }
 
 void DemoApplication::Run() {
+	/*
 	RenderEngine::SetClearColour(1.f, 0.f, 0.f, 1.f);
 	RenderEngine::SetClearMode({ BufferType::COLOUR, BufferType::DEPTH });
 	RenderEngine::SetTopology(MeshTopology::TRIANGLE_STRIP);
@@ -106,22 +108,22 @@ void DemoApplication::Run() {
 	std::unordered_map <int, Shader*> ui_shaders;
 	ui_shaders[static_cast<int>(UI::Element::Type::PANEL)] = &m_panel_shader;
 	ui_shaders[static_cast<int>(UI::Element::Type::LABEL)] = &m_text_shader;
-
+	*/
 	while (!Window::ShouldClose() && !s_quit) {
-		RenderEngine::Clear();
+		//RenderEngine::Clear();
 
-		for (const UI::DrawCommand& command : UI::Layer::GetDrawList()) {
-			ui_shaders[static_cast<int>(command.type)]->SetFloat4("camera", { m_camera.GetPosition(), m_camera.GetScale() });
-			command.buffer->Bind();
-			RenderEngine::DrawLinearInstanced(4, command.count);
-		}
+		//for (const UI::DrawCommand& command : UI::Layer::GetDrawList()) {
+		//	ui_shaders[static_cast<int>(command.type)]->SetFloat4("camera", { m_camera.GetPosition(), m_camera.GetScale() });
+		//	command.buffer->Bind();
+		//	RenderEngine::DrawLinearInstanced(4, command.count);
+		//}
 
-		Editor::BeginFrame();
-		if (s_display_console)
-			Console::Draw();
-			//Editor::ShowDemoWindow();
-		Editor::EndFrame();
-		Window::Update();
+		//Editor::BeginFrame();
+		//if (s_display_console)
+		//	Console::Draw();
+		////Editor::ShowDemoWindow();
+		//Editor::EndFrame();
+		//Window::Update();
 	}
 }
 

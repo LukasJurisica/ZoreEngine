@@ -1,4 +1,5 @@
 #include "zore/core/application.hpp"
+#include "zore/graphics/render_engine.hpp"
 #include "zore/platform/processor.hpp"
 #include "zore/core/file_manager.hpp"
 #include "zore/devices/window.hpp"
@@ -19,6 +20,7 @@ namespace zore {
 		Processor::Init();
 		FileManager::Init();
 		Window::Init(options.transparent_window);
+		RenderEngine::Init();
 		if (options.enable_networking)
 			net::Manager::Init();
 		if (options.enable_audio)
@@ -33,6 +35,7 @@ namespace zore {
 
 		s_initialized = true;
 		Application* app = Create();
+		while (true);
 		app->Run();
 		delete app;
 	}
@@ -42,6 +45,7 @@ namespace zore {
 		Editor::Cleanup();
 		audio::Manager::Cleanup();
 		net::Manager::Cleanup();
+		RenderEngine::Cleanup();
 		Window::Cleanup();
 		Processor::Cleanup();
 		s_initialized = false;

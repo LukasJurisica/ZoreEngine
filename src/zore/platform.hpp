@@ -19,11 +19,20 @@
 
 #if defined(_WIN32)
 #define PLATFORM_WINDOWS
+#define IS_PLATFORM_WINDOWS 1
+#define IS_PLATFORM_LINUX 0
+#define IS_PLATFORM_MACOS 0
 #define PLATFORM "WINDOWS"
 #elif defined(__APPLE__) && defined(__MACH__)
+#define IS_PLATFORM_WINDOWS 0
+#define IS_PLATFORM_LINUX 0
+#define IS_PLATFORM_MACOS 1
 #define PLATFORM_MACOS
 #define PLATFORM "MACOS"
 #elif defined(__unix__)
+#define IS_PLATFORM_WINDOWS 0
+#define IS_PLATFORM_LINUX 1
+#define IS_PLATFORM_MACOS 0
 #define PLATFORM_LINUX
 #define PLATFORM "LINUX"
 #endif

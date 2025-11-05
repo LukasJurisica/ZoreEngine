@@ -3,7 +3,11 @@
 #include "zore/core/file_manager.hpp"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
+#if defined(ZORE_RENDERER_OPENGL)
 #include <imgui_impl_opengl3.h>
+#elif defined(ZORE_RENDERER_VULKAN)
+#include <imgui_impl_vulkan.h>
+#endif
 #include <GLFW/glfw3.h>
 
 namespace zore {
@@ -33,8 +37,15 @@ namespace zore {
 		style.WindowRounding = 0.f;
 		style.Colors[ImGuiCol_WindowBg].w = 1.f;
 
+		
+#if defined(ZORE_RENDERER_OPENGL)
 		ImGui_ImplGlfw_InitForOpenGL(Window::GetWindowHandle(), true);
 		ImGui_ImplOpenGL3_Init("#version 460");
+#elif defined(ZORE_RENDERER_VULKAN)
+		//ImGui_ImplGlfw_InitForVulkan(Window::GetWindowHandle(), true);
+		//ImGui_ImplVulkan_InitInfo init_info = {};
+		//ImGui_ImplVulkan_Init(&init_info);
+#endif
 	}
 
 	ImGuiIO* Editor::GetIO() {
@@ -43,8 +54,12 @@ namespace zore {
 
 	void Editor::Cleanup() {
 		if (io) {
+#if defined(ZORE_RENDERER_OPENGL)
 			ImGui_ImplOpenGL3_Shutdown();
-			ImGui_ImplGlfw_Shutdown();
+#elif defined(ZORE_RENDERER_VULKAN)
+			//ImGui_ImplVulkan_Shutdown();
+#endif
+			//ImGui_ImplGlfw_Shutdown();
 			ImGui::DestroyContext();
 		}
 	}
@@ -55,13 +70,21 @@ namespace zore {
 
 	void Editor::BeginFrame() {
 		ImGui_ImplGlfw_NewFrame();
+#if defined(ZORE_RENDERER_OPENGL)
 		ImGui_ImplOpenGL3_NewFrame();
+#elif defined(ZORE_RENDERER_VULKAN)
+		ImGui_ImplVulkan_NewFrame();
+#endif
 		ImGui::NewFrame();
 	}
 
 	void Editor::EndFrame() {
 		ImGui::Render();
+#if defined(ZORE_RENDERER_OPENGL)
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#elif defined(ZORE_RENDERER_VULKAN)
+		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
+#endif
 
 		if (DynamicViewportsEnabled()) {
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();

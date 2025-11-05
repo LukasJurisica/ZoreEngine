@@ -4,6 +4,7 @@
 #include <format>
 #include <sstream>
 #include <concepts>
+#include <iostream>
 
 template<typename T>
 concept Loggable = requires(std::ostream & os, const T & value) {
@@ -24,6 +25,7 @@ namespace zore {
 			std::stringstream result;
 			Append(result, args...);
 			Console::Print(result.str(), Console::LogLevel::LOG);
+			std::cout << result.str() << std::endl;
 		}
 
 		template<Loggable... Args>
@@ -31,6 +33,7 @@ namespace zore {
 			std::stringstream result;
 			Append(result, args...);
 			Console::Print(result.str(), Console::LogLevel::INFO);
+			std::cout << result.str() << std::endl;
 		}
 
 		template<Loggable... Args>
@@ -38,6 +41,7 @@ namespace zore {
 			std::stringstream result;
 			Append(result, args...);
 			Console::Print(result.str(), Console::LogLevel::WARN);
+			std::cout << result.str() << std::endl;
 		}
 
 		template<Loggable... Args>
@@ -45,6 +49,7 @@ namespace zore {
 			std::stringstream result;
 			Append(result, args...);
 			Console::Print(result.str(), Console::LogLevel::ERR);
+			std::cout << result.str() << std::endl;
 		}
 
 	private:

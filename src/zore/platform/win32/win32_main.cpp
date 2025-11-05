@@ -3,7 +3,8 @@
 #include "zore/debug.hpp"
 #include <WinDef.h>
 
-int WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
+//int WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
+int main() {
 	int return_code = EXIT_FAILURE;
 
 	try {
