@@ -50,28 +50,24 @@ namespace zore {
 			RTrimInPlace(s, delimiter);
 		}
 
-		static std::string Lower(const std::string& s) {
-			std::string result = s;
-			for (char& c : result)
-				c = std::tolower(c);
-			return result;
-		}
-
 		static void LowerInPlace(std::string& s) {
 			for (char& c : s)
 				c = std::tolower(c);
 		}
 
-		static std::string Upper(const std::string& s) {
-			std::string result = s;
-			for (char& c : result)
-				c = std::toupper(c);
-			return result;
+		static std::string Lower(std::string s) {
+			LowerInPlace(s);
+			return s;
 		}
 
 		static void UpperInPlace(std::string& s) {
 			for (char& c : s)
 				c = std::toupper(c);
+		}
+
+		static std::string Upper(std::string s) {
+			UpperInPlace(s);
+			return s;
 		}
 
 		static inline std::string SubStrRange(const std::string& s, size_t left, size_t right = std::string::npos) {

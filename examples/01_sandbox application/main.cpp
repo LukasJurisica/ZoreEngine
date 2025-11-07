@@ -50,7 +50,7 @@ void BenchMark() {
 }
 
 DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f) {
-	FileManager::Init("/examples/01_sandbox application/");
+	//FileManager::Init("/examples/01_sandbox application/");
 	//RenderEngine::SetVSync(false);
 	m_camera.SetHeight(static_cast<float>(Window::GetSize().y));
 	m_camera.SetPosition({ Window::GetSize().x >> 1, Window::GetSize().y >> 1 });

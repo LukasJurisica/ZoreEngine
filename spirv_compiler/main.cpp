@@ -9,6 +9,8 @@ int main() {
 	shaderc::CompileOptions options;
 	options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
+    std::string shader_source = "";
+    
 	shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(
 		shader_source.c_str(),
 		shader_source.length(),

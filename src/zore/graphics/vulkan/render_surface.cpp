@@ -7,7 +7,7 @@ namespace zore {
 
 	void RenderSurface::Init(VkInstance instance) {
 		ENSURE(glfwCreateWindowSurface(instance, Window::GetWindowHandle(), nullptr, &m_surface) == VK_SUCCESS, "Failed to create surface");
-	}
+    }
 
 	void RenderSurface::Cleanup(VkInstance instance) {
 		if (m_surface)

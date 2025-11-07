@@ -67,7 +67,7 @@ namespace zore {
 			};
 
 		for (const char* extension : s_instance_extensions)
-			ENSURE(SupportsExtension(extension), "Missing Required Instance Extension:", extension);
+			ENSURE(SupportsExtension(extension), std::format("Missing Required Instance Extension: {}", extension));
 	}
 
 	void InitValidationLayers() {
@@ -89,7 +89,7 @@ namespace zore {
 			};
 
 		for (const char* layer : s_validation_layers)
-			ENSURE(SupportsValidationLayer(layer), "Missing Required Validation Layer:", layer);
+			ENSURE(SupportsValidationLayer(layer), std::format("Missing Required Validation Layer: {}", layer));
 		return;
 	}
 
