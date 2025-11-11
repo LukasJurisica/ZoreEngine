@@ -9,13 +9,13 @@ int main() {
 	shaderc::CompileOptions options;
 	options.SetOptimizationLevel(shaderc_optimization_level_performance);
 
-    std::string shader_source = "";
+    std::string shader_source = "#version 450\nlayout(location = 0) in vec3 fragColor; layout(location = 0) out vec4 outColor; void main() { outColor = vec4(fragColor, 1.0); }";
     
 	shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(
 		shader_source.c_str(),
 		shader_source.length(),
-		shaderc_glsl_vertex_shader,
-		"shader.vert",
+		shaderc_glsl_fragment_shader,
+		"shader.frag",
 		options
 	);
 
@@ -25,4 +25,12 @@ int main() {
 	else {
 		// Handle error: result.GetErrorMessage()
 	}
+
+	shaderc::SpvCompilationResult result2 = compiler.CompileGlslToSpv(
+		shader_source.c_str(),
+		shader_source.length(),
+		shaderc_glsl_fragment_shader,
+		"shader.frag",
+		options
+	);
 }

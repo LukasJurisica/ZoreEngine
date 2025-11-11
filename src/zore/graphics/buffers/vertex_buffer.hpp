@@ -1,6 +1,6 @@
 #pragma once
 
-#include "zore/utils/sized_integer.hpp"
+#include "zore/graphics/graphics_core.hpp"
 #include "zore/utils/span.hpp"
 
 namespace zore {

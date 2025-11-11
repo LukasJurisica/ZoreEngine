@@ -29,8 +29,9 @@ namespace zore {
 	private:
 		Camera2D m_camera;
 		//Shader m_quad_shader;
-		//Shader m_panel_shader;
+		Shader m_panel_shader;
 		//Shader m_text_shader;
+		//GraphicsPipeline m_quad_pipeline;
 		ActionMap action_map;
 
 		event::MultiHandler m_event_handler;

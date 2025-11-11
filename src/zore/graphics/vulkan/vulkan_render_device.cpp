@@ -1,4 +1,4 @@
-#include "zore/graphics/vulkan/render_device.hpp"
+#include "zore/graphics/vulkan/vulkan_render_device.hpp"
 #include "zore/devices/window.hpp"
 #include "zore/math/math.hpp"
 #include "zore/debug.hpp"
@@ -6,6 +6,9 @@
 #include <GLFW/glfw3.h>
 
 namespace zore {
+
+	static VkPhysicalDevice s_physical_device = nullptr;
+	static VkDevice s_device = nullptr;
 
 	static std::vector<const char*> s_device_extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	static std::vector<QueueFamily> required_queue_families = { QueueFamily::GRAPHICS, QueueFamily::PRESENT };
@@ -16,7 +19,6 @@ namespace zore {
 	static VkSwapchainKHR s_swap_chain = nullptr;
 	static std::vector<VkImage> s_swap_chain_images;
 	static std::vector<VkImageView> s_swap_chain_image_views;
-
 	static VkExtent2D s_extent{ 0, 0 };
 	static VkSurfaceFormatKHR s_surface_format{ VK_FORMAT_UNDEFINED, VK_COLOR_SPACE_MAX_ENUM_KHR };
 	static VkPresentModeKHR s_present_mode = VK_PRESENT_MODE_MAX_ENUM_KHR;
@@ -276,5 +278,21 @@ namespace zore {
 			s_queues[family] = VkQueue();
 			vkGetDeviceQueue(s_device, s_queue_families[family], 0, &s_queues[family]);
 		}
+	}
+
+	const VkDevice& RenderDevice::Get() {
+		return s_device;
+	}
+
+	const VkExtent2D& RenderDevice::GetExtent() {
+		return s_extent;
+	}
+
+	const VkSurfaceFormatKHR& RenderDevice::GetSurfaceFormat() {
+		return s_surface_format;
+	}
+
+	const VkPresentModeKHR& RenderDevice::GetPresentMode() {
+		return s_present_mode;
 	}
 }

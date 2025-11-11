@@ -3,6 +3,10 @@
 #include <glad/glad.h>
 
 namespace zore {
+	
+	//========================================================================
+	//	Compute Shader
+	//========================================================================
 
 	void ComputeShader::Dispatch(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z) const {
 		Bind();

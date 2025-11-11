@@ -9,7 +9,7 @@ namespace zore {
 	//	Vertex Buffer Layout Element
 	//========================================================================
 
-	VertexElement::VertexElement(std::string name, VertexDataType type, unsigned int count, bool normalize) :
+	VertexElement::VertexElement(const std::string& name, VertexDataType type, unsigned int count, bool normalize) :
 		name(name), type(type), count(count), normalize(normalize) {
 		ENSURE(count > 0 && count < 5, "Invalid number of components for Vertex Element");
 	}

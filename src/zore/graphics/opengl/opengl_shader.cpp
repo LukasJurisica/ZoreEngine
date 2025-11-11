@@ -8,17 +8,16 @@
 
 namespace zore {
 
-	//========================================================================
-	//	Shader Class
-	//========================================================================
-
+	static std::string s_version = "#version 460 core";
 	const static Shader* s_active = nullptr;
-	static std::string s_version = "";
-	static std::string s_shader_folder = "assets/shaders/";
 
-	Shader::Shader() : m_id(0) {}
+	//========================================================================
+	//	Shader
+	//========================================================================
 
-	Shader::Shader(const std::string& filename, const std::vector<DefineItem>& defines) : m_id(0), m_filename(filename) {
+	Shader::Shader() : m_id(GL_INVALID_NAME) {}
+
+	Shader::Shader(const std::string& filename, const std::vector<DefineItem>& defines) : m_id(GL_INVALID_NAME), m_filename(filename) {
 		SetDefines(defines);
 		Compile();
 	}
@@ -32,34 +31,13 @@ namespace zore {
 		s_version = "#version " + TOSTR(version) + (core ? " core\n" : " compatibility\n");
 	}
 
-	void Shader::SetShaderFolder(const std::string& path) {
-		s_shader_folder = path;
-	}
-
-	uint32_t Shader::GetID() const {
-		return m_id;
-	}
-
-	Shader& Shader::SetSource(const std::string& filename) {
-		m_filename = filename;
-		return *this;
-	}
-
-	Shader& Shader::SetDefines(const std::vector<DefineItem>& defines) {
-		const Stage validStages[] = { Stage::VERTEX, Stage::GEOMETRY, Stage::FRAGMENT, Stage::COMPUTE };
-		for (const Stage& stage : validStages)
-			m_defines[stage] = "";
-		for (const DefineItem& item : defines)
-			m_defines[item.stage] += "#define " + item.entry + "\n";
-		return *this;
-	}
-
 	Shader& Shader::Compile() {
 		// Cleanup from previous compilation
-		if (m_id) {
+		if (m_id != GL_INVALID_NAME) {
 			glDeleteProgram(m_id);
 			m_uniforms.clear();
-			s_active = nullptr;
+			if (s_active == this)
+				s_active = nullptr;
 		}
 		m_id = glCreateProgram();
 
@@ -178,35 +156,15 @@ namespace zore {
 	void Shader::SetUniformBufferIndex(const std::string& name, uint32_t index) {
 		glUniformBlockBinding(m_id, glGetUniformBlockIndex(m_id, name.c_str()), index);
 	}
-	
-	Shader::Stage Shader::ValidateShaderStage(const std::string_view& name) {
-		Stage stage = GetStage(name);
-		ENSURE(stage != Stage::INVALID, std::format("Invalid ({}) Shader Stage requested in file: {}", name, m_filename));
-		ENSURE(stage != Stage::COMPUTE, std::format("Invalid ({}) Shader stage requested in render shader: {}", name, m_filename));
-		return stage;
-	}
-
-	Shader::Stage Shader::GetStage(const std::string_view& name) {
-		if (name == "vertex")
-			return Stage::VERTEX;
-		else if (name == "geometry")
-			return Stage::GEOMETRY;
-		else if (name == "fragment")
-			return Stage::FRAGMENT;
-		else if (name == "compute")
-			return Stage::COMPUTE;
-		else
-			return Stage::INVALID;
-	}
 
 	uint32_t Shader::CreateShaderStage(const std::string_view& content) {
 		size_t start = content.find("\n", 0);
 		std::string_view stage_name = std::string_view(content.data() + 13, start - 13);
-		Stage stage = ValidateShaderStage(stage_name);
+
 		std::string source = s_version + m_defines[stage] + std::string(content.data() + start + 1, content.size() - start - 1);
 
 		static const uint32_t GLStages[] = { GL_VERTEX_SHADER, GL_GEOMETRY_SHADER, GL_FRAGMENT_SHADER, GL_COMPUTE_SHADER, GL_INVALID_ENUM };
-		uint32_t stage_id = glCreateShader(GLStages[static_cast<uint32_t>(stage)]);
+		uint32_t stage_id = glCreateShader(GLStages[static_cast<uint32_t>(ValidateShaderStage(stage_name))]);
 		const char* source_c = source.c_str();
 		glShaderSource(stage_id, 1, &source_c, nullptr);
 		glCompileShader(stage_id);

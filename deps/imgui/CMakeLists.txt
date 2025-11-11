@@ -17,10 +17,10 @@ set(IMGUI_SOURCES
 )
 set(IMGUI_INCLUDES "${CMAKE_BINARY_DIR}/_deps/glfw-src/include")
 
-if (${ZORE_RENDER_BACKEND} STREQUAL "OpenGL")
+if(ZORE_RENDER_API STREQUAL "OPENGL")
     set(IMGUI_HEADERS ${IMGUI_HEADERS} "include/imgui_impl_opengl3.h" "include/imgui_impl_opengl3_loader.h")
     set(IMGUI_SOURCES ${IMGUI_SOURCES} "src/imgui_impl_opengl3.cpp")
-elseif(${ZORE_RENDER_BACKEND} STREQUAL "Vulkan")
+elseif(ZORE_RENDER_API STREQUAL "VULKAN")
 	set(IMGUI_INCLUDES ${IMGUI_INCLUDES} ${Vulkan_INCLUDE_DIRS})
     set(IMGUI_HEADERS ${IMGUI_HEADERS} "include/imgui_impl_vulkan.h")
     set(IMGUI_SOURCES ${IMGUI_SOURCES} "src/imgui_impl_vulkan.cpp")

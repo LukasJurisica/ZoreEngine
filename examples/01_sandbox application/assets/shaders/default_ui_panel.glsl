@@ -1,10 +1,12 @@
 #shaderstage vertex
 
-uniform vec4 camera;
+layout(set = 0, binding = 0) uniform camera_buffer {
+    vec4 camera;
+};
 
-layout(location = 0) in ivec4 quad;
+layout(location=0) in ivec4 quad;
 
-out flat vec4 colour;
+layout(location=0) out flat vec4 colour;
 
 void main() {
 	vec2 pos = vec2(quad[0] >> 16, quad[0] & 0xffff);
@@ -35,9 +37,9 @@ void main() {
 
 #shaderstage fragment
 
-in vec4 colour;
+layout(location=0) in vec4 colour;
 
-out vec4 FragColor;
+layout(location=0) out vec4 FragColor;
 
 void main() {
 	FragColor = colour;

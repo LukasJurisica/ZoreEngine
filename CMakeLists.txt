@@ -8,11 +8,18 @@ option(ZORE_BUILD_TESTS OFF)
 option(ZORE_BUILD_EXAMPLES OFF)
 option(ZORE_BUILD_PROFILER ON)
 option(ZORE_BUILD_SPIRV_COMPILER ON)
+
 if(APPLE)
-    set(ZORE_RENDER_BACKEND "Vulkan")
+    set(ZORE_RENDER_API "Vulkan")
 else()
-    set(ZORE_RENDER_BACKEND "Vulkan" CACHE STRING "Rendering backend to use (OpenGL, Vulkan)")
+    set(ZORE_RENDER_API "Vulkan" CACHE STRING "Rendering backend to use (OpenGL, Vulkan)")
 endif()
+string(TOUPPER ${ZORE_RENDER_API} ZORE_RENDER_API)
+
+message("-------------------------------------------------------------------")
+message("  Beginning Build of Zore Engine")
+message("-------------------------------------------------------------------")
+
 #set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 #set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
@@ -30,51 +37,57 @@ endif()
 # ========================================================================
 
 include("cmake/CPM.cmake")
+include("cmake/glm.cmake")
+include("cmake/glfw.cmake")
 set(ZORE_LIBRARIES "glm" "glfw" "imgui")
 set(ZORE_INCLUDES "src" "deps/include")
 
+message("-------------------------------------------------------------------")
+message("  Selected Render API: ${ZORE_RENDER_API}")
+message("-------------------------------------------------------------------")
+
 # Add rendering backend dependencies
-if(${ZORE_RENDER_BACKEND} STREQUAL "OpenGL")
-    add_subdirectory("deps/glad")
-    set(ZORE_LIBRARIES ${ZORE_LIBRARIES} "glad")
-	set(ZORE_EXCLUDE_DIRS "src/zore/graphics/vulkan")
-	set(ZORE_DEFINES ZORE_RENDERER_OPENGL)
-elseif(${ZORE_RENDER_BACKEND} STREQUAL "Vulkan")
+if(ZORE_RENDER_API STREQUAL "OPENGL")
+    list(APPEND ZORE_LIBRARIES "glad")
+	list(APPEND ZORE_DEFINES ZORE_RENDER_API_OPENGL)
+	add_subdirectory("deps/glad")
+else()
+	list(APPEND ZORE_EXCLUDE_DIRS "src/zore/graphics/opengl")
+endif()
+
+if(ZORE_RENDER_API STREQUAL "VULKAN")
     set (VULKAN_REQUIRED_COMPONENTS shaderc_combined)
     if(APPLE)
-        set (VULKAN_REQUIRED_COMPONENTS ${VULKAN_REQUIRED_COMPONENTS} MoltenVK)
+        list(APPEND VULKAN_REQUIRED_COMPONENTS MoltenVK)
+		list(APPEND ZORE_LIBRARIES "-framework IOSurface" "-framework Metal" "-framework QuartzCore" "-framework Foundation" "-framework CoreGraphics")
     endif()
     find_package(Vulkan REQUIRED COMPONENTS ${VULKAN_REQUIRED_COMPONENTS})
 	if(NOT Vulkan_FOUND)
 		message(FATAL_ERROR "You must install the Vulkan SDK here: https://vulkan.lunarg.com/")
 	endif()
-	set(ZORE_INCLUDES ${ZORE_INCLUDES} ${Vulkan_INCLUDE_DIRS})
-    set(ZORE_LIBRARIES ${ZORE_LIBRARIES} Vulkan::Vulkan Vulkan::shaderc_combined)
-    if(APPLE)
-	    set(ZORE_LIBRARIES ${ZORE_LIBRARIES} "-framework IOSurface" "-framework Metal" "-framework QuartzCore" "-framework Foundation" "-framework CoreGraphics")
-    endif()
-	set(ZORE_EXCLUDE_DIRS "src/zore/graphics/opengl")
-	set(ZORE_DEFINES ZORE_RENDERER_VULKAN)
+	
+	list(APPEND ZORE_INCLUDES ${Vulkan_INCLUDE_DIRS})
+    list(APPEND ZORE_LIBRARIES Vulkan::Vulkan Vulkan::shaderc_combined)
+	list(APPEND ZORE_DEFINES ZORE_RENDER_API_VULKAN)
 else()
-    message(FATAL_ERROR "Unsupported rendering backend: ${ZORE_RENDER_BACKEND}")
+	list(APPEND ZORE_EXCLUDE_DIRS "src/zore/graphics/vulkan")
 endif()
 
-include("cmake/glm.cmake")
-include("cmake/glfw.cmake")
+# Add IMGUI here as it may rely on vulkan include directories
 add_subdirectory("deps/imgui")
 
 # Add Tracy as a dependency if the ZORE_BUILD_PROFILER option is set
-if(${ZORE_BUILD_PROFILER})
+if(ZORE_BUILD_PROFILER)
 	include ("cmake/tracy.cmake")
-	set(ZORE_LIBRARIES ${ZORE_LIBRARIES} TracyClient)
+	list(APPEND ZORE_LIBRARIES TracyClient)
 endif()
 
 if(WIN32)
 	# Link the Winsock2 library if we are compiling for windows
-	set(ZORE_LIBRARIES ${ZORE_LIBRARIES} ws2_32)
-    set(ZORE_EXCLUDE_DIRS ${ZORE_EXCLUDE_DIRS} "src/zore/platform/macos" "src/zore/platform/linux")
+	list(APPEND ZORE_LIBRARIES ws2_32)
+    list(APPEND ZORE_EXCLUDE_DIRS "src/zore/platform/macos" "src/zore/platform/linux")
 elseif(APPLE)
-    set(ZORE_EXCLUDE_DIRS ${ZORE_EXCLUDE_DIRS} "src/zore/platform/win32" "src/zore/platform/linux")
+    list(APPEND ZORE_EXCLUDE_DIRS "src/zore/platform/win32" "src/zore/platform/linux")
 endif()
 
 # ========================================================================
@@ -101,7 +114,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD 20
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE ${ZORE_DEFINES})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${ZORE_DEFINES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${ZORE_INCLUDES})
 target_link_libraries(${PROJECT_NAME} ${ZORE_LIBRARIES})
 
@@ -109,16 +122,16 @@ target_link_libraries(${PROJECT_NAME} ${ZORE_LIBRARIES})
 #	SPIRV_COMPILER
 # ========================================================================
 
-if(${ZORE_BUILD_SPIRV_COMPILER})
-	Set(ZORE_SPIRV_COMPILER_PROJECT "ZoreEngineSpirvCompiler")
-	if(WIN32)
-		add_executable(${ZORE_SPIRV_COMPILER_PROJECT} "spirv_compiler/main.cpp")
-	else()
-		add_executable(${ZORE_SPIRV_COMPILER_PROJECT} "spirv_compiler/main.cpp")
-	endif()
-	target_link_libraries(${ZORE_SPIRV_COMPILER_PROJECT} PRIVATE Vulkan::shaderc_combined)
-	set_target_properties(${ZORE_SPIRV_COMPILER_PROJECT} PROPERTIES CXX_STANDARD 20)
-endif()
+# if(${ZORE_BUILD_SPIRV_COMPILER} OR TRUE)
+	# Set(ZORE_SPIRV_COMPILER_PROJECT "ZoreEngineSpirvCompiler")
+	# if(WIN32)
+		# add_executable(${ZORE_SPIRV_COMPILER_PROJECT} "spirv_compiler/main.cpp")
+	# else()
+		# add_executable(${ZORE_SPIRV_COMPILER_PROJECT} "spirv_compiler/main.cpp")
+	# endif()
+	# target_link_libraries(${ZORE_SPIRV_COMPILER_PROJECT} PRIVATE Vulkan::shaderc_combined)
+	# set_target_properties(${ZORE_SPIRV_COMPILER_PROJECT} PROPERTIES CXX_STANDARD 20)
+# endif()
 
 # ========================================================================
 #	Examples

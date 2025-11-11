@@ -1,5 +1,6 @@
 #pragma once
 
+#include "zore/graphics/graphics_core.hpp"
 #include "zore/graphics/textures/texture_2D_array.hpp"
 #include "zore/graphics/buffers/depth_buffer.hpp"
 #include <vector>

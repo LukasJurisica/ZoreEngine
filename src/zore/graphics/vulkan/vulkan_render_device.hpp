@@ -1,6 +1,6 @@
 #pragma once
 
-#include "zore/graphics/vulkan/render_surface.hpp"
+#include "zore/graphics/vulkan/vulkan_render_surface.hpp"
 #include <vulkan/vulkan.h>
 #include <vector>
 
@@ -24,12 +24,13 @@ namespace zore {
 		static bool InitSwapChain(VkPhysicalDevice device, RenderSurface& surface);
 		static void CreateSwapChain(VkPhysicalDevice device, RenderSurface& surface);
 		static void CreateFramebuffer();
-
 		static bool CheckDeviceExtensions(VkPhysicalDevice device);
 		static void CreateQueues(const std::vector<QueueFamily>& families);
 
 	public:
-		static inline VkPhysicalDevice s_physical_device = nullptr;
-		static inline VkDevice s_device = nullptr;
+		static const VkDevice& Get();
+		static const VkExtent2D& GetExtent();
+		static const VkSurfaceFormatKHR& GetSurfaceFormat();
+		static const VkPresentModeKHR& GetPresentMode();
 	};
 }

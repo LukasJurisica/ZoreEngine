@@ -35,7 +35,6 @@ namespace zore {
 
 		s_initialized = true;
 		Application* app = Create();
-		while (true);
 		app->Run();
 		delete app;
 	}
