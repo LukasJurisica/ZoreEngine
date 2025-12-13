@@ -1,11 +1,11 @@
 #include "zore/graphics/graphics_pipeline.hpp"
-#include "zore/graphics/vulkan/vulkan_render_device.hpp"
+#include "zore/graphics/devices/render_device.hpp"
 #include "zore/debug.hpp"
 #include <vulkan/vulkan.h>
 
 namespace zore {
 
-	handle_t CreatePipelineLayout() {
+	handle_t GraphicsPipeline::CreatePipelineLayout() {
 		VkPipelineLayoutCreateInfo pipeline_layout_info{};
 		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipeline_layout_info.setLayoutCount = 0;
@@ -16,38 +16,6 @@ namespace zore {
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
 		ENSURE(vkCreatePipelineLayout(RenderDevice::Get(), &pipeline_layout_info, nullptr, &pipeline_layout) != VK_SUCCESS, "Failed to create pipeline layout!");
 		return pipeline_layout;
-	}
-
-	handle_t CreateRenderPass() {
-		VkAttachmentDescription color_attachment_description{};
-		color_attachment_description.format = RenderDevice::GetSurfaceFormat().format;
-		color_attachment_description.samples = VK_SAMPLE_COUNT_1_BIT;
-		color_attachment_description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		color_attachment_description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		color_attachment_description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		color_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		color_attachment_description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		color_attachment_description.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference color_attachment_ref{};
-		color_attachment_ref.attachment = 0;
-		color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpass{};
-		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &color_attachment_ref;
-
-		VkRenderPassCreateInfo render_pass_info{};
-		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		render_pass_info.attachmentCount = 1;
-		render_pass_info.pAttachments = &color_attachment_description;
-		render_pass_info.subpassCount = 1;
-		render_pass_info.pSubpasses = &subpass;
-
-		VkRenderPass render_pass = VK_NULL_HANDLE;
-		ENSURE(vkCreateRenderPass(RenderDevice::Get(), &render_pass_info, nullptr, &render_pass) == VK_SUCCESS, "Failed to create render pass.");
-		return render_pass;
 	}
 
 	GraphicsPipeline::GraphicsPipeline(const Shader& shader, const VertexLayout& layout) {
@@ -162,7 +130,7 @@ namespace zore {
 		color_blend_info.blendConstants[3] = 0.0f;
 
 		m_pipeline_layout = CreatePipelineLayout();
-		m_render_pass = CreateRenderPass();
+		m_render_pass = RenderPass::Get(1);
 
 		VkGraphicsPipelineCreateInfo pipeline_info{};
 		pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -178,7 +146,7 @@ namespace zore {
 		pipeline_info.pColorBlendState = &color_blend_info;
 		//pipeline_info.pDynamicState = &dynamic_state_info;
 		pipeline_info.layout = m_pipeline_layout.as<VkPipelineLayout>();
-		pipeline_info.renderPass = m_render_pass.as<VkRenderPass>();
+		pipeline_info.renderPass = m_render_pass->Handle().as<VkRenderPass>();
 		pipeline_info.subpass = 0;
 		pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 		pipeline_info.basePipelineIndex = -1;
@@ -196,10 +164,6 @@ namespace zore {
 		if (m_pipeline_layout) {
 			vkDestroyPipelineLayout(RenderDevice::Get(), m_pipeline_layout.as<VkPipelineLayout>(), nullptr);
 			m_pipeline_layout = VK_NULL_HANDLE;
-		}
-		if (m_render_pass) {
-			vkDestroyRenderPass(RenderDevice::Get(), m_render_pass.as<VkRenderPass>(), nullptr);
-			m_render_pass = VK_NULL_HANDLE;
 		}
 	}
 }

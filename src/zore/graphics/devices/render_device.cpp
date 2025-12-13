@@ -1,8 +1,11 @@
-#include "zore/graphics/vulkan/vulkan_render_device.hpp"
+#include "zore/graphics/devices/render_device.hpp"
+#include "zore/graphics/graphics_pipeline.hpp"
 #include "zore/devices/window.hpp"
 #include "zore/math/math.hpp"
+#include "zore/platform.hpp"
 #include "zore/debug.hpp"
 #include <unordered_map>
+#include <vulkan/vulkan_beta.h>
 #include <GLFW/glfw3.h>
 
 namespace zore {
@@ -19,6 +22,7 @@ namespace zore {
 	static VkSwapchainKHR s_swap_chain = nullptr;
 	static std::vector<VkImage> s_swap_chain_images;
 	static std::vector<VkImageView> s_swap_chain_image_views;
+    static std::vector<VkFramebuffer> s_swap_chain_framebuffers;
 	static VkExtent2D s_extent{ 0, 0 };
 	static VkSurfaceFormatKHR s_surface_format{ VK_FORMAT_UNDEFINED, VK_COLOR_SPACE_MAX_ENUM_KHR };
 	static VkPresentModeKHR s_present_mode = VK_PRESENT_MODE_MAX_ENUM_KHR;
@@ -27,7 +31,7 @@ namespace zore {
 	//	Vulkan Render Device
 	//========================================================================
 
-	void RenderDevice::Init(VkInstance instance, RenderSurface& surface) {
+	void RenderDevice::Init(VkInstance instance, VkSurfaceKHR surface) {
 		InitPhysicalDevice(instance, surface);
 		InitQueueFamilies(s_physical_device, surface);
 		InitLogicalDevice();
@@ -50,12 +54,15 @@ namespace zore {
 		s_physical_device = nullptr;
 	}
 
-	void RenderDevice::InitPhysicalDevice(VkInstance instance, RenderSurface& surface) {
+	void RenderDevice::InitPhysicalDevice(VkInstance instance, VkSurfaceKHR surface) {
 		uint32_t device_count = 0;
 		vkEnumeratePhysicalDevices(instance, &device_count, nullptr);
 		ENSURE(device_count > 0, "No GPUs with Vulkan support found");
 		std::vector<VkPhysicalDevice> devices(device_count);
 		vkEnumeratePhysicalDevices(instance, &device_count, devices.data());
+
+        if (IS_PLATFORM_MACOS)
+            s_device_extensions.emplace_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
 
 		uint32_t best_score = 0;
 		for (const VkPhysicalDevice& device : devices) {
@@ -118,7 +125,7 @@ namespace zore {
 		Logger::Info("Logical Render Device Creation Complete");
 	}
 
-	bool RenderDevice::InitQueueFamilies(VkPhysicalDevice device, RenderSurface& surface) {
+	bool RenderDevice::InitQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) {
 		s_queue_families.clear();
 		uint32_t queue_family_count = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, nullptr);
@@ -129,7 +136,7 @@ namespace zore {
 			if (queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 				s_queue_families[QueueFamily::GRAPHICS] = i;
 			VkBool32 present_support = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface.m_surface, &present_support);
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &present_support);
 			if (present_support)
 				s_queue_families[QueueFamily::PRESENT] = i;
 			if (queue_families[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
@@ -149,15 +156,15 @@ namespace zore {
 		return true;
 	}
 
-	bool RenderDevice::InitSwapChain(VkPhysicalDevice device, RenderSurface& surface) {
+	bool RenderDevice::InitSwapChain(VkPhysicalDevice device, VkSurfaceKHR surface) {
 		// Select Optimal Surface Format
 		uint32_t format_count;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface.m_surface, &format_count, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &format_count, nullptr);
 		if (format_count == 0)
 			return false;
 		std::vector<VkSurfaceFormatKHR> surface_formats;
 		surface_formats.resize(format_count);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface.m_surface, &format_count, surface_formats.data());
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &format_count, surface_formats.data());
 		auto SelectOptimalFormat = [](const std::vector<VkSurfaceFormatKHR>& formats) {
 			for (const auto& format : formats)
 				if (format.format == VK_FORMAT_B8G8R8A8_SRGB && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
@@ -168,12 +175,12 @@ namespace zore {
 
 		// Select Optimal Present Mode
 		uint32_t present_mode_count;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface.m_surface, &present_mode_count, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &present_mode_count, nullptr);
 		if (present_mode_count == 0)
 			return false;
 		std::vector<VkPresentModeKHR> present_modes;
 		present_modes.resize(present_mode_count);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface.m_surface, &present_mode_count, present_modes.data());
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &present_mode_count, present_modes.data());
 		if (std::find(present_modes.begin(), present_modes.end(), VK_PRESENT_MODE_MAILBOX_KHR) != present_modes.end())
 			s_present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 		else
@@ -182,9 +189,9 @@ namespace zore {
 		return true;
 	}
 
-	void RenderDevice::CreateSwapChain(VkPhysicalDevice device, RenderSurface& surface) {
+	void RenderDevice::CreateSwapChain(VkPhysicalDevice device, VkSurfaceKHR surface) {
 		VkSurfaceCapabilitiesKHR surface_capabilities{};
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(s_physical_device, surface.m_surface, &surface_capabilities);
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(s_physical_device, surface, &surface_capabilities);
 		s_extent = surface_capabilities.currentExtent;
 		if (s_extent.width == std::numeric_limits<uint32_t>::max()) {
 			int width, height;
@@ -198,7 +205,7 @@ namespace zore {
 
 		VkSwapchainCreateInfoKHR swapchain_info{};
 		swapchain_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		swapchain_info.surface = surface.m_surface;
+		swapchain_info.surface = surface;
 		swapchain_info.minImageCount = image_count;
 		swapchain_info.imageFormat = s_surface_format.format;
 		swapchain_info.imageColorSpace = s_surface_format.colorSpace;
@@ -232,8 +239,9 @@ namespace zore {
 		vkGetSwapchainImagesKHR(s_device, s_swap_chain, &image_count, nullptr);
 		s_swap_chain_images.resize(image_count);
 		vkGetSwapchainImagesKHR(s_device, s_swap_chain, &image_count, s_swap_chain_images.data());
-
 		s_swap_chain_image_views.resize(image_count);
+        s_swap_chain_framebuffers.resize(image_count);
+
 		for (int i = 0; i < image_count; i++) {
 			VkImageViewCreateInfo view_info{};
 			view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -250,7 +258,19 @@ namespace zore {
 			view_info.subresourceRange.baseArrayLayer = 0;
 			view_info.subresourceRange.layerCount = 1;
 			ENSURE(vkCreateImageView(s_device, &view_info, nullptr, &s_swap_chain_image_views[i]) == VK_SUCCESS, "Failed to create image view");
-		}
+		
+            VkRenderPass render_pass = RenderPass::Get(1)->Handle().as<VkRenderPass>();
+            VkImageView attachments[] = { s_swap_chain_image_views[i] };
+            VkFramebufferCreateInfo framebuffer_info{};
+            framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebuffer_info.renderPass = render_pass;
+            framebuffer_info.attachmentCount = 1;
+            framebuffer_info.pAttachments = attachments;
+            framebuffer_info.width = s_extent.width;
+            framebuffer_info.height = s_extent.height;
+            framebuffer_info.layers = 1;
+            ENSURE(vkCreateFramebuffer(s_device, &framebuffer_info, nullptr, &s_swap_chain_framebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer");
+        }
 		Logger::Info("Frame Buffer Creation Complete");
 	}
 

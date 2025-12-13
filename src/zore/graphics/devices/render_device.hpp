@@ -1,6 +1,6 @@
 #pragma once
 
-#include "zore/graphics/vulkan/vulkan_render_surface.hpp"
+#include "zore/graphics/devices/render_surface.hpp"
 #include <vulkan/vulkan.h>
 #include <vector>
 
@@ -14,15 +14,15 @@ namespace zore {
 
 	class RenderDevice {
 	public:
-		static void Init(VkInstance instance, RenderSurface& surface);
+		static void Init(VkInstance instance, VkSurfaceKHR surface);
 		static void Cleanup();
 
 	private:
-		static void InitPhysicalDevice(VkInstance instance, RenderSurface& surface);
-		static bool InitQueueFamilies(VkPhysicalDevice device, RenderSurface& surface);
+		static void InitPhysicalDevice(VkInstance instance, VkSurfaceKHR surface);
+		static bool InitQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
 		static void InitLogicalDevice();
-		static bool InitSwapChain(VkPhysicalDevice device, RenderSurface& surface);
-		static void CreateSwapChain(VkPhysicalDevice device, RenderSurface& surface);
+		static bool InitSwapChain(VkPhysicalDevice device, VkSurfaceKHR surface);
+		static void CreateSwapChain(VkPhysicalDevice device, VkSurfaceKHR surface);
 		static void CreateFramebuffer();
 		static bool CheckDeviceExtensions(VkPhysicalDevice device);
 		static void CreateQueues(const std::vector<QueueFamily>& families);
@@ -33,4 +33,11 @@ namespace zore {
 		static const VkSurfaceFormatKHR& GetSurfaceFormat();
 		static const VkPresentModeKHR& GetPresentMode();
 	};
+
+    class SwapChain {
+    public:
+
+    private:
+
+    };
 }

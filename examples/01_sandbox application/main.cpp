@@ -51,6 +51,9 @@ void BenchMark() {
 
 DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f) {
 	FileManager::Init("/examples/01_sandbox application/");
+
+
+    Logger::Log(IS_DEBUG);    
 	//RenderEngine::SetVSync(false);
 	m_camera.SetHeight(static_cast<float>(Window::GetSize().y));
 	m_camera.SetPosition({ Window::GetSize().x >> 1, Window::GetSize().y >> 1 });
@@ -78,7 +81,7 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	//action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_F8, true, false, [](bool start) {
 	//	s_instance->ReloadShaders();
 	//	});
-	m_panel_shader.SetSource("default_ui_panel.glsl").Compile();
+	m_panel_shader.SetSource("example.glsl").Compile();
 }
 
 void DemoApplication::ReloadShaders() {

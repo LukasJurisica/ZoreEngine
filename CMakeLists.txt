@@ -9,13 +9,6 @@ option(ZORE_BUILD_EXAMPLES OFF)
 option(ZORE_BUILD_PROFILER ON)
 option(ZORE_BUILD_SPIRV_COMPILER ON)
 
-if(APPLE)
-    set(ZORE_RENDER_API "Vulkan")
-else()
-    set(ZORE_RENDER_API "Vulkan" CACHE STRING "Rendering backend to use (OpenGL, Vulkan)")
-endif()
-string(TOUPPER ${ZORE_RENDER_API} ZORE_RENDER_API)
-
 message("-------------------------------------------------------------------")
 message("  Beginning Build of Zore Engine")
 message("-------------------------------------------------------------------")
@@ -42,36 +35,18 @@ include("cmake/glfw.cmake")
 set(ZORE_LIBRARIES "glm" "glfw" "imgui")
 set(ZORE_INCLUDES "src" "deps/include")
 
-message("-------------------------------------------------------------------")
-message("  Selected Render API: ${ZORE_RENDER_API}")
-message("-------------------------------------------------------------------")
-
 # Add rendering backend dependencies
-if(ZORE_RENDER_API STREQUAL "OPENGL")
-    list(APPEND ZORE_LIBRARIES "glad")
-	list(APPEND ZORE_DEFINES ZORE_RENDER_API_OPENGL)
-	add_subdirectory("deps/glad")
-else()
-	list(APPEND ZORE_EXCLUDE_DIRS "src/zore/graphics/opengl")
+set (VULKAN_REQUIRED_COMPONENTS shaderc_combined)
+if(APPLE)
+    list(APPEND VULKAN_REQUIRED_COMPONENTS MoltenVK)
+    list(APPEND ZORE_LIBRARIES "-framework IOSurface" "-framework Metal" "-framework QuartzCore" "-framework Foundation" "-framework CoreGraphics")
 endif()
-
-if(ZORE_RENDER_API STREQUAL "VULKAN")
-    set (VULKAN_REQUIRED_COMPONENTS shaderc_combined)
-    if(APPLE)
-        list(APPEND VULKAN_REQUIRED_COMPONENTS MoltenVK)
-		list(APPEND ZORE_LIBRARIES "-framework IOSurface" "-framework Metal" "-framework QuartzCore" "-framework Foundation" "-framework CoreGraphics")
-    endif()
-    find_package(Vulkan REQUIRED COMPONENTS ${VULKAN_REQUIRED_COMPONENTS})
-	if(NOT Vulkan_FOUND)
-		message(FATAL_ERROR "You must install the Vulkan SDK here: https://vulkan.lunarg.com/")
-	endif()
-	
-	list(APPEND ZORE_INCLUDES ${Vulkan_INCLUDE_DIRS})
-    list(APPEND ZORE_LIBRARIES Vulkan::Vulkan Vulkan::shaderc_combined)
-	list(APPEND ZORE_DEFINES ZORE_RENDER_API_VULKAN)
-else()
-	list(APPEND ZORE_EXCLUDE_DIRS "src/zore/graphics/vulkan")
+find_package(Vulkan REQUIRED COMPONENTS ${VULKAN_REQUIRED_COMPONENTS})
+if(NOT Vulkan_FOUND)
+    message(FATAL_ERROR "You must install the Vulkan SDK here: https://vulkan.lunarg.com/")
 endif()
+list(APPEND ZORE_INCLUDES ${Vulkan_INCLUDE_DIRS})
+list(APPEND ZORE_LIBRARIES Vulkan::Vulkan Vulkan::shaderc_combined)
 
 # Add IMGUI here as it may rely on vulkan include directories
 add_subdirectory("deps/imgui")
@@ -114,7 +89,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD 20
 )
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC ${ZORE_DEFINES})
+#target_compile_definitions(${PROJECT_NAME} PUBLIC ${ZORE_DEFINES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${ZORE_INCLUDES})
 target_link_libraries(${PROJECT_NAME} ${ZORE_LIBRARIES})
 

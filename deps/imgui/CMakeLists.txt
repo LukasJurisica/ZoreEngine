@@ -6,6 +6,7 @@ set(IMGUI_HEADERS
 	"include/imstb_rectpack.h"
 	"include/imstb_textedit.h"
 	"include/imstb_truetype.h"
+    "include/imgui_impl_vulkan.h"
 )
 set(IMGUI_SOURCES
 	"src/imgui.cpp"
@@ -14,17 +15,9 @@ set(IMGUI_SOURCES
 	"src/imgui_impl_glfw.cpp"
 	"src/imgui_tables.cpp"
 	"src/imgui_widgets.cpp"
+    "src/imgui_impl_vulkan.cpp"
 )
-set(IMGUI_INCLUDES "${CMAKE_BINARY_DIR}/_deps/glfw-src/include")
-
-if(ZORE_RENDER_API STREQUAL "OPENGL")
-    set(IMGUI_HEADERS ${IMGUI_HEADERS} "include/imgui_impl_opengl3.h" "include/imgui_impl_opengl3_loader.h")
-    set(IMGUI_SOURCES ${IMGUI_SOURCES} "src/imgui_impl_opengl3.cpp")
-elseif(ZORE_RENDER_API STREQUAL "VULKAN")
-	set(IMGUI_INCLUDES ${IMGUI_INCLUDES} ${Vulkan_INCLUDE_DIRS})
-    set(IMGUI_HEADERS ${IMGUI_HEADERS} "include/imgui_impl_vulkan.h")
-    set(IMGUI_SOURCES ${IMGUI_SOURCES} "src/imgui_impl_vulkan.cpp")
-endif()
+set(IMGUI_INCLUDES "${CMAKE_BINARY_DIR}/_deps/glfw-src/include" ${Vulkan_INCLUDE_DIRS})
 
 add_library(imgui ${IMGUI_SOURCES} ${IMGUI_HEADERS})
 target_include_directories(imgui PUBLIC "include" PRIVATE ${IMGUI_INCLUDES})

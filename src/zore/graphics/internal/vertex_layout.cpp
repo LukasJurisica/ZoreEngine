@@ -1,4 +1,4 @@
-#include "zore/graphics/vertex_layout.hpp"
+#include "zore/graphics/internal/vertex_layout.hpp"
 #include "zore/graphics/shader.hpp"
 #include <vulkan/vulkan.h>
 

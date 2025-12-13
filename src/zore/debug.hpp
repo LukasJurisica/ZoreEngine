@@ -4,7 +4,7 @@
 
 #define ENSURE(expr, msg) (expr || zore::Exception::AssertionException(__LINE__, __FILE__, msg))
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || true
 #define DEBUG_ENSURE(expr, msg) ENSURE(expr, msg)
 #define DEBUG_ONLY(call) call
 #define IS_DEBUG 1

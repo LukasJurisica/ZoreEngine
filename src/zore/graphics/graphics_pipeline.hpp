@@ -1,6 +1,7 @@
 #pragma once
 #include "zore/graphics/shader.hpp"
-#include "zore/graphics/vertex_layout.hpp"
+#include "zore/graphics/internal/vertex_layout.hpp"
+#include "zore/graphics/internal/render_pass.hpp"
 
 namespace zore {
 
@@ -11,14 +12,11 @@ namespace zore {
 		~GraphicsPipeline();
 		void Bind() const;
 
+        static handle_t CreatePipelineLayout();
+
 	private:
-#if defined(ZORE_RENDER_API_OPENGL)
-		handle_t m_shader_id;
-		handle_t m_vao_id;
-#elif defined(ZORE_RENDER_API_VULKAN)
 		handle_t m_pipeline_id;
 		handle_t m_pipeline_layout;
-		handle_t m_render_pass;
-#endif
+		std::shared_ptr<RenderPass> m_render_pass;
 	};
 }

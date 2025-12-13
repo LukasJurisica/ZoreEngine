@@ -1,6 +1,6 @@
 #include "zore/graphics/render_engine.hpp"
-#include "zore/graphics/vulkan/vulkan_render_device.hpp"
-#include "zore/graphics/vulkan/vulkan_render_surface.hpp"
+#include "zore/graphics/devices/render_device.hpp"
+#include "zore/graphics/devices/render_surface.hpp"
 #include "zore/platform.hpp"
 #include <GLFW/glfw3.h>
 #include "zore/debug.hpp"
@@ -12,7 +12,6 @@ namespace zore {
 	static VkDebugUtilsMessengerEXT s_messenger = VK_NULL_HANDLE;
 	static std::vector<const char*> s_instance_extensions;
 	static std::vector<const char*> s_validation_layers;
-	static RenderSurface s_surface;
 
 	//========================================================================
 	//	Vulkan Render Engine Utility
@@ -48,8 +47,10 @@ namespace zore {
 		glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 		for (uint32_t i = 0; i < glfw_extension_count; i++)
 			s_instance_extensions.emplace_back(glfw_extensions[i]);
-		if (IS_PLATFORM_MACOS)
+		if (IS_PLATFORM_MACOS) {
 			s_instance_extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+            s_instance_extensions.emplace_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        }
 		if (IS_DEBUG)
 			s_instance_extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
@@ -117,15 +118,15 @@ namespace zore {
 		ENSURE(vkCreateInstance(&instance_info, nullptr, &s_instance) == VK_SUCCESS, "Failed to create Vulkan Instance");
 		Logger::Info("Vulkan Render Engine Initialization Complete.");
 
-		s_surface.Init(s_instance);
+		RenderSurface::Init(s_instance);
 		if (IS_DEBUG)
 			InitMessenger();
-		RenderDevice::Init(s_instance, s_surface);
+		RenderDevice::Init(s_instance, RenderSurface::Get());
 	}
 
 	void RenderEngine::Cleanup() {
 		RenderDevice::Cleanup();
-		s_surface.Cleanup(s_instance);
+		RenderSurface::Cleanup(s_instance);
 
 		if (s_messenger != VK_NULL_HANDLE) {
 			auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(s_instance, "vkDestroyDebugUtilsMessengerEXT");
