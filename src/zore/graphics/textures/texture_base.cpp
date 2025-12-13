@@ -1,17 +1,54 @@
 #include "zore/graphics/textures/texture_base.hpp"
+#include "zore/graphics/buffers/shader_storage_buffer.hpp"
 #include "zore/debug.hpp"
 #include <unordered_map>
+#include <algorithm>
 #include <glad/glad.h>
 
 namespace zore::Texture {
 
-    std::unordered_map<std::string, unsigned int> s_named_texture_slots;
+	//========================================================================
+	//	Bindless Texture Lookup Table
+	//========================================================================
+
+	static std::vector<uint64_t> s_bindless_texture_handles;
+	static std::vector<uint32_t> s_bindless_texture_holes;
+	static ShaderStorageBuffer s_bindless_texture_buffer;
+
+	void BindlessLookupTable::SetResident(uint32_t index, bool value) {
+		auto func = value ? glMakeTextureHandleResidentARB : glMakeTextureHandleNonResidentARB;
+		auto iter = std::find(s_bindless_texture_holes.begin(), s_bindless_texture_holes.end(), index);
+		if (index < s_bindless_texture_handles.size() && iter == s_bindless_texture_holes.end())
+			func(s_bindless_texture_handles[index]);
+	}
+
+	void BindlessLookupTable::Update() {
+		s_bindless_texture_buffer.Set(s_bindless_texture_handles);
+	}
+
+	void BindlessLookupTable::Bind(uint32_t slot) {
+		s_bindless_texture_buffer.Bind(slot);
+	}
+
+	uint32_t BindlessLookupTable::Request() {
+		if (!s_bindless_texture_holes.empty()) {
+			uint32_t index = s_bindless_texture_holes.back();
+			s_bindless_texture_holes.pop_back();
+			return index;
+		}
+		else {
+			s_bindless_texture_handles.emplace_back(0);
+			return static_cast<uint32_t>(s_bindless_texture_handles.size()) - 1;
+		}
+	}
 
 	//========================================================================
 	//	Texture Base
 	//========================================================================
 
-	Base::Base(Format format) : m_id(GL_INVALID_NAME), m_format(format), m_slot(0) {}
+	std::unordered_map<std::string, unsigned int> s_named_texture_slots;
+
+	Base::Base(Format format) : m_id(GL_INVALID_NAME), m_format(format), m_bindless_offset(UINT32_MAX), m_slot(0) {}
 
 	Base::Base(Base&& other) noexcept {
 		Move(other);
@@ -27,21 +64,32 @@ namespace zore::Texture {
 		m_id = other.m_id;
 		m_format = other.m_format;
 		m_slot = other.m_slot;
+		m_bindless_offset = other.m_bindless_offset;
 		other.m_id = GL_INVALID_NAME;
 		other.m_format = Format::RGBA;
 		other.m_slot = 0;
+		other.m_bindless_offset = UINT32_MAX;
 	}
 
 	void Base::Init(uint32_t target) {
-		if (m_id != GL_INVALID_NAME)
-			glDeleteTextures(1, &m_id);
+		Cleanup();
 		glCreateTextures(target, 1, &m_id);
-        m_bindless = false;
+	}
+
+	void Base::Cleanup() {
+		if (m_bindless_offset != UINT32_MAX) {
+			BindlessLookupTable::SetResident(m_bindless_offset, false);
+			s_bindless_texture_holes.push_back(m_bindless_offset);
+			m_bindless_offset = UINT32_MAX;
+		}
+		if (m_id != GL_INVALID_NAME) {
+			glDeleteTextures(1, &m_id);
+			m_id = GL_INVALID_NAME;
+		}
 	}
 
 	Base::~Base() {
-		if (m_id != GL_INVALID_NAME)
-			glDeleteTextures(1, &m_id);
+		Cleanup();
 	}
 
 	uint32_t Base::GetID() const {
@@ -62,10 +110,14 @@ namespace zore::Texture {
 		glBindTextureUnit(m_slot, m_id);
 	}
 
-    //uint64_t Base::CreateHandle(const Sampler& sampler) const {
-    //    m_bindless = true;
-    //    return glGetTextureSamplerHandleARB(m_id, sampler.GetID());
-    //}
+	uint32_t Base::CreateHandle(const Sampler& sampler) {
+		if (m_bindless_offset != UINT32_MAX)
+			BindlessLookupTable::SetResident(m_bindless_offset, false);
+		else
+			m_bindless_offset = BindlessLookupTable::Request();
+		s_bindless_texture_handles[m_bindless_offset] = glGetTextureSamplerHandleARB(m_id, sampler.GetID());
+        return m_bindless_offset;
+    }
 
 	void Base::SetNamedTextureSlot(const std::string& name, uint32_t slot) {
 		static constexpr uint32_t S_MAX_TEXTURE_SLOTS = 8;

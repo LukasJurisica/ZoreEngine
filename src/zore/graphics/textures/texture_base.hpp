@@ -7,39 +7,57 @@
 
 namespace zore::Texture {
 
-    //========================================================================
-    //	Texture Base
-    //========================================================================
+	//========================================================================
+	//	Bindless Texture Lookup Table
+	//========================================================================
 
-    class Base {
-    protected:
-        Base(Format format);
-        Base(const Base&) = delete;
-        Base(Base&&) noexcept;
-        Base& operator=(const Base&) = delete;
-        Base& operator=(Base&&) noexcept;
-        void Move(Base& other);
-        void Init(uint32_t target);
-        ~Base();
+	class BindlessLookupTable {
+	public:
+		friend class Base;
 
-    public:
-        uint32_t GetID() const;
-        void Bind() const;
-        void Bind(uint32_t slot);
-        void Bind(const std::string& slot);
-        //uint64_t CreateHandle(const Sampler& sampler) const;
+	public:
+		static void SetResident(uint32_t index, bool value);
+		static void Update();
+		static void Bind(uint32_t slot);
 
-        static void SetNamedTextureSlot(const std::string& name, uint32_t slot);
-        static uint32_t GetNamedTextureSlot(const std::string& name);
+	private:
+		static uint32_t Request();
+	};
 
-    protected:
-        uint32_t GetInternalFormat();
-        uint32_t GetBaseFormat();
+	//========================================================================
+	//	Texture Base
+	//========================================================================
 
-    protected:
-        uint32_t m_id;
-        uint32_t m_slot;
-        Format m_format;
-        mutable bool m_bindless = false;
-    };
+	class Base {
+	protected:
+		Base(Format format);
+		Base(const Base&) = delete;
+		Base(Base&&) noexcept;
+		Base& operator=(const Base&) = delete;
+		Base& operator=(Base&&) noexcept;
+		void Move(Base& other);
+		void Init(uint32_t target);
+		void Cleanup();
+		~Base();
+
+	public:
+		uint32_t GetID() const;
+		void Bind() const;
+		void Bind(uint32_t slot);
+		void Bind(const std::string& slot);
+		uint32_t CreateHandle(const Sampler& sampler);
+
+		static void SetNamedTextureSlot(const std::string& name, uint32_t slot);
+		static uint32_t GetNamedTextureSlot(const std::string& name);
+
+	protected:
+		uint32_t GetInternalFormat();
+		uint32_t GetBaseFormat();
+
+	protected:
+		uint32_t m_id;
+		uint32_t m_slot;
+		uint32_t m_bindless_offset;
+		Format m_format;
+	};
 }
