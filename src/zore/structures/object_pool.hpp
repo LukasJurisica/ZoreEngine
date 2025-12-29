@@ -6,7 +6,7 @@
 template <typename T>
 class ObjectPool {
 public:
-    ObjectPool(uint32_t count = 0) { 
+    ObjectPool(uint32_t count = 0) {
         if (count > 0) {
             m_data.resize(count);
             m_next = 0;
@@ -35,4 +35,4 @@ private:
     static const uint32_t INVALID_INDEX = ~(static_cast<uint32_t>(0));
     std::vector<std::pair<T, uint32_t>> m_data;
     uint32_t m_next = INVALID_INDEX, m_last = INVALID_INDEX;
-}
+};

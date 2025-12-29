@@ -76,14 +76,6 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_F8, true, false, [](bool start) {
 		s_instance->ReloadShaders();
 		});
-
-
-	BenchMark();
-
-	zm::simd::int32_4 f(1, 2, 3, 4);
-	zm::simd::float32_4 g = zm::simd::float32_4(f);
-	zm::simd::int32_4 h = zm::simd::int32_4(g);
-	Logger::Log(g.extract(0), g.extract(1), g.extract(2), g.extract(3));
 }
 
 void DemoApplication::ReloadShaders() {
