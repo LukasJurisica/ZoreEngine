@@ -3,11 +3,11 @@
 
 namespace zm {
 
-	void Bezier::Quadratic(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, int count, glm::vec2* out, bool includeEndPoints) {
+	void Bezier::Quadratic(const zm::vec2& a, const zm::vec2& b, const zm::vec2& c, int count, zm::vec2* out, bool includeEndPoints) {
 
 	}
 
-	void Bezier::Cubic(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, const glm::vec2& d, int count, glm::vec2* out, bool includeEndPoints) {
+	void Bezier::Cubic(const zm::vec2& a, const zm::vec2& b, const zm::vec2& c, const zm::vec2& d, int count, zm::vec2* out, bool includeEndPoints) {
 
 	}
 

@@ -30,15 +30,15 @@ namespace zm {
 
 		// SIMD8 Input --------------------
 #if SIMD_FLOAT32_8 == true && SIMD_INT32_8 == true
-		void Eval(simd::float32_8& x, simd::float32_8& out) override;
-		void Eval(simd::float32_8& x, simd::float32_8& y, simd::float32_8& out) override;
-		void Eval(simd::float32_8& x, simd::float32_8& y, simd::float32_8& z, simd::float32_8& out) override;
+		void Eval(simd<float, 8>& x, simd<float, 8>& out) override;
+		void Eval(simd<float, 8>& x, simd<float, 8>& y, simd<float, 8>& out) override;
+		void Eval(simd<float, 8>& x, simd<float, 8>& y, simd<float, 8>& z, simd<float, 8>& out) override;
 #endif
 		// SIMD4 Input --------------------
 #if SIMD_FLOAT32_4 == true && SIMD_INT32_4 == true
-		void Eval(simd::float32_4& x, simd::float32_4& out) override;
-		void Eval(simd::float32_4& x, simd::float32_4& y, simd::float32_4& out) override;
-		void Eval(simd::float32_4& x, simd::float32_4& y, simd::float32_4& z, simd::float32_4& out) override;
+		void Eval(simd<float, 4>& x, simd<float, 4>& out) override;
+		void Eval(simd<float, 4>& x, simd<float, 4>& y, simd<float, 4>& out) override;
+		void Eval(simd<float, 4>& x, simd<float, 4>& y, simd<float, 4>& z, simd<float, 4>& out) override;
 #endif
 	};
 }

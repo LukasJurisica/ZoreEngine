@@ -43,7 +43,7 @@ namespace zore {
 	}
 
 	void RenderEngine::ResetViewport() {
-		const glm::ivec2& res = Window::GetSize();
+		const zm::ivec2& res = Window::GetSize();
 		glViewport(0, 0, res.x, res.y);
 	}
 

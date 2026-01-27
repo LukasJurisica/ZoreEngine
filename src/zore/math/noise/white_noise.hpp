@@ -26,17 +26,17 @@ namespace zm {
 
 		// SIMD8 Input --------------------
 #if SIMD_FLOAT32_8 == true && SIMD_INT32_8 == true
-		static void Eval(const simd::int32_8& x, simd::float32_8& out);
-		static void Eval(const simd::int32_8& x, const simd::int32_8& y, simd::float32_8& out);
-		static void Eval(const simd::int32_8& x, const simd::int32_8& y, const simd::int32_8& z, simd::float32_8& out);
-		static void Eval(const simd::int32_8& x, const simd::int32_8& y, const simd::int32_8& z, const simd::int32_8& w, simd::float32_8& out);
+		static void Eval(const simd<int32_t, 8>& x, simd<float, 8>& out);
+		static void Eval(const simd<int32_t, 8>& x, const simd<int32_t, 8>& y, simd<float, 8>& out);
+		static void Eval(const simd<int32_t, 8>& x, const simd<int32_t, 8>& y, const simd<int32_t, 8>& z, simd<float, 8>& out);
+		static void Eval(const simd<int32_t, 8>& x, const simd<int32_t, 8>& y, const simd<int32_t, 8>& z, const simd<int32_t, 8>& w, simd<float, 8>& out);
 #endif
 		// SIMD4 Input --------------------
 #if SIMD_FLOAT32_4 == true && SIMD_INT32_4 == true
-		static void Eval(const simd::int32_4& x, simd::float32_4& out);
-		static void Eval(const simd::int32_4& x, const simd::int32_4& y, simd::float32_4& out);
-		static void Eval(const simd::int32_4& x, const simd::int32_4& y, const simd::int32_4& z, simd::float32_4& out);
-		static void Eval(const simd::int32_4& x, const simd::int32_4& y, const simd::int32_4& z, const simd::int32_4& w, simd::float32_4& out);
+		static void Eval(const simd<int32_t, 4>& x, simd<float, 4>& out);
+		static void Eval(const simd<int32_t, 4>& x, const simd<int32_t, 4>& y, simd<float, 4>& out);
+		static void Eval(const simd<int32_t, 4>& x, const simd<int32_t, 4>& y, const simd<int32_t, 4>& z, simd<float, 4>& out);
+		static void Eval(const simd<int32_t, 4>& x, const simd<int32_t, 4>& y, const simd<int32_t, 4>& z, const simd<int32_t, 4>& w, simd<float, 4>& out);
 #endif
 
 	public:

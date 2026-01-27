@@ -11,41 +11,14 @@
 #include <zore/utils/time.hpp>
 #include <zore/math/noise/white_noise.hpp>
 
+#include <zore/math/vector/vec4.hpp>
+#include <zore/math/matrix/mat4.hpp>
+
 using namespace zore;
 
 static bool s_display_console = false;
 static bool s_quit = false;
 static DemoApplication* s_instance = nullptr;
-
-void BenchMark() {
-	const int count = 100000;
-	Timer timer;
-
-	zm::vec4* zm_a = new zm::vec4[count * 2];
-	zm::vec4* zm_b = new zm::vec4[count * 2];
-
-	glm::vec4* glm_a = new glm::vec4[count * 2];
-	glm::vec4* glm_b = new glm::vec4[count * 2];
-
-	for (int i = 0; i < count; i++) {
-		zm_a[i] = zm::WhiteNoise::Eval4(zm::vec2(i, 0));
-		zm_b[i] = zm::WhiteNoise::Eval4(i * 2 + 1);
-		glm_a[i] = glm::vec4(zm_a[i].x, zm_a[i].y, zm_a[i].z, zm_a[i].w);
-		glm_b[i] = glm::vec4(zm_b[i].x, zm_b[i].y, zm_b[i].z, zm_b[i].w);
-	}
-
-	Logger::Log(count, " Multiplications");
-	timer.Reset();
-	for (int i = 0; i < count; i++) {
-		glm_a[i] = glm_a[i] * glm_b[i];
-	}
-	Logger::Log("GLM Time: ", timer.Time());
-	timer.Reset();
-	for (int i = 0; i < count; i++) {
-		zm_a[i] = zm_a[i] * zm_b[i];
-	}
-	Logger::Log(" ZM Time: ", timer.Time());
-}
 
 DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f) {
 	FileManager::Init("/examples/01_sandbox application/");
@@ -66,7 +39,7 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	CreateSimpleUI();
 	UI::Manager::Bind(action_map);
 	UI::Manager::Bind("main_menu");
-	glm::ivec2 resolution = Window::GetSize();
+	zm::ivec2 resolution = Window::GetSize();
 	UI::Layer::Resize(resolution.x, resolution.y);
 
 	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
@@ -118,7 +91,7 @@ void DemoApplication::Run() {
 		Editor::BeginFrame();
 		if (s_display_console)
 			Console::Draw();
-			//Editor::ShowDemoWindow();
+		//Editor::ShowDemoWindow();
 		Editor::EndFrame();
 		Window::Update();
 	}

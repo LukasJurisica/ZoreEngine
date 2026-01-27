@@ -106,7 +106,11 @@ namespace zore {
 		}
 	}
 
-	// glUniform{1|2|3|4}{f|i|ui}
+	// glUniform{1|2|3|4}{f|i|ui}v
+	void Shader::SetBool(const std::string& name, bool data) {
+		glUniform1i(GetUniformLocation(name), static_cast<int32_t>(data));
+	}
+
 	void Shader::SetBool(const std::string& name, int32_t data) {
 		glUniform1i(GetUniformLocation(name), data);
 	}
@@ -115,59 +119,59 @@ namespace zore {
 		glUniform1i(GetUniformLocation(name), data);
 	}
 
-	void Shader::SetInt2(const std::string& name, const glm::ivec2& data) {
-		glUniform2i(GetUniformLocation(name), data.x, data.y);
+	void Shader::SetInt2(const std::string& name, const zm::ivec2& data) {
+		glUniform2iv(GetUniformLocation(name), 1, data.data);
 	}
 
-	void Shader::SetInt3(const std::string& name, const glm::ivec3& data) {
-		glUniform3i(GetUniformLocation(name), data.x, data.y, data.z);
+	void Shader::SetInt3(const std::string& name, const zm::ivec3& data) {
+		glUniform3iv(GetUniformLocation(name), 1, data.data);
 	}
 
-	void Shader::SetInt4(const std::string& name, const glm::ivec4& data) {
-		glUniform4i(GetUniformLocation(name), data.x, data.y, data.z, data.w);
+	void Shader::SetInt4(const std::string& name, const zm::ivec4& data) {
+		glUniform4iv(GetUniformLocation(name), 1, data.data);
 	}
 
 	void Shader::SetUInt(const std::string& name, uint32_t data) {
 		glUniform1ui(GetUniformLocation(name), data);
 	}
 
-	void Shader::SetUInt2(const std::string& name, const glm::uvec2& data) {
-		glUniform2ui(GetUniformLocation(name), data.x, data.y);
+	void Shader::SetUInt2(const std::string& name, const zm::uvec2& data) {
+		glUniform2uiv(GetUniformLocation(name), 1, data.data);
 	}
 
-	void Shader::SetUInt3(const std::string& name, const glm::uvec3& data) {
-		glUniform3ui(GetUniformLocation(name), data.x, data.y, data.z);
+	void Shader::SetUInt3(const std::string& name, const zm::uvec3& data) {
+		glUniform3uiv(GetUniformLocation(name), 1, data.data);
 	}
 
-	void Shader::SetUInt4(const std::string& name, const glm::uvec4& data) {
-		glUniform4ui(GetUniformLocation(name), data.x, data.y, data.z, data.w);
+	void Shader::SetUInt4(const std::string& name, const zm::uvec4& data) {
+		glUniform4uiv(GetUniformLocation(name), 1, data.data);
 	}
 
 	void Shader::SetFloat(const std::string& name, float data) {
 		glUniform1f(GetUniformLocation(name), data);
 	}
 
-	void Shader::SetFloat2(const std::string& name, const glm::vec2& data) {
-		glUniform2f(GetUniformLocation(name), data.x, data.y);
+	void Shader::SetFloat2(const std::string& name, const zm::vec2& data) {
+		glUniform2fv(GetUniformLocation(name), 1, data.data);
 	}
 
-	void Shader::SetFloat3(const std::string& name, const glm::vec3& data) {
-		glUniform3f(GetUniformLocation(name), data.x, data.y, data.z);
+	void Shader::SetFloat3(const std::string& name, const zm::vec3& data) {
+		glUniform3fv(GetUniformLocation(name), 1, data.data);
 	}
 
-	void Shader::SetFloat4(const std::string& name, const glm::vec4& data) {
-		glUniform4f(GetUniformLocation(name), data.x, data.y, data.z, data.w);
+	void Shader::SetFloat4(const std::string& name, const zm::vec4& data) {
+		glUniform4fv(GetUniformLocation(name), 1, data.data);
 	}
 	// glUniformMatrix{2|3|4|2x3|3x2|2x4|4x2|3x4|4x3}fv
-	void Shader::SetMat2(const std::string& name, const glm::mat2& data) {
+	void Shader::SetMat2(const std::string& name, const zm::mat2& data) {
 		glUniformMatrix2fv(GetUniformLocation(name), 1, GL_FALSE, &(data[0].x));
 	}
 
-	void Shader::SetMat3(const std::string& name, const glm::mat3& data) {
+	void Shader::SetMat3(const std::string& name, const zm::mat3& data) {
 		glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &(data[0].x));
 	}
 
-	void Shader::SetMat4(const std::string& name, const glm::mat4& data) {
+	void Shader::SetMat4(const std::string& name, const zm::mat4& data) {
 		glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &(data[0].x));
 	}
 

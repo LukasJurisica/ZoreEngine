@@ -1,6 +1,7 @@
 #pragma once
-#include "glm/ext/vector_float3.hpp"
-#include "glm/ext/matrix_float4x4.hpp"
+
+#include "zore/math/vector/vec2.hpp"
+#include "zore/math/matrix/mat4.hpp"
 
 namespace zore {
 
@@ -14,28 +15,28 @@ namespace zore {
 		~Camera2D() = default;
 
 		void Invert(bool x = false, bool y = true);
-		void SetPosition(const glm::vec2& position);
-		const glm::vec2& Translate(const glm::vec2& offset);
-		const glm::vec2& TranslatePixels(const glm::vec2& offset);
-		const glm::vec2& SetAspectRatio(float aspect_ratio);
-		const glm::vec2& SetHeight(float height);
+		void SetPosition(const zm::vec2& position);
+		const zm::vec2& Translate(const zm::vec2& offset);
+		const zm::vec2& TranslatePixels(const zm::vec2& offset);
+		const zm::vec2& SetAspectRatio(float aspect_ratio);
+		const zm::vec2& SetHeight(float height);
 
-		bool TestPoint(glm::vec2 point) const;
-		bool TestAABB(glm::vec2 min, const glm::vec2& size) const;
+		bool TestPoint(zm::vec2 point) const;
+		bool TestAABB(zm::vec2 min, const zm::vec2& size) const;
 
-		const glm::vec2& GetPosition() const;
-		const glm::vec2& GetScale() const;
+		const zm::vec2& GetPosition() const;
+		const zm::vec2& GetScale() const;
 		float GetHeight() const;
-		glm::vec2 GetWorldSpaceTranslation(const glm::vec2& offset) const;
-		glm::vec2 GetWorldSpacePosition(glm::vec2 coordinate) const;
+		zm::vec2 GetWorldSpaceTranslation(const zm::vec2& offset) const;
+		zm::vec2 GetWorldSpacePosition(zm::vec2 coordinate) const;
 
 	private:
-		const glm::vec2& UpdateProjection();
+		const zm::vec2& UpdateProjection();
 
 	private:
-		glm::vec2 m_multiplier;
-		glm::vec2 m_position;
-		glm::vec2 m_scale;
+		zm::vec2 m_multiplier;
+		zm::vec2 m_position;
+		zm::vec2 m_scale;
 		float m_width, m_height;
 		float m_aspect_ratio;
 	};
@@ -48,23 +49,23 @@ namespace zore {
 	public:
 		virtual ~Camera3D() = default;
 
-		void SetPosition(const glm::vec3& position);
-		void Translate(const glm::vec3& offset);
+		void SetPosition(const zm::vec3& position);
+		void Translate(const zm::vec3& offset);
 		void SetYawPitch(float yaw, float pitch);
-		void SetViewVectors(const glm::vec3& forward, const glm::vec3& right);
+		void SetViewVectors(const zm::vec3& forward, const zm::vec3& right);
 		void SetAspectRatio(float aspect_ratio);
 		void SetNearFarPlanes(float near_dist, float far_dist);
 
-		virtual bool TestPoint(const glm::vec3& point) const = 0;
-		virtual bool TestAABB(const glm::vec3& min, const glm::vec3& size) const = 0;
+		virtual bool TestPoint(const zm::vec3& point) const = 0;
+		virtual bool TestAABB(const zm::vec3& min, const zm::vec3& size) const = 0;
 
-		const glm::mat4& GetProjection() const;
-		const glm::mat4& GetView() const;
-		const glm::vec3& GetPosition() const;
-		const glm::vec3& GetFront() const;
-		const glm::vec3& GetForward() const;
-		const glm::vec3& GetRight() const;
-		const glm::vec3& GetUp() const;
+		const zm::mat4& GetProjection() const;
+		const zm::mat4& GetView() const;
+		const zm::vec3& GetPosition() const;
+		const zm::vec3& GetFront() const;
+		const zm::vec3& GetForward() const;
+		const zm::vec3& GetRight() const;
+		const zm::vec3& GetUp() const;
 
 	protected:
 		Camera3D(float aspect_ratio, float near_dist, float far_dist);
@@ -76,13 +77,13 @@ namespace zore {
 		float m_aspect_ratio;
 		float m_near_dist, m_far_dist;
 
-		glm::mat4 m_projection_matrix;
-		glm::mat4 m_view_matrix;
-		glm::vec3 m_position;
-		glm::vec3 m_front;
-		glm::vec3 m_forward;
-		glm::vec3 m_right;
-		glm::vec3 m_up;
+		zm::mat4 m_projection_matrix;
+		zm::mat4 m_view_matrix;
+		zm::vec3 m_position;
+		zm::vec3 m_front;
+		zm::vec3 m_forward;
+		zm::vec3 m_right;
+		zm::vec3 m_up;
 	};
 
 	//========================================================================
@@ -95,8 +96,8 @@ namespace zore {
 		~PerspectiveCamera() = default;
 
 		void SetFOV(float fov);
-		bool TestPoint(const glm::vec3& point) const override;
-		bool TestAABB(const glm::vec3& min, const glm::vec3& size) const override;
+		bool TestPoint(const zm::vec3& point) const override;
+		bool TestAABB(const zm::vec3& min, const zm::vec3& size) const override;
 
 	private:
 		void UpdateProjectionMatrix() override;
@@ -104,7 +105,7 @@ namespace zore {
 
 	private:
 		float m_fov;
-		glm::vec3 m_frustum_plane_normals[4];
+		zm::vec3 m_frustum_plane_normals[4];
 	};
 
 	//========================================================================
@@ -117,8 +118,8 @@ namespace zore {
 		~OrthographicCamera() = default;
 
 		void SetHeight(float height);
-		bool TestPoint(const glm::vec3& point) const override;
-		bool TestAABB(const glm::vec3& min, const glm::vec3& size) const override;
+		bool TestPoint(const zm::vec3& point) const override;
+		bool TestAABB(const zm::vec3& min, const zm::vec3& size) const override;
 
 	private:
 		void UpdateProjectionMatrix() override;

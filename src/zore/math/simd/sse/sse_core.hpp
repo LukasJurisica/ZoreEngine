@@ -1,20 +1,6 @@
 #pragma once
 
 #include "zore/math/simd/simd_core.hpp"
-#include "zore/utils/concepts.hpp"
-
-//#if SIMD_SSE >= ENCODE_VERSION(4, 2, 0)
-//#include <nmmintrin.h>
-//#elif SIMD_SSE >= ENCODE_VERSION(4, 1, 0)
-//#include <smmintrin.h>
-//#elif SIMD_SSE >= ENCODE_VERSION(3, 0, 0)
-//#include <pmmintrin.h>
-//#elif SIMD_SSE >= ENCODE_VERSION(2, 0, 0)
-//#include <emmintrin.h>
-//#elif SIMD_SSE >= ENCODE_VERSION(1, 0, 0)
-//#include <xmmintrin.h>
-//#endif
-
 #include <immintrin.h>
 
 #if SIMD_SSE >= ENCODE_VERSION(1, 0, 0)
@@ -25,7 +11,7 @@
 #undef min
 #undef max
 
-namespace zm::simd::internal {
+namespace zm::internal {
 
 	/* Conversion  --------------------
 	-------------------------------- */
@@ -146,14 +132,8 @@ namespace zm::simd::internal {
 #endif
 	}
 
-	/* shuffle ------------------------
-	   Swizzle the components of a vector
+	/* Swizzling ----------------------
 	-------------------------------- */
-	template<int x, int y, int z, int w>
-	ALWAYS_INLINE __m128 shuffle(const __m128& a, const __m128& b) {
-		static_assert(x >= 0 && x <= 3 && y >= 0 && y <= 3 && z >= 0 && z <= 3 && w >= 0 && w <= 3, "shuffle parameters must be between 0 and 3 inclusive.");
-		return _mm_shuffle_ps(a, b, _MM_SHUFFLE(w, z, y, x));
-	}
 
 	template<int x, int y, int z, int w>
 	ALWAYS_INLINE __m128i shuffle(const __m128i& a) {
@@ -161,9 +141,12 @@ namespace zm::simd::internal {
 		return _mm_shuffle_epi32(a, _MM_SHUFFLE(w, z, y, x));
 	}
 
-	/* blend  -------------------------
-	   Blend the components of two vectors
-	-------------------------------- */
+	template<int x, int y, int z, int w>
+	ALWAYS_INLINE __m128 shuffle(const __m128& a, const __m128& b) {
+		static_assert(x >= 0 && x <= 3 && y >= 0 && y <= 3 && z >= 0 && z <= 3 && w >= 0 && w <= 3, "shuffle parameters must be between 0 and 3 inclusive.");
+		return _mm_shuffle_ps(a, b, _MM_SHUFFLE(w, z, y, x));
+	}
+
 	template<int x, int y, int z, int w>
 	ALWAYS_INLINE __m128 blend(const __m128& a, const __m128& b) {
 		static_assert(x >= 0 && x <= 1 && y >= 0 && y <= 1 && z >= 0 && z <= 1 && w >= 0 && w <= 1, "Blend parameters must be 0 or 1.");
@@ -277,9 +260,9 @@ namespace zm::simd::internal {
 #endif
 	}
 
-	/* hsum ---------------------------
-	   Compute the horizontal sum of a vector
+	/* Horizontal Operators -----------
 	-------------------------------- */
+
 	ALWAYS_INLINE float hsum(const __m128& a) {
 #if SIMD_SSE >= ENCODE_VERSION(4, 1, 0)
 		return _mm_cvtss_f32(_mm_dp_ps(a, _mm_set1_ps(1.f), 0xF1));
@@ -304,9 +287,6 @@ namespace zm::simd::internal {
 #endif
 	}
 
-	/* dot ----------------------------
-	   Compute the dot product
-	-------------------------------- */
 	ALWAYS_INLINE float dot(const __m128& a, const __m128& b) {
 #if SIMD_SSE >= ENCODE_VERSION(4, 1, 0)
 		return _mm_cvtss_f32(_mm_dp_ps(a, b, 0xF1));

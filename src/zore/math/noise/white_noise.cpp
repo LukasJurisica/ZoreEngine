@@ -64,16 +64,16 @@ namespace zm {
 	void WhiteNoise::Eval(int32_t* x, float* out, uint32_t count) {
 #if SIMD_FLOAT32_8 == true && SIMD_INT32_8 == true
 		while (count >= 8) {
-			simd::float32_8 result;
-			Eval(simd::int32_8(x), result);
+			simd<float, 8> result;
+			Eval(simd<int32_t, 8>(x), result);
 			result.unload(out);
 			UpdateStorage(&x, &out, count, 8);
 		}
 #endif
 #if SIMD_FLOAT32_4 == true && SIMD_INT32_4 == true
 		while (count >= 4) {
-			simd::float32_4 result;
-			Eval(simd::int32_4(x), result);
+			simd<float, 4> result;
+			Eval(simd<int32_t, 4>(x), result);
 			result.unload(out);
 			UpdateStorage(&x, &out, count, 4);
 		}
@@ -87,16 +87,16 @@ namespace zm {
 	void WhiteNoise::Eval(int32_t* x, int32_t* y, float* out, uint32_t count) {
 #if SIMD_FLOAT32_8 == true && SIMD_INT32_8 == true
 		while (count >= 8) {
-			simd::float32_8 result;
-			Eval(simd::int32_8(x), simd::int32_8(y), result);
+			simd<float, 8> result;
+			Eval(simd<int32_t, 8>(x), simd<int32_t, 8>(y), result);
 			result.unload(out);
 			UpdateStorage(&x, &y, &out, count, 8);
 		}
 #endif
 #if SIMD_FLOAT32_4 == true && SIMD_INT32_4 == true
 		while (count >= 4) {
-			simd::float32_4 result;
-			Eval(simd::int32_4(x), simd::int32_4(y), result);
+			simd<float, 4> result;
+			Eval(simd<int32_t, 4>(x), simd<int32_t, 4>(y), result);
 			result.unload(out);
 			UpdateStorage(&x, &y, &out, count, 4);
 		}
@@ -110,16 +110,16 @@ namespace zm {
 	void WhiteNoise::Eval(int32_t* x, int32_t* y, int32_t* z, float* out, uint32_t count) {
 #if SIMD_FLOAT32_8 == true && SIMD_INT32_8 == true
 		while (count >= 8) {
-			simd::float32_8 result;
-			Eval(simd::int32_8(x), simd::int32_8(y), simd::int32_8(z), result);
+			simd<float, 8> result;
+			Eval(simd<int32_t, 8>(x), simd<int32_t, 8>(y), simd<int32_t, 8>(z), result);
 			result.unload(out);
 			UpdateStorage(&x, &y, &z, &out, count, 8);
 		}
 #endif
 #if SIMD_FLOAT32_4 == true && SIMD_INT32_4 == true
 		while (count >= 4) {
-			simd::float32_4 result;
-			Eval(simd::int32_4(x), simd::int32_4(y), simd::int32_4(z), result);
+			simd<float, 4> result;
+			Eval(simd<int32_t, 4>(x), simd<int32_t, 4>(y), simd<int32_t, 4>(z), result);
 			result.unload(out);
 			UpdateStorage(&x, &y, &z, &out, count, 4);
 		}
@@ -133,16 +133,16 @@ namespace zm {
 	void WhiteNoise::Eval(int32_t* x, int32_t* y, int32_t* z, int32_t* w, float* out, uint32_t count) {
 #if SIMD_FLOAT32_8 == true && SIMD_INT32_8 == true
 		while (count >= 8) {
-			simd::float32_8 result;
-			Eval(simd::int32_8(x), simd::int32_8(y), simd::int32_8(z), simd::int32_8(w), result);
+			simd<float, 8> result;
+			Eval(simd<int32_t, 8>(x), simd<int32_t, 8>(y), simd<int32_t, 8>(z), simd<int32_t, 8>(w), result);
 			result.unload(out);
 			UpdateStorage(&x, &y, &z, &w, &out, count, 8);
 		}
 #endif
 #if SIMD_FLOAT32_4 == true && SIMD_INT32_4 == true
 		while (count >= 4) {
-			simd::float32_4 result;
-			Eval(simd::int32_4(x), simd::int32_4(y), simd::int32_4(z), simd::int32_4(w), result);
+			simd<float, 4> result;
+			Eval(simd<int32_t, 4>(x), simd<int32_t, 4>(y), simd<int32_t, 4>(z), simd<int32_t, 4>(w), result);
 			result.unload(out);
 			UpdateStorage(&x, &y, &z, &w, &out, count, 4);
 		}
@@ -158,23 +158,23 @@ namespace zm {
 	//========================================================================
 
 #if SIMD_FLOAT32_8 == true && SIMD_INT32_8 == true
-	void WhiteNoise::Eval(const simd::int32_8& x, simd::float32_8& out) {
-		simd::int32_8 hash = x * PRIME_X;
+	void WhiteNoise::Eval(const simd<int32_t, 8>& x, simd<float, 8>& out) {
+		simd<int32_t, 8> hash = x * PRIME_X;
 		ShuffleSIMD(hash, out);
 	}
 
-	void WhiteNoise::Eval(const simd::int32_8& x, const simd::int32_8& y, simd::float32_8& out) {
-		simd::int32_8 hash = (x * PRIME_X) ^ (y * PRIME_Y);
+	void WhiteNoise::Eval(const simd<int32_t, 8>& x, const simd<int32_t, 8>& y, simd<float, 8>& out) {
+		simd<int32_t, 8> hash = (x * PRIME_X) ^ (y * PRIME_Y);
 		ShuffleSIMD(hash, out);
 	}
 
-	void WhiteNoise::Eval(const simd::int32_8& x, const simd::int32_8& y, const simd::int32_8& z, simd::float32_8& out) {
-		simd::int32_8 hash = (x * PRIME_X) ^ (y * PRIME_Y) ^ (z * PRIME_Z);
+	void WhiteNoise::Eval(const simd<int32_t, 8>& x, const simd<int32_t, 8>& y, const simd<int32_t, 8>& z, simd<float, 8>& out) {
+		simd<int32_t, 8> hash = (x * PRIME_X) ^ (y * PRIME_Y) ^ (z * PRIME_Z);
 		ShuffleSIMD(hash, out);
 	}
 
-	void WhiteNoise::Eval(const simd::int32_8& x, const simd::int32_8& y, const simd::int32_8& z, const simd::int32_8& w, simd::float32_8& out) {
-		simd::int32_8 hash = (x * PRIME_X) ^ (y * PRIME_Y) ^ (z * PRIME_Z) ^ (w * PRIME_W);
+	void WhiteNoise::Eval(const simd<int32_t, 8>& x, const simd<int32_t, 8>& y, const simd<int32_t, 8>& z, const simd<int32_t, 8>& w, simd<float, 8>& out) {
+		simd<int32_t, 8> hash = (x * PRIME_X) ^ (y * PRIME_Y) ^ (z * PRIME_Z) ^ (w * PRIME_W);
 		ShuffleSIMD(hash, out);
 	}
 #endif
@@ -184,23 +184,23 @@ namespace zm {
 	//========================================================================
 
 #if SIMD_FLOAT32_4 == true && SIMD_INT32_4 == true
-	void WhiteNoise::Eval(const simd::int32_4& x, simd::float32_4& out) {
-		simd::int32_4 hash = x * PRIME_X;
+	void WhiteNoise::Eval(const simd<int32_t, 4>& x, simd<float, 4>& out) {
+		simd<int32_t, 4> hash = x * PRIME_X;
 		ShuffleSIMD(hash, out);
 	}
 
-	void WhiteNoise::Eval(const simd::int32_4& x, const simd::int32_4& y, simd::float32_4& out) {
-		simd::int32_4 hash = (x * PRIME_X) ^ (y * PRIME_Y);
+	void WhiteNoise::Eval(const simd<int32_t, 4>& x, const simd<int32_t, 4>& y, simd<float, 4>& out) {
+		simd<int32_t, 4> hash = (x * PRIME_X) ^ (y * PRIME_Y);
 		ShuffleSIMD(hash, out);
 	}
 
-	void WhiteNoise::Eval(const simd::int32_4& x, const simd::int32_4& y, const simd::int32_4& z, simd::float32_4& out) {
-		simd::int32_4 hash = (x * PRIME_X) ^ (y * PRIME_Y) ^ (z * PRIME_Z);
+	void WhiteNoise::Eval(const simd<int32_t, 4>& x, const simd<int32_t, 4>& y, const simd<int32_t, 4>& z, simd<float, 4>& out) {
+		simd<int32_t, 4> hash = (x * PRIME_X) ^ (y * PRIME_Y) ^ (z * PRIME_Z);
 		ShuffleSIMD(hash, out);
 	}
 
-	void WhiteNoise::Eval(const simd::int32_4& x, const simd::int32_4& y, const simd::int32_4& z, const simd::int32_4& w, simd::float32_4& out) {
-		simd::int32_4 hash = (x * PRIME_X) ^ (y * PRIME_Y) ^ (z * PRIME_Z) ^ (w * PRIME_W);
+	void WhiteNoise::Eval(const simd<int32_t, 4>& x, const simd<int32_t, 4>& y, const simd<int32_t, 4>& z, const simd<int32_t, 4>& w, simd<float, 4>& out) {
+		simd<int32_t, 4> hash = (x * PRIME_X) ^ (y * PRIME_Y) ^ (z * PRIME_Z) ^ (w * PRIME_W);
 		ShuffleSIMD(hash, out);
 	}
 #endif

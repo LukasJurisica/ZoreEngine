@@ -11,182 +11,75 @@
 namespace zm {
 
 	//========================================================================
-	//  int32 4 SIMD Vector
+	//  Vector 4 with SIMD backing
 	//========================================================================
 
-	template<>
-	struct alignas(16) vec4_base<int32_t> {
+	template <zore::numeric T>
+		requires simd_enabled<T, 4>
+	struct alignas(sizeof(T) * 4) vec_base<T, 4> {
 	public:
 		// Constructors -------------------
-		ALWAYS_INLINE explicit vec4_base() : v() {}
+		ALWAYS_INLINE vec_base() : v() {}
 		template <zore::numeric U>
-		ALWAYS_INLINE vec4_base(U s) : v(static_cast<int32_t>(s)) {}
+		ALWAYS_INLINE vec_base(U s) : v(static_cast<T>(s)) {}
+		template <zore::numeric U, zore::numeric V, zore::numeric W, zore::numeric X>
+		ALWAYS_INLINE vec_base(U x, V y, W z, X w) : data(static_cast<T>(x), static_cast<T>(y), static_cast<T>(z), static_cast<T>(w)) {}
+		template <zore::numeric U, zore::numeric V>
+		ALWAYS_INLINE vec_base(U x, const vec_base<V, 3>& yzw) : data(static_cast<T>(x), static_cast<T>(yzw[0]), static_cast<T>(yzw[1]), static_cast<T>(yzw[2])) {}
+		template <zore::numeric U, zore::numeric V>
+		ALWAYS_INLINE vec_base(const vec_base<V, 3>& xyz, U w) : data(static_cast<T>(xyz[0]), static_cast<T>(xyz[1]), static_cast<T>(xyz[2]), static_cast<T>(w)) {}
+		template <zore::numeric U, zore::numeric V, zore::numeric W>
+		ALWAYS_INLINE vec_base(const vec_base<U, 2>& xy, V z, W w) : data(static_cast<T>(xy[0]), static_cast<T>(xy[1]), static_cast<T>(z), static_cast<T>(w)) {}
+		template <zore::numeric U, zore::numeric V, zore::numeric W>
+		ALWAYS_INLINE vec_base(U x, const vec_base<V, 2>& yz, W w) : data(static_cast<T>(x), static_cast<T>(yz[0]), static_cast<T>(yz[1]), static_cast<T>(w)) {}
+		template <zore::numeric U, zore::numeric V, zore::numeric W>
+		ALWAYS_INLINE vec_base(U x, V y, const vec_base<W, 2>& zw) : data(static_cast<T>(x), static_cast<T>(y), static_cast<T>(zw[0]), static_cast<T>(zw[1])) {}
+		template <zore::numeric U, zore::numeric V>
+		ALWAYS_INLINE vec_base(const vec_base<U, 2>& xy, const vec_base<V, 2>& zw) : data{ static_cast<T>(xy[0]), static_cast<T>(xy[1]), static_cast<T>(zw[0]), static_cast<T>(zw[1]) } {}
 		template <zore::numeric U>
-		ALWAYS_INLINE explicit vec4_base(U x, U y, U z, U w) : v(static_cast<int32_t>(x), static_cast<int32_t>(y), static_cast<int32_t>(z), static_cast<int32_t>(w)) {}
-		template <zore::numeric U>
-		ALWAYS_INLINE vec4_base(const vec4_base<U>& o) {
-			if constexpr (std::is_same_v<U, uint32_t>)
-				v = reinterpret_cast<const simd::uint32_4&>(o).v;
-			else if constexpr (std::is_same_v<U, float>)
-				v = simd::int32_4(reinterpret_cast<const simd::float32_4&>(o).v);
+		ALWAYS_INLINE vec_base(const vec_base<U, 4>& o) {
+			if constexpr (simd_enabled<U, 4>)
+				v = simd<T, 4>(o.v);
 			else
-				v = simd::int32_4(static_cast<int32_t>(o.x), static_cast<int32_t>(o.y), static_cast<int32_t>(o.z), static_cast<int32_t>(o.w));
+				v = { o.x, o.y, o.z, o.w };
 		}
-		ALWAYS_INLINE vec4_base(const simd::int32_4& o) : v(o) {}
+		ALWAYS_INLINE vec_base(const simd<T, 4>& o) : v(o) {}
 
 	public:
 		// Comparison ---------------------
-		ALWAYS_INLINE bool operator== (const vec4_base<int32_t>& o) const { return simd::mask(v == o.v) == 0xFFFF; }
-		ALWAYS_INLINE bool operator!= (const vec4_base<int32_t>& o) const { return simd::mask(v == o.v) != 0xFFFF; }
+		ALWAYS_INLINE bool operator== (const vec_base& o) const { return mask(v == o.v) == 0xFFFF; }
+		ALWAYS_INLINE bool operator!= (const vec_base& o) const { return mask(v == o.v) != 0xFFFF; }
+		// Bit Operations -----------------
+		ALWAYS_INLINE vec_base  operator>> (T s) const requires std::integral<T> { return { v >> s }; }
+		ALWAYS_INLINE vec_base& operator>>=(T s)       requires std::integral<T> { v >>= s; return *this; }
+		ALWAYS_INLINE vec_base  operator<< (T s) const requires std::integral<T> { return { v << s }; }
+		ALWAYS_INLINE vec_base& operator<<=(T s)       requires std::integral<T> { v <<= s; return *this; }
 		// Arithmetic ---------------------
-		ALWAYS_INLINE vec4_base<int32_t>& operator+  () { return *this; }
-		ALWAYS_INLINE vec4_base<int32_t>  operator+  (const vec4_base<int32_t>& o) const { return vec4_base<int32_t>(v + o.v); }
-		ALWAYS_INLINE vec4_base<int32_t>& operator+= (const vec4_base<int32_t>& o) { v += o.v; return *this; }
-		ALWAYS_INLINE vec4_base<int32_t>  operator-  () const { return -v; }
-		ALWAYS_INLINE vec4_base<int32_t>  operator-  (const vec4_base<int32_t>& o) const { return vec4_base<int32_t>(v - o.v); }
-		ALWAYS_INLINE vec4_base<int32_t>& operator-= (const vec4_base<int32_t>& o) { v -= o.v; return *this; }
-		ALWAYS_INLINE vec4_base<int32_t>  operator*  (const vec4_base<int32_t>& o) const { return vec4_base<int32_t>(v * o.v); }
-		ALWAYS_INLINE vec4_base<int32_t>& operator*= (const vec4_base<int32_t>& o) { v *= o.v; return *this; }
-		ALWAYS_INLINE vec4_base<int32_t>  operator/  (const vec4_base<int32_t>& o) const { return vec4_base<int32_t>(v / o.v); }
-		ALWAYS_INLINE vec4_base<int32_t>& operator/= (const vec4_base<int32_t>& o) { v /= o.v; return *this; }
+		ALWAYS_INLINE vec_base& operator+  () const { return *this; }
+		ALWAYS_INLINE vec_base  operator+  (const vec_base& o) const { return { v + o.v }; }
+		ALWAYS_INLINE vec_base& operator+= (const vec_base& o) { v += o.v; return *this; }
+		ALWAYS_INLINE vec_base  operator-  () const { return -v; }
+		ALWAYS_INLINE vec_base  operator-  (const vec_base& o) const { return { v - o.v }; }
+		ALWAYS_INLINE vec_base& operator-= (const vec_base& o) { v -= o.v; return *this; }
+		ALWAYS_INLINE vec_base  operator*  (const vec_base& o) const { return { v * o.v }; }
+		ALWAYS_INLINE vec_base& operator*= (const vec_base& o) { v *= o.v; return *this; }
+		ALWAYS_INLINE vec_base  operator/  (const vec_base& o) const { return { v / o.v }; }
+		ALWAYS_INLINE vec_base& operator/= (const vec_base& o) { v /= o.v; return *this; }
 		// Other --------------------------
-		ALWAYS_INLINE       int32_t& operator[](int index) { return data[index]; }
-		ALWAYS_INLINE const int32_t& operator[](int index) const { return data[index]; }
-		ALWAYS_INLINE int32_t Sum() const { return v.hsum(); }
-		ALWAYS_INLINE int32_t Dot(const vec4_base<int32_t>& o) const { return v.dot(o.v); }
+		ALWAYS_INLINE       T& operator[](int index) { return data[index]; }
+		ALWAYS_INLINE const T& operator[](int index) const { return data[index]; }
+		ALWAYS_INLINE T Sum() const { return v.hsum(); }
+		ALWAYS_INLINE T Dot(const vec_base& o) const { return v.dot(o.v); }
 		ALWAYS_INLINE float Length() const { return std::sqrtf(static_cast<float>(v.dot(v))); }
+		ALWAYS_INLINE vec_base& Normalize() requires std::floating_point<T> { (*this) *= (1.f / Length()); return *this; }
 
 	public:
 		// Data ---------------------------
 		union {
-			struct { int32_t x, y, z, w; };
-			struct { int32_t r, g, b, a; };
-			int32_t data[4];
-			simd::int32_4 v;
+			struct { T x, y, z, w; };
+			struct { T r, g, b, a; };
+			T data[4];
+			simd<T, 4> v;
 		};
 	};
-
-	//========================================================================
-	//  uint32 4 SIMD Vector
-	//========================================================================
-
-	template<>
-	struct alignas(16) vec4_base<uint32_t> {
-	public:
-		// Constructors -------------------
-		ALWAYS_INLINE explicit vec4_base() : v() {}
-		template <zore::numeric U>
-		ALWAYS_INLINE vec4_base(U s) : v(static_cast<uint32_t>(s)) {}
-		template <zore::numeric U>
-		ALWAYS_INLINE explicit vec4_base(U x, U y, U z, U w) : v(static_cast<uint32_t>(x), static_cast<uint32_t>(y), static_cast<uint32_t>(z), static_cast<uint32_t>(w)) {}
-		template <zore::numeric U>
-		ALWAYS_INLINE vec4_base(const vec4_base<U>& o) {
-			if constexpr (std::is_same_v<U, int32_t>)
-				v = reinterpret_cast<const simd::int32_4&>(o).v;
-			else if constexpr (std::is_same_v<U, float>)
-				v = simd::uint32_4(reinterpret_cast<const simd::float32_4&>(o).v);
-			else
-				v = simd::uint32_4(static_cast<uint32_t>(o.x), static_cast<uint32_t>(o.y), static_cast<uint32_t>(o.z), static_cast<uint32_t>(o.w));
-		}
-		ALWAYS_INLINE vec4_base(const simd::uint32_4& o) : v(o) {}
-
-	public:
-		// Comparison ---------------------
-		ALWAYS_INLINE bool operator== (const vec4_base<uint32_t>& o) const { return simd::mask(v == o.v) == 0xFFFF; }
-		ALWAYS_INLINE bool operator!= (const vec4_base<uint32_t>& o) const { return simd::mask(v == o.v) != 0xFFFF; }
-		// Arithmetic ---------------------
-		ALWAYS_INLINE vec4_base<uint32_t>& operator+  () { return *this; }
-		ALWAYS_INLINE vec4_base<uint32_t>  operator+  (const vec4_base<uint32_t>& o) const { return vec4_base<uint32_t>(v + o.v); }
-		ALWAYS_INLINE vec4_base<uint32_t>& operator+= (const vec4_base<uint32_t>& o) { v += o.v; return *this; }
-		ALWAYS_INLINE vec4_base<uint32_t>  operator-  () const { return -v; }
-		ALWAYS_INLINE vec4_base<uint32_t>  operator-  (const vec4_base<uint32_t>& o) const { return vec4_base<uint32_t>(v - o.v); }
-		ALWAYS_INLINE vec4_base<uint32_t>& operator-= (const vec4_base<uint32_t>& o) { v -= o.v; return *this; }
-		ALWAYS_INLINE vec4_base<uint32_t>  operator*  (const vec4_base<uint32_t>& o) const { return vec4_base<uint32_t>(v * o.v); }
-		ALWAYS_INLINE vec4_base<uint32_t>& operator*= (const vec4_base<uint32_t>& o) { v *= o.v; return *this; }
-		ALWAYS_INLINE vec4_base<uint32_t>  operator/  (const vec4_base<uint32_t>& o) const { return vec4_base<uint32_t>(v / o.v); }
-		ALWAYS_INLINE vec4_base<uint32_t>& operator/= (const vec4_base<uint32_t>& o) { v /= o.v; return *this; }
-		// Other --------------------------
-		ALWAYS_INLINE       uint32_t& operator[](int index) { return data[index]; }
-		ALWAYS_INLINE const uint32_t& operator[](int index) const { return data[index]; }
-		ALWAYS_INLINE uint32_t Sum() const { return v.hsum(); }
-		ALWAYS_INLINE uint32_t Dot(const vec4_base<uint32_t>& o) const { return v.dot(o.v); }
-		ALWAYS_INLINE float Length() const { return std::sqrtf(static_cast<float>(v.dot(v))); }
-
-	public:
-		// Data ---------------------------
-		union {
-			struct { uint32_t x, y, z, w; };
-			struct { uint32_t r, g, b, a; };
-			uint32_t data[4];
-			simd::uint32_4 v;
-		};
-	};
-
-	//========================================================================
-	//  float32 4 SIMD Vector
-	//========================================================================
-
-	template<>
-	struct alignas(16) vec4_base<float> {
-	public:
-		// Constructors -------------------
-		ALWAYS_INLINE explicit vec4_base() : v() {}
-		template <zore::numeric U>
-		ALWAYS_INLINE vec4_base(U s) : v(static_cast<float>(s)) {}
-		template <zore::numeric U>
-		ALWAYS_INLINE explicit vec4_base(U x, U y, U z, U w) : v(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), static_cast<float>(w)) {}
-		template <zore::numeric U>
-		ALWAYS_INLINE vec4_base(const vec4_base<U>& o) {
-			if constexpr (std::is_same_v<U, int32_t>)
-				v = simd::float32_4(reinterpret_cast<const simd::int32_4&>(o).v);
-			else if constexpr (std::is_same_v<U, uint32_t>)
-				v = simd::float32_4(reinterpret_cast<const simd::uint32_4&>(o).v);
-			else
-				v = simd::float32_4(static_cast<float>(o.x), static_cast<float>(o.y), static_cast<float>(o.z), static_cast<float>(o.w));
-		}
-		ALWAYS_INLINE vec4_base(const simd::float32_4& o) : v(o) {}
-
-	public:
-		// Comparison ---------------------
-		ALWAYS_INLINE bool operator== (const vec4_base<float>& o) const { return simd::mask(v == o.v) == 0xFFFF; }
-		ALWAYS_INLINE bool operator!= (const vec4_base<float>& o) const { return simd::mask(v == o.v) != 0xFFFF; }
-		// Arithmetic ---------------------
-		ALWAYS_INLINE vec4_base<float>& operator+  () { return *this; }
-		ALWAYS_INLINE vec4_base<float>  operator+  (const vec4_base<float>& o) const { return vec4_base<float>(v + o.v); }
-		ALWAYS_INLINE vec4_base<float>& operator+= (const vec4_base<float>& o) { v += o.v; return *this; }
-		ALWAYS_INLINE vec4_base<float>  operator-  () const { return -v; }
-		ALWAYS_INLINE vec4_base<float>  operator-  (const vec4_base<float>& o) const { return vec4_base<float>(v - o.v); }
-		ALWAYS_INLINE vec4_base<float>& operator-= (const vec4_base<float>& o) { v -= o.v; return *this; }
-		ALWAYS_INLINE vec4_base<float>  operator*  (const vec4_base<float>& o) const { return vec4_base<float>(v * o.v); }
-		ALWAYS_INLINE vec4_base<float>& operator*= (const vec4_base<float>& o) { v *= o.v; return *this; }
-		ALWAYS_INLINE vec4_base<float>  operator/  (const vec4_base<float>& o) const { return vec4_base<float>(v / o.v); }
-		ALWAYS_INLINE vec4_base<float>& operator/= (const vec4_base<float>& o) { v /= o.v; return *this; }
-		// Other --------------------------
-		ALWAYS_INLINE       float& operator[](int index) { return data[index]; }
-		ALWAYS_INLINE const float& operator[](int index) const { return data[index]; }
-		ALWAYS_INLINE float Sum() const { return v.hsum(); }
-		ALWAYS_INLINE float Dot(const vec4_base<float>& o) const { return v.dot(o.v); }
-		ALWAYS_INLINE float Length() const { return std::sqrtf(v.dot(v)); }
-		ALWAYS_INLINE vec4_base<float>& Normalize() { v /= simd::float32_4(Length()); return *this; }
-
-	public:
-		// Data ---------------------------
-		union {
-			struct { float x, y, z, w; };
-			struct { float r, g, b, a; };
-			float data[4];
-			simd::float32_4 v;
-		};
-	};
-
-	template <>
-	ALWAYS_INLINE vec4_base<float> Trunc(const vec4_base<float>& a) { return vec4_base<float>(simd::trunc(a.v)); }
-	template <>
-	ALWAYS_INLINE vec4_base<float> Floor(const vec4_base<float>& a) { return vec4_base<float>(simd::floor(a.v)); }
-	template <>
-	ALWAYS_INLINE vec4_base<float> Ceil(const vec4_base<float>& a) { return vec4_base<float>(simd::ceil(a.v)); }
-	template <>
-	ALWAYS_INLINE vec4_base<float> Round(const vec4_base<float>& a) { return vec4_base<float>(simd::round(a.v)); }
-	template <>
-	ALWAYS_INLINE vec4_base<float> Fract(const vec4_base<float>& a) { return vec4_base<float>(simd::fract(a.v)); }
 }

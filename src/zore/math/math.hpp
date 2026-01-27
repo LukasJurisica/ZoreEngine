@@ -71,30 +71,12 @@ namespace zm {
 	template <zore::arithmetic T>
 	inline T Spread(float n) { return (n * (T)2) - (T)1; }
 
-	// Packs a floating representation of a radian in a uint8_t
-	inline uint8_t PackRadians(float r) {
-		static const float mult = 128.f / zm::PI; // 256 / 2pi
-		return static_cast<uint8_t>(std::floor(r * mult));
-	};
+	template <zore::numeric T>
+	inline T Radians(T d) { return static_cast<float>(d) * PI / 180.f; }
 
-	// Unpacks a uint8_t representation of a radian
-	inline float UnpackRadians(uint8_t r) {
-		static const float mult = zm::PI / 128.f; // 2pi / 256
-		return r * mult;
-	};
+	template <zore::numeric T>
+	inline T Degrees(T r) { return static_cast<float>(r) * 180.f / PI; }
 
-	// Packs a floating representation of a degree in a uint8_t
-	inline uint8_t PackDegrees(float r) {
-		static const float mult = 256.f / 360.f;
-		return static_cast<uint8_t>(std::floor(r * mult));
-	};
-
-	// Unpacks a uint8_t representation of a degree
-	inline float UnpackDegrees(uint8_t r) {
-		static const float mult = 360.f / 256;
-		return r * mult;
-	};
-	
 	// Returns the smaller value between a and b
 	template <zore::numeric T>
 	inline T Min(T a, T b) { return a < b ? a : b; }

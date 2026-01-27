@@ -66,7 +66,7 @@ namespace zore::UI {
 	void Layer::Bind() {
 		if (s_active_layer != this) {
 			s_active_layer = this;
-			glm::ivec2 resolution = Window::GetSize();
+			zm::ivec2 resolution = Window::GetSize();
 			Resize(resolution.x, resolution.y);
 			s_hovered_button = nullptr;
 			s_pressed_button = nullptr;

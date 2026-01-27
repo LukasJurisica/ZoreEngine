@@ -1,5 +1,6 @@
 #pragma once
-#include "glm/ext/vector_int2.hpp"
+
+#include "zore/math/vector/vec2.hpp"
 
 struct GLFWwindow;
 struct GLFWMonitor;
@@ -34,11 +35,11 @@ namespace zore {
 		static bool ShouldClose();
 		static bool GetMaximized();
 		static float GetAspectRatio();		
-		static const glm::ivec2& GetSize();
-		static const glm::ivec2& GetPosition();
+		static const zm::ivec2& GetSize();
+		static const zm::ivec2& GetPosition();
 		static GLFWwindow* GetWindowHandle();
 		static void GetNativeHandle(void* result);
-		static glm::ivec2 GetNativeResolution(int monitor_index = 0);
+		static zm::ivec2 GetNativeResolution(int monitor_index = 0);
 
 	private:
 		static void Init(bool transparent);

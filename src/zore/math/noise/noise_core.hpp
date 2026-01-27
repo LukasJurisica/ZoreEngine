@@ -34,15 +34,15 @@ namespace zm {
 
 		// SIMD8 Input --------------------
 #if SIMD_INT32_8 == true
-		virtual void Eval(simd::float32_8& x, simd::float32_8& out) = 0;
-		virtual void Eval(simd::float32_8& x, simd::float32_8& y, simd::float32_8& out) = 0;
-		virtual void Eval(simd::float32_8& x, simd::float32_8& y, simd::float32_8& z, simd::float32_8& out) = 0;
+		virtual void Eval(simd<float, 8>& x, simd<float, 8>& out) = 0;
+		virtual void Eval(simd<float, 8>& x, simd<float, 8>& y, simd<float, 8>& out) = 0;
+		virtual void Eval(simd<float, 8>& x, simd<float, 8>& y, simd<float, 8>& z, simd<float, 8>& out) = 0;
 #endif
 		// SIMD4 Input --------------------
 #if SIMD_INT32_4 == true
-		virtual void Eval(simd::float32_4& x, simd::float32_4& out) = 0;
-		virtual void Eval(simd::float32_4& x, simd::float32_4& y, simd::float32_4& out) = 0;
-		virtual void Eval(simd::float32_4& x, simd::float32_4& y, simd::float32_4& z, simd::float32_4& out) = 0;
+		virtual void Eval(simd<float, 4>& x, simd<float, 4>& out) = 0;
+		virtual void Eval(simd<float, 4>& x, simd<float, 4>& y, simd<float, 4>& out) = 0;
+		virtual void Eval(simd<float, 4>& x, simd<float, 4>& y, simd<float, 4>& z, simd<float, 4>& out) = 0;
 #endif
 
 	protected:
@@ -78,5 +78,4 @@ namespace zm {
 		(*w) += count;
 		UpdateStorage(x, y, z, o, remaining, count);
 	}
-
 }

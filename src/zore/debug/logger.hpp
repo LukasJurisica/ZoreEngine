@@ -22,28 +22,28 @@ namespace zore {
 		template<Loggable... Args>
 		static void Log(Args... args) {
 			std::stringstream result;
-			Append(result, args...);
+			((result << args << ' '), ...);
 			Console::Print(result.str(), Console::LogLevel::LOG);
 		}
 
 		template<Loggable... Args>
 		static void Info(Args... args) {
 			std::stringstream result;
-			Append(result, args...);
+			((result << args << ' '), ...);
 			Console::Print(result.str(), Console::LogLevel::INFO);
 		}
 
 		template<Loggable... Args>
 		static void Warn(Args... args) {
 			std::stringstream result;
-			Append(result, args...);
+			((result << args << ' '), ...);
 			Console::Print(result.str(), Console::LogLevel::WARN);
 		}
 
 		template<Loggable... Args>
 		static void Error(Args... args) {
 			std::stringstream result;
-			Append(result, args...);
+			((result << args << ' '), ...);
 			Console::Print(result.str(), Console::LogLevel::ERR);
 		}
 

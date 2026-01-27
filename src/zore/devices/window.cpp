@@ -9,10 +9,10 @@
 
 namespace zore {
 
-	static glm::ivec2 s_size = { 0, 0 };
-	static glm::ivec2 s_min_size = { GLFW_DONT_CARE, GLFW_DONT_CARE };
-	static glm::ivec2 s_max_size = { GLFW_DONT_CARE, GLFW_DONT_CARE };
-	static glm::ivec2 s_position = { 0, 0 };
+	static zm::ivec2 s_size = { 0, 0 };
+	static zm::ivec2 s_min_size = { GLFW_DONT_CARE, GLFW_DONT_CARE };
+	static zm::ivec2 s_max_size = { GLFW_DONT_CARE, GLFW_DONT_CARE };
+	static zm::ivec2 s_position = { 0, 0 };
 	static GLFWwindow* s_window_handle = nullptr;
 	static bool s_fullscreen = false;
 	static bool s_cursor_hidden = false;
@@ -29,8 +29,8 @@ namespace zore {
 		glfwSetErrorCallback(ErrorCallback);
 		Logger::Info("Window Initialization Complete.");
 
-		glm::ivec2 native_resolution = Window::GetNativeResolution();
-		s_size = { static_cast<int>(native_resolution.x * 0.75f), static_cast<int>(native_resolution.y * 0.75f) };
+		zm::ivec2 native_resolution = Window::GetNativeResolution();
+		s_size = native_resolution / 4 * 3;
 		s_transparent = transparent;
 
 		Create();
@@ -192,15 +192,15 @@ namespace zore {
 		return (static_cast<float>(s_size.x) / static_cast<float>(s_size.y));
 	}
 
-	const glm::ivec2& Window::GetSize() {
+	const zm::ivec2& Window::GetSize() {
 		return s_size;
 	}
 
-	const glm::ivec2& Window::GetPosition() {
+	const zm::ivec2& Window::GetPosition() {
 		return s_position;
 	}
 
-	glm::ivec2 Window::GetNativeResolution(int monitor_index) {
+	zm::ivec2 Window::GetNativeResolution(int monitor_index) {
 		int count;
 		GLFWmonitor** monitors = glfwGetMonitors(&count);
 		ENSURE(monitor_index >= 0 && monitor_index < count, "Monitor Index specified out of range");
