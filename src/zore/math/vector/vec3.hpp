@@ -73,6 +73,10 @@ namespace zm {
 	template <zore::numeric T>
 	ALWAYS_INLINE float Distance(const vec_base<T, 3>& a, const vec_base<T, 3>& b) { return Length(a - b); }
 	template <zore::numeric T>
+	ALWAYS_INLINE vec_base<T, 3> Min(const vec_base<T, 3>& a, const vec_base<T, 3>& b) { return { zm::Min(a.x, b.x), zm::Min(a.y, b.y), zm::Min(a.z, b.z) }; }
+	template <zore::numeric T>
+	ALWAYS_INLINE vec_base<T, 3> Max(const vec_base<T, 3>& a, const vec_base<T, 3>& b) { return { zm::Max(a.x, b.x), zm::Max(a.y, b.y), zm::Max(a.z, b.z) }; }
+	template <zore::numeric T>
 	ALWAYS_INLINE vec_base<T, 3> Cross(const vec_base<T, 3>& a, const vec_base<T, 3>& b) { return a.Cross(b); }
 	template <std::floating_point T>
 	ALWAYS_INLINE vec_base<T, 3> Normalize(const vec_base<T, 3>& v) { return v / v.Length(); }

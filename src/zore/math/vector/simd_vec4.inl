@@ -82,4 +82,21 @@ namespace zm {
 			simd<T, 4> v;
 		};
 	};
+
+	//========================================================================
+	// Static Operators
+	//========================================================================
+
+	template <zore::numeric T>
+	ALWAYS_INLINE vec_base<T, 4> Min(const vec_base<T, 4>& a, const vec_base<T, 4>& b) requires simd_enabled<T, 4> { return min(a.v, b.v); }
+	template <zore::numeric T>
+	ALWAYS_INLINE vec_base<T, 4> Max(const vec_base<T, 4>& a, const vec_base<T, 4>& b) requires simd_enabled<T, 4> { return max(a.v, b.v); }
+	template <std::floating_point T>
+	ALWAYS_INLINE vec_base<T, 4> Floor(const vec_base<T, 4>& v) requires simd_enabled<T, 4> { return floor(v.v); }
+	template <std::floating_point T>
+	ALWAYS_INLINE vec_base<T, 4> Ceil(const vec_base<T, 4>& v) requires simd_enabled<T, 4> { return ceil(v.v); }
+	template <std::floating_point T>
+	ALWAYS_INLINE vec_base<T, 4> Round(const vec_base<T, 4>& v) requires simd_enabled<T, 4> { return round(v.v); }
+	template <std::floating_point T>
+	ALWAYS_INLINE vec_base<T, 4> Trunc(const vec_base<T, 4>& v) requires simd_enabled<T, 4> { return trunc(v.v); }
 }
