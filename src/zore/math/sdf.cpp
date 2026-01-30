@@ -39,7 +39,7 @@ namespace zm {
 		p -= zm::vec2(-k.x, k.y) * zm::Min(zm::Dot(zm::vec2(-k.x, k.y), p), 0.f) * 2.f;
 		p -= zm::vec2( k.x, k.y) * zm::Min(zm::Dot(zm::vec2( k.x, k.y), p), 0.f) * 2.f;
 		p -= zm::vec2(zm::Clamp(p.x, -r * k.z, r * k.z), r);
-		return -zm::vec2(x, y).Length() * zm::Sign(y);
+		return p.Length() * zm::Sign(p.y);
 	}
 
 	float SDF::Star5(float x, float y, float r) {
