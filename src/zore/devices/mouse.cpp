@@ -13,7 +13,7 @@ namespace zore {
 	//	Mouse
 	//========================================================================
 
-	static glm::vec2 s_position = { 0, 0 };
+	static zm::vec2 s_position = { 0, 0 };
 
 	static std::bitset<MOUSE_BUTTON_COUNT> s_button_held_states;
 	static std::bitset<MOUSE_BUTTON_COUNT> s_button_up_states;
@@ -34,13 +34,17 @@ namespace zore {
 		return s_button_down_states[button];
 	}
 
-	const glm::vec2& Mouse::GetPosition() {
+	const zm::vec2& Mouse::GetPosition() {
 		return s_position;
 	}
 
 	void Mouse::SetPosition(float x, float y) {
-		s_position = { x, y };
-		glfwSetCursorPos(Window::GetWindowHandle(), x, y);
+		SetPosition({ x, y });
+	}
+
+	static void SetPosition(const zm::vec2& position) {
+		s_position = position;
+		glfwSetCursorPos(Window::GetWindowHandle(), position.x, position.y);
 	}
 
 	void Mouse::ClearState(bool clear_held_state) {
@@ -75,7 +79,7 @@ namespace zore {
 	}
 
 	void Mouse::MoveCallback(GLFWwindow* windowHandle, double xpos, double ypos) {
-		glm::vec2 delta = s_position;
+		zm::vec2 delta = s_position;
 		s_position = { xpos, ypos };
 		delta = s_position - delta;
 		if (Editor::WantsMouse())

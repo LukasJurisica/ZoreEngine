@@ -1,6 +1,6 @@
 #pragma once
 #include "zore/devices/mouse_codes.hpp"
-#include <glm/ext/vector_float2.hpp>
+#include "zore/math/vector/vec2.hpp"
 
 struct GLFWwindow;
 
@@ -16,8 +16,9 @@ namespace zore {
 		static bool GetButton(int button);
 		static bool GetButtonUp(int button);
 		static bool GetButtonDown(int button);
-		static const glm::vec2& GetPosition();
+		static const zm::vec2& GetPosition();
 		static void SetPosition(float x = 0, float y = 0);
+		static void SetPosition(const zm::vec2& position);
 		static void ClearState(bool clear_held_state = true);
 
 	private:
