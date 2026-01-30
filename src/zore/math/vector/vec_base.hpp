@@ -1,9 +1,7 @@
 #pragma once
 
-#include "zore/utils/sized_integer.hpp"
-#include "zore/utils/concepts.hpp"
+#include "zore/math/math.hpp"
 #include "zore/platform.hpp"
-#include <cmath>
 #include <ostream>
 
 namespace zm {

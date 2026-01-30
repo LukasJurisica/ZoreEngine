@@ -42,7 +42,7 @@ namespace zore {
 		SetPosition({ x, y });
 	}
 
-	static void SetPosition(const zm::vec2& position) {
+	void Mouse::SetPosition(const zm::vec2& position) {
 		s_position = position;
 		glfwSetCursorPos(Window::GetWindowHandle(), position.x, position.y);
 	}
