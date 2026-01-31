@@ -18,6 +18,8 @@ namespace zm {
 			vec2(0.f, static_cast<float>(s))
 		} {}
 		ALWAYS_INLINE mat2(const vec2& r0, const vec2& r1) : rows{ r0, r1 } {}
+		template <zore::numeric X1, zore::numeric Y1, zore::numeric X2, zore::numeric Y2>
+		ALWAYS_INLINE mat2(X1 x1, Y1 y1, X2 x2, Y2 y2) : rows{{ x1, y1 }, { x2, y2 }} {}
 		// Comparison ---------------------
 		ALWAYS_INLINE bool  operator==(const mat2& m) const { return rows[0] == m.rows[0] && rows[1] == m.rows[1]; }
 		ALWAYS_INLINE bool  operator!=(const mat2& m) const { return rows[0] != m.rows[0] || rows[1] != m.rows[1]; }

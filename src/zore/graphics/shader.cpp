@@ -164,15 +164,15 @@ namespace zore {
 	}
 	// glUniformMatrix{2|3|4|2x3|3x2|2x4|4x2|3x4|4x3}fv
 	void Shader::SetMat2(const std::string& name, const zm::mat2& data) {
-		glUniformMatrix2fv(GetUniformLocation(name), 1, GL_FALSE, &(data[0].x));
+		glUniformMatrix2fv(GetUniformLocation(name), 1, GL_TRUE, &(data[0].x));
 	}
 
 	void Shader::SetMat3(const std::string& name, const zm::mat3& data) {
-		glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &(data[0].x));
+		glUniformMatrix3fv(GetUniformLocation(name), 1, GL_TRUE, &(data[0].x));
 	}
 
 	void Shader::SetMat4(const std::string& name, const zm::mat4& data) {
-		glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &(data[0].x));
+		glUniformMatrix4fv(GetUniformLocation(name), 1, GL_TRUE, &(data[0].x));
 	}
 
 	void Shader::SetTextureSlot(const std::string& name, uint32_t slot) {
