@@ -1,5 +1,6 @@
 #include "zore/graphics/textures/texture_data.hpp"
 #include "zore/graphics/textures/texture_base.hpp"
+#include "zore/debug.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
@@ -43,6 +44,7 @@ namespace zore::Texture {
             Free();
         stbi_set_flip_vertically_on_load(true);
         data = stbi_load(path.c_str(), &width, &height, &channels, GetChannelCount(requested_format));
+		ENSURE(data, "Failed to load texture: " + path + ". " + stbi_failure_reason());
     }
 
     void Data::Free() {
