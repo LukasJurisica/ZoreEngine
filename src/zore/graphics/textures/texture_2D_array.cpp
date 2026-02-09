@@ -26,6 +26,14 @@ namespace zore {
 		}
 	}
 
+	void Texture2DArray::Update(const std::vector<std::string>& filenames, const std::string& root, uint32_t offset) {
+		for (int i = 0; i < filenames.size(); i++) {
+			Texture::Data image(root + filenames[i], m_format);
+			ENSURE(image.width == m_width && image.height == m_height, "The following texture cannot be added to the texture array as it has different dimensions: " + root + filenames[i]);
+			Update(image.data, i + offset, 1);
+		}
+	}
+
 	void Texture2DArray::Set(void* data, uint32_t width, uint32_t height, uint32_t layers) {
 		ENSURE(width * height * layers != 0, "Cannot create Texture2DArray with 0 area (requested Width, Height or Layers are 0)");
 		m_width = width;

@@ -18,7 +18,8 @@ namespace zore {
         Texture2DArray& operator=(Texture2DArray&&) = default;
         ~Texture2DArray() = default;
 
-        void Update(void* data, uint32_t offset = 0, uint32_t count = ~0);
+		void Update(void* data, uint32_t offset, uint32_t count);
+        void Update(const std::vector<std::string>& filenames, const std::string& root = "assets/", uint32_t offset = 0);
         void Set(void* data, uint32_t width, uint32_t height, uint32_t layers);
         void Set(void* data, uint32_t width, uint32_t height, uint32_t layers, Texture::Format format);
         void Set(const std::vector<std::string>& filenames, const std::string& root = "assets/", Texture::Format format = Texture::Format::RGBA);
