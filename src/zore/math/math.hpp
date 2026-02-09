@@ -72,10 +72,10 @@ namespace zm {
 	inline T Spread(float n) { return (n * (T)2) - (T)1; }
 
 	template <zore::numeric T>
-	inline T Radians(T d) { return static_cast<float>(d) * PI / 180.f; }
+	inline float Radians(T d) { return static_cast<float>(d) * PI / 180.f; }
 
 	template <zore::numeric T>
-	inline T Degrees(T r) { return static_cast<float>(r) * 180.f / PI; }
+	inline float Degrees(T r) { return static_cast<float>(r) * 180.f / PI; }
 
 	// Returns the smaller value between a and b
 	template <zore::numeric T>
