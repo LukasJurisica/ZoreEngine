@@ -15,7 +15,7 @@ namespace zore {
 		Console::LogLevel level;
 	};
 
-	static std::unordered_map<std::string, void (*)(const std::vector<std::string>&)> s_commands;
+	static std::unordered_map<std::string, bool (*)(const std::vector<std::string>&)> s_commands;
 	static char s_buffer[256];
 	static std::vector<LogEntry> s_log_entries;
 	static std::vector<uint32_t> s_history;
@@ -107,14 +107,15 @@ namespace zore {
 			}
 			ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
 			if (ImGui::InputText("Console", s_buffer, sizeof(s_buffer), input_text_flags, &TextEditCallback)) {
-				ProcessCommand();
+				ProcessCommand(std::string(s_buffer));
+				memset(s_buffer, 0, 256);
 				s_retain_focus = true;
 			}
 		}
 		ImGui::End();
 	}
 
-	void Console::RegisterCommand(const std::string& command, void (*func)(const std::vector<std::string>&)) {
+	void Console::RegisterCommand(const std::string& command, bool (*func)(const std::vector<std::string>&)) {
 		s_commands[String::Lower(command)] = func;
 	}
 
@@ -156,32 +157,38 @@ namespace zore {
 		}
 	}
 
-	void Console::Help(const std::vector<std::string>& args) {
+	bool Console::Help(const std::vector<std::string>& args) {
 		std::string result = "Commands:";
 		for (const auto& command : s_commands)
 			result += "\n- " + command.first;
 		Print(result, LogLevel::LOG);
+		return true;
 	}
 
-	void Console::ProcessCommand() {
+	bool Console::ProcessCommand(const std::string& command, bool print) {
 		std::vector<std::string> args;
-		std::string buffer = std::string(s_buffer);
-		String::Split(args, buffer, " ");
+		String::Split(args, command, " ");
 		String::LowerInPlace(args[0]);
-		buffer = "# " + buffer;
 
-		Print(buffer, LogLevel::CMD);
-		if (s_history.size() == 0 || s_log_entries[s_history.back()].text != buffer)
-			s_history.push_back(s_log_entries.size() - 1);
-		s_history_pos = s_history.size();
-		
+		if (print) {
+			Print("> " + command, LogLevel::CMD);
+			if (s_history.size() == 0 || s_log_entries[s_history.back()].text != "> " + command)
+				s_history.push_back(s_log_entries.size() - 1);
+			s_history_pos = s_history.size();
+			s_scroll_to_bottom = true;
+		}
+
 		auto iter = s_commands.find(args[0]);
-		if (iter != s_commands.end())
-			iter->second(args);
-		else
-			Print("Command not found: " + args[0], LogLevel::ERR);
+		if (iter != s_commands.end()) {
+			try {
+				return iter->second(args);
+			} catch (const std::exception& e) {
+				Print("Error executing command: " + std::string(e.what()), LogLevel::ERR);
+				return false;
+			}
+		}
 
-		memset(s_buffer, 0, 256);
-		s_scroll_to_bottom = true;
+		Print("Command not found: " + args[0], LogLevel::ERR);
+		return false;
 	}
 }
