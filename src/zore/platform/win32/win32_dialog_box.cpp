@@ -1,5 +1,5 @@
 #define WIN32_NOT_LEAN
-#include "zore/utils/dialog_box.hpp"
+#include "zore/core/dialog_box.hpp"
 #include "zore/platform/win32/win32_core.hpp"
 #include "zore/devices/window.hpp"
 #include "zore/debug.hpp"

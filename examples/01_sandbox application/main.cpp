@@ -1,10 +1,7 @@
 #include "main.hpp"
 #include <zore/core/file_manager.hpp>
-#include <zore/utils/config_manager.hpp>
 #include <zore/audio/audio_manager.hpp>
-#include <zore/ui/manager.hpp>
-#include <zore/ui/editor.hpp>
-#include <zore/ui/font.hpp>
+#include <zore/ui.hpp>
 #include <zore/debug.hpp>
 
 #include <zore/math/vector.hpp>

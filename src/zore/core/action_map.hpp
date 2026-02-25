@@ -7,24 +7,27 @@
 //	Action Map Class
 //========================================================================
 
-class ActionMap {
-public:
-	enum class Source { INTERNAL, KEYBOARD, MOUSE, GAMEPAD };
+namespace zore {
 
-public:
-	ActionMap() = default;
-	~ActionMap() = default;
+	class ActionMap {
+	public:
+		enum class Source { INTERNAL, KEYBOARD, MOUSE, GAMEPAD };
 
-	void RegisterAction(Source source, uint32_t code, bool on_start, bool on_stop, void (*action)(bool));
-	bool HandleEvent(Source source, uint32_t code, bool start) const;
+	public:
+		ActionMap() = default;
+		~ActionMap() = default;
 
-	static Source GetSource(uint32_t key);
-	static uint32_t GetCode(uint32_t key);
-	static uint32_t GetType(uint32_t key);
+		void RegisterAction(Source source, uint32_t code, bool on_start, bool on_stop, void (*action)(bool));
+		bool HandleEvent(Source source, uint32_t code, bool start) const;
 
-private:
-	static uint32_t CreateSourceEventKey(Source source, uint32_t code, uint32_t type);
+		static Source GetSource(uint32_t key);
+		static uint32_t GetCode(uint32_t key);
+		static uint32_t GetType(uint32_t key);
 
-private:
-	std::unordered_map<uint32_t, void (*)(bool)> m_actions;
-};
+	private:
+		static uint32_t CreateSourceEventKey(Source source, uint32_t code, uint32_t type);
+
+	private:
+		std::unordered_map<uint32_t, void (*)(bool)> m_actions;
+	};
+}

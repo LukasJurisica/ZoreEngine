@@ -1,4 +1,4 @@
-#include "zore/utils/config_manager.hpp"
+#include "zore/core/config_manager.hpp"
 #include "zore/core/file_manager.hpp"
 #include "zore/utils/string.hpp"
 #include "zore/debug.hpp"
