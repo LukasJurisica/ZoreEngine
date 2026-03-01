@@ -32,6 +32,11 @@ namespace zore {
 			return elapsed_time.count();
 		}
 
+		static inline void Init() {
+			s_last_time = CurrentTime();
+			s_delta_time = 0.0f;
+		}
+
 	private:
 		static inline void NewFrame() {
 			TimePoint current_time = CurrentTime();

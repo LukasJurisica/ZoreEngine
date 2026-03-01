@@ -77,13 +77,13 @@ namespace zore::UI {
 		std::string m_text;
 		std::vector<UNIQUE<Element>> m_children;
 		Type m_type;
-		uint32_t m_id;
 		const Style* m_style;
-		int16_t m_size[2];
-		int16_t m_min_size[2];
-		int16_t m_max_size[2];
-		int16_t m_margin[4];
+		uint32_t m_id;
 		int16_t m_min_margin[4];
 		int16_t m_max_margin[4];
+		int16_t m_margin[4];
+		int16_t m_min_size[2];
+		int16_t m_max_size[2];
+		int16_t m_size[2];
 	};
 }
