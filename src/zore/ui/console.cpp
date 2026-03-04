@@ -108,12 +108,12 @@ namespace zore {
 				std::string command = std::string(s_buffer);
 				memset(s_buffer, 0, 256);
 				Console::Print("> " + command, Console::LogLevel::CMD);
-				Command::Process(command);
 				if (s_history.size() == 0 || s_log_entries[s_history.back()].text != "> " + command)
 					s_history.push_back(s_log_entries.size() - 1);
 				s_history_pos = s_history.size();
 				s_scroll_to_bottom = true;
 				s_retain_focus = true;
+				Command::Process(command);
 			}
 		}
 		ImGui::End();

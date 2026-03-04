@@ -2,6 +2,23 @@
 
 namespace zore {
 
+	Colour Colour::hex(const std::string_view& s) {
+		std::string_view l = s;
+		if (l.length() > 1 && l[0] == '#')
+			l = l.substr(1);
+		else if (l.length() > 2 && l[0] == '0' && l[1] == 'x')
+			l = l.substr(2);
+		if (l.length() == 3)
+			return Colour(h(l[0], l[0]), h(l[1], l[1]), h(l[2], l[2]), 255);
+		else if (l.length() == 4)
+			return Colour(h(l[0], l[0]), h(l[1], l[1]), h(l[2], l[2]), h(l[3], l[3]));
+		else if (l.length() == 6)
+			return Colour(h(l[0], l[1]), h(l[2], l[3]), h(l[4], l[5]), 255);
+		else if (l.length() == 8)
+			return Colour(h(l[0], l[1]), h(l[2], l[3]), h(l[4], l[5]), h(l[6], l[7]));
+		return Colour();
+	}
+
 	Colour Colour::nhsl(float h, float s, float l, float a) {
 		if (s > 0.f) {
 			float q = (l < 0.5f) ? (l * (1.f + s)) : ((l + s) - (l * s));

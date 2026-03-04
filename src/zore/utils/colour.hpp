@@ -4,6 +4,7 @@
 #include "zore/math/math.hpp"
 #include "zore/math/vector/vec3.hpp"
 #include "zore/math/vector/vec4.hpp"
+#include <string_view>
 
 namespace zore {
 
@@ -18,10 +19,7 @@ namespace zore {
 		static inline Colour rgb(const zm::vec4& c) { return nrgb(c.r, c.g, c.b, c.a); }
 		static inline Colour rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) { return Colour(r, g, b, a); }
 		static inline Colour nrgb(float r, float g, float b, float a = 1.f) { return Colour(n(r), n(g), n(b), n(a)); }
-		static inline Colour hex(const char(&s)[5]) { return Colour(h(s[1], s[1]), h(s[2], s[2]), h(s[3], s[3]), 255); }
-		static inline Colour hex(const char(&s)[6]) { return Colour(h(s[1], s[1]), h(s[2], s[2]), h(s[3], s[3]), h(s[4], s[4])); }
-		static inline Colour hex(const char(&s)[8]) { return Colour(h(s[1], s[2]), h(s[3], s[4]), h(s[5], s[6]), 255); }
-		static inline Colour hex(const char(&s)[10]) { return Colour(h(s[1], s[2]), h(s[3], s[4]), h(s[5], s[6]), h(s[7], s[8])); }
+		static Colour hex(const std::string_view& s);
 		static inline Colour hsl(float h, float s, float l, float a = 1.f) { return nhsl(h / 360.f, s, l, a); }
 		static Colour nhsl(float h, float s, float l, float a = 1.f);
 		static inline Colour hsv(float h, float s, float v, float a = 1.f) { return nhsv(h / 360.f, s, v, a); }
