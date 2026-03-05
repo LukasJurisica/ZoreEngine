@@ -113,7 +113,12 @@ namespace zore {
 				s_history_pos = s_history.size();
 				s_scroll_to_bottom = true;
 				s_retain_focus = true;
-				Command::Process(command);
+				try {
+					Command::Process(command);
+				}
+				catch (const std::exception& e) {
+					Logger::Error("Error executing command:", std::string(e.what()));
+				}
 			}
 		}
 		ImGui::End();

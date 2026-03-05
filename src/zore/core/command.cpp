@@ -38,17 +38,12 @@ namespace zore {
 		String::Split(args, command, " ");
 		String::LowerInPlace(args[0]);
 
-		if (auto iter = s_commands_full.find(args[0]); iter != s_commands_full.end()) {
-			try { iter->second(command, args); }
-			catch (const std::exception& e) { Logger::Error("Error executing command:", std::string(e.what())); }
-		}
-		else if (auto iter = s_commands.find(args[0]); iter != s_commands.end()) {
-			try { iter->second(args); }
-			catch (const std::exception& e) { Logger::Error("Error executing command:", std::string(e.what())); }
-		}
-		else {
-			Logger::Error("Command not found:", args[0]);
-		}
+		if (auto iter = s_commands_full.find(args[0]); iter != s_commands_full.end())
+			iter->second(command, args);
+		else if (auto iter = s_commands.find(args[0]); iter != s_commands.end())
+			iter->second(args);
+		else
+			throw std::runtime_error("Command not found: " + args[0]);
 	}
 
 	void Command::Help(const std::vector<std::string>& args) {
