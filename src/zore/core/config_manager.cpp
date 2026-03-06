@@ -20,10 +20,9 @@ namespace zore::Config {
 		std::vector<std::string> content;
 		FileManager::ReadLines(content, m_filename, false, false);
 		for (std::string& line : content) {
-			String::TrimInPlace(line);
-			size_t index = line.find("=");
-			std::string key = String::RTrim(line.substr(0, index));
-			m_entries[key] = line.substr(index + 1);
+			std::string_view trimmed = String::TrimV(line);
+			size_t index = trimmed.find("=");
+			m_entries[String::RTrim(trimmed.substr(0, index))] = line.substr(index + 1);
 		}
 	}
 
