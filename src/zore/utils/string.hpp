@@ -2,8 +2,11 @@
 #include <string>
 #include <vector>
 #include <cctype>
+#include <charconv>
 
 namespace zore {
+
+	using string_hash_t = size_t;
 
 	class String {
 	public:
@@ -254,18 +257,31 @@ namespace zore {
 			s.append(width - s.size(), pad);
 		}
 
-		//static inline std::string ToStrMinDigits(int value, int count) {
-		//	std::string num = std::to_string(value);
-		//	count -= static_cast<int>(num.length());
-		//	return std::string(count, '0') + num;
-		//}
+		template <typename T>
+		static inline bool Parse(std::string_view s, T* result) {
+			auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), *result);
+			return ec == std::errc();
+		}
 
-		static std::wstring to_wstring(std::string_view string) {
+		static inline constexpr string_hash_t Hash(std::string_view s) {
+			string_hash_t hash = 14695981039346656037ull;
+			for (auto c : s) {
+				hash ^= static_cast<uint8_t>(c);
+				hash *= 1099511628211ull;
+			}
+			return hash;
+		}
+
+		static inline std::wstring to_wstring(std::string_view string) {
 			return std::wstring(string.begin(), string.end());
 		}
 		
-		static std::string to_string(const std::wstring& string) {
+		static inline std::string to_string(const std::wstring& string) {
 			return std::string(string.begin(), string.end());
 		}
 	};
+
+	inline constexpr string_hash_t operator""_hash (const char* str, size_t len) {
+		return String::Hash(std::string_view(str, len));
+	}
 }
