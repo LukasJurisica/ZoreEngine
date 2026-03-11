@@ -3,14 +3,14 @@
 #include "zore/debug.hpp"
 #include "path_config.h"
 #include <filesystem>
-#include <fstream>
 
 namespace zore {
 
-	void FileManager::Init(const std::string& path) {
-		// Get the current working file directory
-		//std::filesystem::current_path();
-		
+	//========================================================================
+	//	File Manager Utility
+	//========================================================================
+
+	void File::Manager::Init(const std::string& path) {
 #if IS_DEBUG
 		std::filesystem::current_path(std::string(BASE_DIRECTORY) + path);
 #else
@@ -18,51 +18,126 @@ namespace zore {
 #endif
 	}
 
-	std::string FileManager::GetFullPath(const std::string& filename) {
-		return std::filesystem::current_path().generic_string() + (filename[0] == '/' ? "" : "/") + filename;
+	std::string File::Manager::Path(const std::string& path) {
+		return std::filesystem::current_path().generic_string() + (path[0] == '/' ? "" : "/") + path;
 	}
 
-	void FileManager::ReadContent(std::string& result, const std::string& filename, bool include_empty_lines, bool must_exist) {
-		// Open file
-		std::ifstream f(filename);
-		if (f.is_open()) {
-			// Read file
-			std::string line;
-			while (std::getline(f, line))
-				if (line != "" || include_empty_lines)
-					result += line + "\n";
-		}
-		else if (must_exist)
-			throw ZORE_EXCEPTION("Error opening file: " + filename);
+	void File::Manager::EnsureDir(const std::string& path) {
+		if (!std::filesystem::exists(path))
+			std::filesystem::create_directories(path);
 	}
 
-	void FileManager::ReadLines(std::vector<std::string>& result, const std::string& filename, bool include_empty_lines, bool must_exist) {
-		// Open file
-		std::ifstream f(filename);
-		if (f.is_open()) {
-			// Read file
-			std::string line;
-			while (std::getline(f, line))
-				if (line != "" || include_empty_lines)
-					result.emplace_back(line);
-		}
-		else if (must_exist)
-			throw ZORE_EXCEPTION("Error opening file: " + filename);
+	//========================================================================
+	//	File Class Utility
+	//========================================================================
+
+	File::Iterator::Iterator(std::fstream* stream) : m_stream(stream) {
+		++(*this);
 	}
 
-	void FileManager::ReadChunks(std::vector<std::string>& result, const std::string& filename, const std::string& delimiter, bool include_empty_lines, bool must_exist) {
-
+	const std::string& File::Iterator::operator*() const {
+		return m_line;
 	}
 
-	void FileManager::WriteContent(const std::string& data, const std::string& filename, bool overwrite) {
-		EnsureDir(filename.substr(0, filename.rfind("/")));
-		std::ofstream f(filename, overwrite ? std::ios::out : std::ios::out | std::ios::app);
-		if (f.good())
-			f << data;
-		else
-			Logger::Error("Error writing to file: " + filename);
+	File::Iterator& File::Iterator::operator++() {
+		if (m_stream && std::getline(*m_stream, m_line))
+			return *this;
+		m_stream = nullptr;
+		return *this;
 	}
 
+	bool File::Iterator::operator!=(const Iterator& other) const {
+		return m_stream != other.m_stream;
+	}
+
+	//========================================================================
+	//	File Class
+	//========================================================================
+
+	File::File(const std::string& path, Mode mode) : m_filename(path), m_mode(mode), m_stream(path, std::ios::in | std::ios::out) {}
+
+	File File::Open(const std::string& path, Mode mode) {
+		return File(path, mode);
+	}
+
+	File::File(File&& other) noexcept {
+		m_stream = std::move(other.m_stream);
+		m_filename = other.m_filename;
+		m_mode = other.m_mode;
+	}
+
+	File& File::operator=(File&& other) noexcept {
+		m_stream = std::move(other.m_stream);
+		m_filename = other.m_filename;
+		m_mode = other.m_mode;
+		return *this;
+	}
+
+	File::~File() {
+		m_stream.close();
+	}
+
+	bool File::IsOpen() const {
+		return m_stream.is_open();
+	}
+
+	void File::Close() {
+		m_stream.close();
+	}
+
+	std::string File::Read() {
+		if (!IsOpen())
+			throw ZORE_EXCEPTION("Error opening file: " + m_filename);
+		Reset();
+		size_t size = Size();
+		std::string buffer(size, '\0');
+		m_stream.read(buffer.data(), size);
+		return buffer;
+	}
+
+	bool File::ReadLine(std::string& line) {
+		return static_cast<bool>(std::getline(m_stream, line));
+	}
+
+	void File::Write(const std::string& content) {
+		m_stream.close();
+		m_stream = std::fstream(m_filename, std::ios::trunc);
+		m_stream.write(content.data(), content.size());
+		m_stream.flush();
+	}
+
+	void File::Append(const std::string& content) {
+		m_stream.seekp(0, std::ios::end);
+		m_stream.write(content.data(), content.size());
+		m_stream.flush();
+	}
+
+	void File::Reset() {
+		m_stream.clear();
+		m_stream.seekg(0);
+		m_stream.seekp(0);
+	}
+
+	size_t File::Size() {
+		auto pos = m_stream.tellg();
+		m_stream.seekg(0, std::ios::end);
+		size_t size = m_stream.tellg();
+		m_stream.seekg(pos);
+		return size;
+	}
+
+	File::Iterator File::begin() {
+		if (!m_stream.is_open())
+			Reset();
+		if (!m_stream.is_open())
+			throw ZORE_EXCEPTION("Error opening file: " + m_filename);
+		return Iterator(&m_stream);
+	}
+
+	File::Iterator File::end() {
+		return Iterator(nullptr);
+	}
+	/*
 	void FileManager::IncrementFilenameIfExists(std::string& filename) {
 		if (std::filesystem::exists(filename)) {
 			std::vector<std::string_view> tokens;
@@ -81,13 +156,5 @@ namespace zore {
 			filename = test;
 		}
 	}
-
-	std::string FileManager::GetAbsolutePath(const std::string& filename) {
-		return std::filesystem::current_path().generic_string() + filename;
-	}
-
-	void FileManager::EnsureDir(const std::string& path) {
-		if (!std::filesystem::exists(path))
-			std::filesystem::create_directories(path);
-	}
+	*/
 }

@@ -117,7 +117,7 @@ namespace zore::UI {
 
 	uint32_t Layer::HandleMousePress(uint32_t button) {
 		if (!s_active_layer || !s_hovered_button)
-			return luid::INVALID_ID;
+			return uuid_32::INVALID_ID;
 
 		s_coloured_quads[s_hovered_button->index].data |= PRESSED_BIT;
 		s_pressed_button = s_hovered_button;
@@ -126,7 +126,7 @@ namespace zore::UI {
 	}
 
 	uint32_t Layer::HandleMouseRelease(uint32_t button) {
-		uint32_t button_id = luid::INVALID_ID;
+		uint32_t button_id = uuid_32::INVALID_ID;
 		if (s_pressed_button) {
 			s_coloured_quads[s_pressed_button->index].data &= ~PRESSED_BIT;
 			Flush();
@@ -138,7 +138,7 @@ namespace zore::UI {
 	}
 
 	uint32_t Layer::HandleKeyPress(uint32_t key) {
-		return luid::INVALID_ID;
+		return uuid_32::INVALID_ID;
 	}
 
 	void Layer::ParseUIElement(Element* element, int16_t viewport_width, int16_t viewport_height, const Element::Bounds& bounds, int16_t depth) {

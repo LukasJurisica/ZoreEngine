@@ -19,7 +19,7 @@ namespace zore::event {
 		virtual bool Execute(const EventBase& e) const = 0;
 
 	public:
-		int m_priority;
+		int m_priority = 0;
 	};
 
 	//========================================================================

@@ -1,20 +1,77 @@
 #pragma once
 
+#include "zore/utils/uuid.hpp"
 #include <string>
 #include <vector>
+#include <fstream>
 
 namespace zore {
 
-	class FileManager {
+	//========================================================================
+	//	File Class
+	//========================================================================
+
+	class File {
 	public:
-		static void Init(const std::string& path = "/");
-		static std::string GetFullPath(const std::string& filename);
-		static void ReadContent(std::string& result, const std::string& filename, bool include_empty_lines = true, bool must_exist = true);
-		static void ReadLines(std::vector<std::string>& result, const std::string& filename, bool include_empty_lines = true, bool must_exist = true);
-		static void ReadChunks(std::vector<std::string>& result, const std::string& filename, const std::string& delimiter, bool include_empty_lines = true, bool must_exist = true);
-		static void WriteContent(const std::string& data, const std::string& filename, bool overwrite = true);
-		static void IncrementFilenameIfExists(std::string& filename);
-		static std::string GetAbsolutePath(const std::string& filename);
-		static void EnsureDir(const std::string& path);
+
+		//------------------------------------------------------------------------
+		//	File Management Utility
+		//------------------------------------------------------------------------
+
+		class Manager {
+		public:
+			static void Init(const std::string& path = "/");
+			static std::string Path(const std::string& path);
+			static void EnsureDir(const std::string& path);
+		};
+
+		//------------------------------------------------------------------------
+		//	File Class Iterator
+		//------------------------------------------------------------------------
+
+		class Iterator {
+		public:
+			explicit Iterator(std::fstream* stream);
+
+			const std::string& operator*() const;
+			Iterator& operator++();
+			bool operator!=(const Iterator& other) const;
+
+		private:
+			std::fstream* m_stream;
+			std::string m_line;
+		};
+
+		//------------------------------------------------------------------------
+		//	File Class Utiltiy
+		//------------------------------------------------------------------------
+
+		enum class Mode { BINARY, TEXT };
+
+	public:
+		File(const std::string& filename, Mode mode = Mode::TEXT);
+		static File Open(const std::string& filename, Mode mode = Mode::TEXT);
+		File(const File&) = delete;
+		File(File&& other) noexcept;
+		File& operator=(const File&) = delete;
+		File& operator=(File&& other) noexcept;
+		~File();
+
+		bool IsOpen() const;
+		void Close();
+		std::string Read();
+		bool ReadLine(std::string& line);
+		void Write(const std::string& content);
+		void Append(const std::string& content);
+		void Reset();
+		size_t Size();
+
+		Iterator begin();
+		Iterator end();
+
+	private:
+		std::string m_filename;
+		std::fstream m_stream;
+		Mode m_mode;
 	};
 }

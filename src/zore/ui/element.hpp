@@ -2,6 +2,7 @@
 
 #include "zore/ui/style.hpp"
 #include "zore/utils/memory.hpp"
+#include "zore/utils/uuid.hpp"
 #include <vector>
 
 namespace zore::UI {
@@ -78,7 +79,7 @@ namespace zore::UI {
 		std::vector<UNIQUE<Element>> m_children;
 		Type m_type;
 		const Style* m_style;
-		uint32_t m_id;
+		uuid_32 m_id;
 		int16_t m_min_margin[4];
 		int16_t m_max_margin[4];
 		int16_t m_margin[4];

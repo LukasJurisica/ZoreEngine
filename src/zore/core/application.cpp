@@ -18,7 +18,7 @@ namespace zore {
 
 	Application::Application(const LaunchOptions& options) {
 		Processor::Init();
-		FileManager::Init();
+		File::Manager::Init();
 		Window::Init(options.transparent_window);
 		if (options.enable_networking)
 			net::Manager::Init();

@@ -63,8 +63,7 @@ namespace zore {
 		}
 		m_id = glCreateProgram();
 
-		std::string source;
-		FileManager::ReadContent(source, s_shader_folder + m_filename, IS_DEBUG);
+		std::string source = File::Open(s_shader_folder + m_filename).Read();
 		size_t right = source.size();
 		size_t left = source.rfind("#shaderstage", right);
 

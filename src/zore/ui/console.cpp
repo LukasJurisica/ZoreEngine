@@ -136,7 +136,7 @@ namespace zore {
 		time_t timestamp = time(NULL);
 		struct tm datetime = *localtime(&timestamp);
 
-		FileManager::EnsureDir("logs");
+		File::Manager::EnsureDir("logs");
 		char buffer[20];
 		strftime(buffer, 20, "%Y-%m-%d_%I-%M-%S", &datetime);
 		std::string filename = "logs/crashlog_" + std::string(buffer) + ".log";

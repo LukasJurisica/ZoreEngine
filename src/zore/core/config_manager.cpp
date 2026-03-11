@@ -2,100 +2,45 @@
 #include "zore/core/file_manager.hpp"
 #include "zore/utils/string.hpp"
 #include "zore/debug.hpp"
-#include <vector>
 
 namespace zore::Config {
 
-	//========================================================================
-	//	Config Manager Class
-	//========================================================================
+	zore::string_unordered_map<Manager> s_managers;
 
-	Manager::Manager(const std::string& filename) : m_should_save(false) {
-		Load(filename);
+	Manager::Manager(std::string_view filename) {
+		m_filename = filename;
+		Reload();
 	}
 
-	void Manager::Load(const std::string& filename) {
-		FileManager::EnsureDir("config");
-		m_filename = "config/" + filename + ".cfg";
-		std::vector<std::string> content;
-		FileManager::ReadLines(content, m_filename, false, false);
-		for (std::string& line : content) {
-			std::string_view trimmed = String::TrimV(line);
-			size_t index = trimmed.find("=");
-			m_entries[String::RTrim(trimmed.substr(0, index))] = line.substr(index + 1);
+	Manager& Manager::Load(std::string_view filename) {
+		auto iter = s_managers.find(filename);
+		if (iter != s_managers.end())
+			return iter->second;
+		return s_managers.emplace(filename, filename).first->second;
+	}
+
+	void Manager::Reload() {
+		m_entries.clear();
+		m_should_save = false;
+
+		File::Manager::EnsureDir("config");
+		File file("config/" + m_filename + ".cfg");
+		for (const std::string& line : file) {
+			size_t index = line.find("=");
+			std::string key = String::Trim(line.substr(0, index));
+			std::string value = String::Trim(line.substr(index + 1));
+			m_entries[key] = value;
 		}
-	}
-
-	void Manager::Save(const std::string& filename) {
-		m_filename = "config/" + filename + ".cfg";
-		Save();
 	}
 
 	void Manager::Save() {
 		if (m_should_save) {
+			File file("config/" + m_filename + ".cfg");
 			std::string output;
 			for (auto& iter : m_entries)
 				output += iter.first + "=" + iter.second + "\n";
-			FileManager::WriteContent(output, m_filename, true);
+			file.Write(output);
 			m_should_save = false;
 		}
-	}
-
-	const std::string& Manager::GetString(const std::string& key, const std::string& default_value) {
-		auto iter = m_entries.find(key);
-		if (iter == m_entries.end()) {
-			Set(key, default_value);
-			return default_value;
-		}
-		return iter->second;
-	}
-
-	int Manager::GetInt(const std::string& key, int default_value) {
-		try {
-			return std::stoi(GetString(key, std::to_string(default_value)));
-		}
-		catch (const std::exception& e) {
-			Set(key, std::to_string(default_value));
-		}
-		return default_value;
-	}
-
-	float Manager::GetFloat(const std::string& key, float default_value) {
-		try {
-			return std::stof(GetString(key, std::to_string(default_value)));
-		}
-		catch (const std::exception& e) {
-			Set(key, std::to_string(default_value));
-		}
-		return default_value;
-	}
-
-	bool Manager::GetBool(const std::string& key, bool default_value) {
-		const std::string& value = GetString(key, default_value ? "true" : "false");
-		if (value == "true")
-			return true;
-		else if (value == "false")
-			return false;
-		else
-			Set(key, default_value);
-		return default_value;
-	}
-
-	void Manager::Set(const std::string& key, const std::string& value) {
-		m_entries[key] = value;
-		m_should_save = true;
-	}
-
-	void Manager::Set(const std::string& key, int value) {
-		Set(key, std::to_string(value));
-	}
-
-	void Manager::Set(const std::string& key, float value) {
-		Set(key, std::to_string(value));
-	}
-
-	void Manager::Set(const std::string& key, bool value) {
-		const std::string possible_values[] = { "false", "true" };
-		Set(key, possible_values[static_cast<int>(value)]);
 	}
 }

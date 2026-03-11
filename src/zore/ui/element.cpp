@@ -47,7 +47,7 @@ namespace zore::UI {
 	Element::Element(Type type, const std::string& style) : Element(type, Style::Get(style)) {}
 
 	Element::Element(Type type, const Style* style) :
-		m_type(type), m_style(style ? style : Style::Get("")), m_id(luid::Generate()),
+		m_type(type), m_style(style ? style : Style::Get("")),
 		m_size{}, m_max_size{}, m_min_size{}, m_margin{}, m_min_margin{}, m_max_margin{} {
 	}
 

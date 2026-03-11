@@ -1,69 +1,31 @@
 #pragma once
 
 #include "zore/utils/sized_integer.hpp"
-#include <atomic>
 
 namespace zore {
 
-    //========================================================================
-	//	Local Unique Identifier Class
-    //========================================================================
-
-    class luid {
+    template<typename T>
+    class uuid {
     public:
-        static inline luid Generate() {
-            static std::atomic<uint32_t> id = 0;
-            return luid(++id);
-        }
-        operator uint32_t&() { return m_id; }
-        operator uint32_t() const { return m_id; }
+        uuid();
+        uuid(const uuid&) = delete;
+        uuid(uuid&& other) noexcept;
+        uuid& operator=(const uuid&) = delete;
+        uuid& operator=(uuid&& other) noexcept;
+        ~uuid() = default;
 
-    private:
-        luid(uint32_t id) : m_id(id) {}
+        operator T&() { return m_id; }
+        operator T() const { return m_id; }
 
     public:
-        static inline constexpr uint32_t INVALID_ID = 0;
+        static inline constexpr T INVALID_ID = 0;
 
     private:
-        uint32_t m_id;
+        T m_id;
     };
 
-    //========================================================================
-	//	Wide Unique Identifier Class
-    //========================================================================
-
-    class wuid {
-    public:
-        static wuid Generate() {
-            static std::atomic<uint64_t> id = 0;
-            return wuid(++id);
-        }
-        operator uint64_t&() { return m_id; }
-        operator uint64_t() const { return m_id; }
-
-    private:
-        wuid(uint64_t id) : m_id(id) {}
-
-    public:
-        static inline constexpr uint64_t INVALID_ID = 0;
-
-    private:
-        uint64_t m_id;
-    };
-
-    //========================================================================
-	//	Global Unique Identifier Class
-    //========================================================================
-
-	// TODO: Implement global unique identifier class
-
-    class guid {
-    public:
-        static guid Generate() {
-
-        }
-    };
-
-    typedef luid uuid_32;
-    typedef wuid uuid_64;
+    typedef uuid<uint32_t> uuid_32;
+    typedef uuid<uint64_t> uuid_64;
 }
+
+#include "zore/utils/uuid.inl"

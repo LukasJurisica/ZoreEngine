@@ -1,21 +1,15 @@
 #pragma once
 
+#include "zore/math/vector.hpp"
+
 namespace zore {
-
-	template <typename TYPE, int DIMS>
-	class Point {
-	public:
-
-	private:
-		TYPE[DIMS] data;
-	};
 
 	template <typename TYPE, int DIMS>
 	class AABB {
 	public:
 
 	private:
-		Point<TYPE, DIMS> min;
-		Point<TYPE, DIMS> max;
+		zm::vec_base <TYPE, DIMS> min;
+		zm::vec_base <TYPE, DIMS> max;
 	};
 }

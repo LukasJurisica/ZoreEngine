@@ -11,6 +11,8 @@
 #include <zore/math/vector/vec4.hpp>
 #include <zore/math/matrix/mat4.hpp>
 
+#include <zore/utils/string.hpp>
+
 using namespace zore;
 
 static bool s_display_console = false;
@@ -18,7 +20,7 @@ static bool s_quit = false;
 static DemoApplication* s_instance = nullptr;
 
 DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f) {
-	FileManager::Init("/examples/01_sandbox application/");
+	File::Manager::Init("/examples/01_sandbox application/");
 	RenderEngine::SetVSync(false);
 	m_camera.SetHeight(static_cast<float>(Window::GetSize().y));
 	m_camera.SetPosition({ Window::GetSize().x >> 1, Window::GetSize().y >> 1 });

@@ -15,7 +15,7 @@ namespace zore {
 		ImGui::CreateContext();
 		io = &ImGui::GetIO();
 
-		FileManager::EnsureDir("config");
+		File::Manager::EnsureDir("config");
 		io->IniFilename = "config/imgui.cfg";
 		if (enable_keyboard_navigation) // Enable Keyboard Controls
 			io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
