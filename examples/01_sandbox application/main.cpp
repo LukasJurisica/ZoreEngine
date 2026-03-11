@@ -4,15 +4,6 @@
 #include <zore/ui.hpp>
 #include <zore/debug.hpp>
 
-#include <zore/math/vector.hpp>
-#include <zore/utils/time.hpp>
-#include <zore/math/noise/white_noise.hpp>
-
-#include <zore/math/vector/vec4.hpp>
-#include <zore/math/matrix/mat4.hpp>
-
-#include <zore/utils/string.hpp>
-
 using namespace zore;
 
 static bool s_display_console = false;

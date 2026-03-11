@@ -9,13 +9,18 @@ namespace zore::Config {
 
 	template<typename T>
 	void Manager::Set(std::string_view key, T value) {
-		m_entries[key] = std::to_string(value);
+		m_entries[std::string(key)] = std::to_string(value);
 	}
 
 	template<>
 	void Manager::Set(std::string_view key, bool value) {
 		const std::string_view possible_values[] = { "false", "true" };
 		Set(key, possible_values[value ? 1 : 0]);
+	}
+
+	template<>
+	void Manager::Set(std::string_view key, std::string_view value) {
+		m_entries[std::string(key)] = std::string(value);
 	}
 
 	template<typename T>

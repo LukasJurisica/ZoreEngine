@@ -20,6 +20,8 @@ namespace zore::Config {
 		void Set(std::string_view key, T value);
 		template<>
 		void Set(std::string_view key, bool value);
+		template<>
+		void Set(std::string_view key, std::string_view value);
 
 		template<typename T>
 		void Get(std::string_view key, T* value);
@@ -37,3 +39,5 @@ namespace zore::Config {
 		bool m_should_save;
 	};
 }
+
+#include "zore/core/config_manager.inl"
