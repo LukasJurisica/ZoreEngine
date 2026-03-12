@@ -43,4 +43,34 @@ namespace zore::Config {
 			m_should_save = false;
 		}
 	}
+
+
+	template<>
+	void Manager::Set(std::string_view key, bool value) {
+		const std::string_view possible_values[] = { "false", "true" };
+		Set(key, possible_values[value ? 1 : 0]);
+	}
+
+	template<>
+	void Manager::Set(std::string_view key, std::string_view value) {
+		m_entries[std::string(key)] = std::string(value);
+	}
+
+	template<>
+	void Manager::Get(std::string_view key, bool* value) {
+		auto iter = m_entries.find(key);
+		if (iter != m_entries.end())
+			*value = String::Lower(iter->second) == "true";
+		else
+			Set(key, *value);
+	}
+
+	template<>
+	std::string_view Manager::Get(std::string_view key, std::string_view default_value) {
+		auto iter = m_entries.find(key);
+		if (iter != m_entries.end())
+			return iter->second;
+		Set(key, default_value);
+		return default_value;
+	}
 }
