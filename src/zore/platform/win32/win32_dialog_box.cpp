@@ -47,7 +47,7 @@ namespace zore {
 		ofn.lpstrFile = szFile;
 		ofn.nMaxFile = CHAR_BUFFER_SIZE;
 		ofn.lpstrFilter = filter;
-		ofn.nFilterIndex = 1 + (include_all_files ? 1 : 0);
+		ofn.nFilterIndex = 1;
 		//ofn.lpstrFileTitle = NULL;
 		//ofn.nMaxFileTitle = 0;
 		//ofn.lpstrInitialDir = NULL;

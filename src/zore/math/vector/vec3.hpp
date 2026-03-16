@@ -106,3 +106,24 @@ namespace zm {
 		return os << "[" << v.x << ", " << v.y << ", " << v.z << "]";
 	}
 }
+
+namespace std {
+
+	template <std::integral T>
+	struct std::hash<zm::vec_base<T, 3>> {
+		size_t operator()(const zm::vec_base<T, 3>& v) const noexcept {
+			uint64_t x, y, z;
+			if constexpr (sizeof(T) == 4) {
+				x = static_cast<uint32_t>(v.x);
+				y = static_cast<uint32_t>(v.y);
+				z = static_cast<uint32_t>(v.z);
+			}
+			else {
+				x = static_cast<uint64_t>(v.x);
+				y = static_cast<uint64_t>(v.y);
+				z = static_cast<uint64_t>(v.z);
+			}
+			return (x * 0x9E3779B185EBCA87ULL) ^ (y * 0xC2B2AE3D27D4EB4FULL) ^ (z * 0x165667B19E3779F9ULL);
+		}
+	};
+}

@@ -99,6 +99,25 @@ namespace zm {
 	}
 }
 
+namespace std {
+
+	template <std::integral T>
+	struct std::hash<zm::vec_base<T, 2>> {
+		size_t operator()(const zm::vec_base<T, 2>& v) const noexcept {
+			uint64_t x, y;
+			if constexpr (sizeof(T) == 4) {
+				x = static_cast<uint32_t>(v.x);
+				y = static_cast<uint32_t>(v.y);
+			}
+			else {
+				x = static_cast<uint64_t>(v.x);
+				y = static_cast<uint64_t>(v.y);
+			}
+			return (x * 0x9E3779B185EBCA87ULL) ^ (y * 0xC2B2AE3D27D4EB4FULL);
+		}
+	};
+}
+
 
 
 //template <int x, int y>
