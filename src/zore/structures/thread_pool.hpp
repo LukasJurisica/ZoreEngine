@@ -84,11 +84,13 @@ namespace zore {
 			requires(std::is_base_of_v<Job, JobType>&& std::is_copy_constructible_v<JobType>)
 		void RegisterCallback(std::function<void(const JobType&)> callback) {
 			std::lock_guard<std::mutex> lock(m_job_mutex);
+			if (m_callback_handlers.find(typeid(JobType)) != m_callback_handlers.end())
+				delete m_callback_handlers[typeid(JobType)];
 			m_callback_handlers[typeid(JobType)] = new JobCallbackHandler<JobType>(callback);
 		}
 
 		template <typename JobType>
-			requires(std::is_base_of_v<Job, JobType> && std::is_copy_constructible_v<JobType>)
+			requires(std::is_base_of_v<Job, JobType>&& std::is_copy_constructible_v<JobType>)
 		void Enqueue(const JobType& job) {
 			std::lock_guard<std::mutex> lock(m_job_mutex);
 			m_jobs.push_back(new JobType(job));

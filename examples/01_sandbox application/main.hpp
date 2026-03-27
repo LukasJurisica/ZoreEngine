@@ -31,6 +31,7 @@ namespace zore {
 		Shader m_quad_shader;
 		Shader m_panel_shader;
 		Shader m_text_shader;
+		ComputeShader m_compute_shader;
 		ActionMap action_map;
 
 		event::MultiHandler m_event_handler;

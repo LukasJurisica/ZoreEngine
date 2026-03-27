@@ -44,6 +44,7 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 void DemoApplication::ReloadShaders() {
 	m_panel_shader.Compile();
 	m_text_shader.Compile();
+	m_compute_shader.Compile();
 }
 
 void DemoApplication::Run() {
@@ -68,6 +69,17 @@ void DemoApplication::Run() {
 	std::unordered_map <int, Shader*> ui_shaders;
 	ui_shaders[static_cast<int>(UI::Element::Type::PANEL)] = &m_panel_shader;
 	ui_shaders[static_cast<int>(UI::Element::Type::LABEL)] = &m_text_shader;
+
+
+
+	// Test Compute Shader
+	m_compute_shader.SetSource("example_compute.glsl").Compile();
+	ShaderStorageBuffer compute_buffer;
+	compute_buffer.Set(nullptr, 8);
+	compute_buffer.Bind(1);
+
+
+
 
 	while (!Window::ShouldClose() && !s_quit) {
 		RenderEngine::Clear();
