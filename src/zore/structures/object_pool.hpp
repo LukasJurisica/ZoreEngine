@@ -43,6 +43,22 @@ namespace zore {
 			return m_data[index];
 		}
 
+		std::vector<T>::iterator begin() {
+			return m_data.begin();
+		}
+
+		std::vector<T>::const_iterator begin() const {
+			return m_data.begin();
+		}
+
+		std::vector<T>::iterator end() {
+			return m_data.end();
+		}
+
+		std::vector<T>::const_iterator end() const {
+			return m_data.end();
+		}
+
 	private:
 		uint32_t get_free_index() {
 			uint32_t index = m_free_indices.front();

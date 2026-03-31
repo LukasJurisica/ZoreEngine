@@ -3,6 +3,7 @@
 #include "zore/core/file_manager.hpp"
 #include "zore/core/command.hpp"
 #include "zore/devices/window.hpp"
+#include "zore/graphics/buffers/buffer_base.hpp"
 #include "zore/networking/networking_manager.hpp"
 #include "zore/audio/audio_manager.hpp"
 #include "zore/ui/editor.hpp"
@@ -20,6 +21,7 @@ namespace zore {
 		Processor::Init();
 		File::Manager::Init();
 		Window::Init(options.transparent_window);
+		Buffer::Base::Init();
 		if (options.enable_networking)
 			net::Manager::Init();
 		if (options.enable_audio)
@@ -43,6 +45,7 @@ namespace zore {
 		Editor::Cleanup();
 		audio::Manager::Cleanup();
 		net::Manager::Cleanup();
+		Buffer::Base::Cleanup();
 		Window::Cleanup();
 		Processor::Cleanup();
 		s_initialized = false;

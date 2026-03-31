@@ -23,6 +23,9 @@ namespace zore::Buffer {
 		~Base();
 
 	public:
+		static void Init();
+		static void Cleanup();
+
 		uint32_t GetID() const;
 		void Set(const void_span& span);
 		void Set(const void* data, size_t size);
@@ -30,5 +33,6 @@ namespace zore::Buffer {
 
 	protected:
 		uint32_t m_index;
+		static inline bool s_context_active = false;
 	};
 }

@@ -51,18 +51,31 @@ namespace zore::Buffer {
 
 	void Base::Copy(const Base& other) {
 		m_index = other.m_index;
-		s_buffer_pool[m_index].ref_count++;
+		if (m_index != s_buffer_pool.INVALID_INDEX)
+			s_buffer_pool[m_index].ref_count++;
 	}
 
 	Base::~Base() {
-		if (m_index == s_buffer_pool.INVALID_INDEX)
+		if (!s_context_active || m_index == s_buffer_pool.INVALID_INDEX)
 			return;
 		if (s_buffer_pool[m_index].ref_count == 1) {
 			glDeleteBuffers(1, &s_buffer_pool[m_index].id);
+			s_buffer_pool[m_index].id = GL_INVALID_NAME;
 			s_buffer_pool.release(m_index);
 		}
 		else
 			s_buffer_pool[m_index].ref_count--;
+	}
+
+	void Base::Init() {
+		s_context_active = true;
+	}
+
+	void Base::Cleanup() {
+		s_context_active = false;
+		for (const Buffer::Data& data : s_buffer_pool)
+			if (data.id != GL_INVALID_NAME)
+				glDeleteBuffers(1, &data.id);
 	}
 
 	uint32_t Base::GetID() const {
