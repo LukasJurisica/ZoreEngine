@@ -7,7 +7,7 @@ namespace zore::net {
        Resize(HeaderSize());
     }
 
-	Packet::Packet(const VoidSpan& span) : Packet(span.Data(), static_cast<uint32_t>(span.Size())) {}
+	Packet::Packet(const void_span& span) : Packet(span.data(), static_cast<uint32_t>(span.size())) {}
 
 	Packet::Packet(const void* payload, uint32_t length, uint8_t flags) : m_position(0) {
 		if (payload && (length > 0)) {
@@ -58,9 +58,9 @@ namespace zore::net {
         m_data.resize(size < HeaderSize() ? HeaderSize() : size);
     }
 
-	void Packet::Append(const VoidSpan& span) {
-		if (span.Data() && (span.Size() > 0))
-			m_data.insert(m_data.end(), span.Data<uint8_t>(), span.Data<uint8_t>() + span.SizeBytes());
+	void Packet::Append(const void_span& span) {
+		if (span.data() && (span.size() > 0))
+			m_data.insert(m_data.end(), span.data<uint8_t>(), span.data<uint8_t>() + span.size_bytes());
 	}
 
 	void Packet::Seek(uint32_t offset) {

@@ -1,58 +1,24 @@
-#include "zore/graphics/buffer.hpp"
-#include "zore/debug.hpp"
+#include "zore/graphics/buffers/uniform_buffer.hpp"
 #include <glad/glad.h>
 
 namespace zore {
 
-	static constexpr uint32_t INVALID_BUFFER_ID = ~0;
-
 	//========================================================================
-	//	OpenGL Uniform Buffer
+	//	Uniform Buffer
 	//========================================================================
 
-	UniformBuffer::UniformBuffer() : m_id(INVALID_BUFFER_ID), m_index(0) {}
+	UniformBuffer::UniformBuffer() : m_bind_point(0) {}
 
-	UniformBuffer::UniformBuffer(const VoidSpan& span) : m_id(0), m_index(0) {
-		glCreateBuffers(1, &m_id);
-		glNamedBufferData(m_id, span.SizeBytes(), span.Data(), GL_STATIC_DRAW);
-	}
+	UniformBuffer::UniformBuffer(const void_span& span) : Base(span), m_bind_point(0) {}
 
-	UniformBuffer::UniformBuffer(const void* data, uint32_t size) : m_index(0), m_id(0) {
-		glCreateBuffers(1, &m_id);
-		glNamedBufferData(m_id, size, data, GL_STATIC_DRAW);
-	}
-
-	UniformBuffer::~UniformBuffer() {
-		glDeleteBuffers(1, &m_id);
-	}
-
-	uint32_t UniformBuffer::GetID() const {
-		return m_id;
-	}
-
-	void UniformBuffer::Set(const VoidSpan& span) {
-		Set(span.Data(), static_cast<uint32_t>(span.SizeBytes()));
-	}
-
-	void UniformBuffer::Set(const void* data, uint32_t size) {
-		if (m_id == INVALID_BUFFER_ID)
-			glCreateBuffers(1, &m_id);
-		glNamedBufferData(m_id, size, data, GL_STATIC_DRAW);
-	}
-
-	void UniformBuffer::Update(const void* data, uint32_t size, uint32_t offset) {
-		void* ptr = glMapNamedBufferRange(m_id, offset, size, GL_MAP_WRITE_BIT);
-		memcpy(ptr, data, size);
-		glUnmapNamedBuffer(m_id);
-	}
+	UniformBuffer::UniformBuffer(const void* data, size_t size) : Base(data, size), m_bind_point(0) {}
 
 	void UniformBuffer::Bind() const {
-		DEBUG_ENSURE(m_id != INVALID_BUFFER_ID, "Attempted to bind an Unitialized UniformBuffer");
-		glBindBufferBase(GL_UNIFORM_BUFFER, m_index, m_id);
+		glBindBufferBase(GL_UNIFORM_BUFFER, m_bind_point, GetID());
 	}
-
-	void UniformBuffer::Bind(uint32_t index) {
-		m_index = index;
+	
+	void UniformBuffer::Bind(uint32_t bind_point) {
+		m_bind_point = bind_point;
 		Bind();
 	}
 }

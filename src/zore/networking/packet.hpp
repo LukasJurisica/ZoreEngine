@@ -12,7 +12,7 @@ namespace zore::net {
 
 	public:
 		Packet();
-		Packet(const VoidSpan& span);
+		Packet(const void_span& span);
 		Packet(const void* payload, uint32_t length, uint8_t flags = 0);
 		~Packet() = default;
 
@@ -27,7 +27,7 @@ namespace zore::net {
 		void Clear();
 		void Reserve(uint32_t size);
         void Resize(uint32_t size);
-		void Append(const VoidSpan& span);
+		void Append(const void_span& span);
 		void Seek(uint32_t offset);
         uint16_t* ParseHeader();
 

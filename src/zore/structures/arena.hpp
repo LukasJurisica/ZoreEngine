@@ -12,26 +12,26 @@ namespace zore {
 	//=========================================================================
 
 	template <typename T, typename S = size_t>
-	class Arena {
+	class arena {
 	public:
-		struct Region {
+		struct region {
 			S offset;
 			S size;
 		};
 
 	public:
-		Arena(S size = 0) {
+		arena(S size = 0) {
 			if (size > 0) {
 				m_data.resize(size);
 				m_free_regions.emplace_back(0, size);
 			}
 		}
 
-		Arena(const Arena&) = delete;
-		Arena& operator=(const Arena&) = delete;
-		~Arena() = default;
+		arena(const arena&) = delete;
+		arena& operator=(const arena&) = delete;
+		~arena() = default;
 
-		S Allocate(S size) {
+		S allocate(S size) {
 			for (auto it = m_free_regions.rbegin(); it != m_free_regions.rend(); ++it) {
 				Region r = *it;
 				if (r.size >= size) {
@@ -41,14 +41,14 @@ namespace zore {
 					return r.offset;
 				}
 			}
-			return Grow(size);
+			return grow(size);
 		}
 
-		S Reallocate(S old_offset, S old_size, S new_size) {
+		S reallocate(S old_offset, S old_size, S new_size) {
 			if (new_size == old_size)
 				return old_offset;
 			if (new_size < old_size) {
-				Free(old_offset + new_size, old_size - new_size);
+				free(old_offset + new_size, old_size - new_size);
 				return old_offset;
 			}
 
@@ -68,11 +68,11 @@ namespace zore {
 
 			S new_offset = Allocate(new_size);
 			std::memcpy(&m_data[new_offset], &m_data[old_offset], old_size * sizeof(T));
-			Free(old_offset, old_size);
+			free(old_offset, old_size);
 			return new_offset;
 		}
 
-		void Free(S offset, S size) {
+		void free(S offset, S size) {
 			S begin = offset;
 			S end = offset + size;
 
@@ -101,7 +101,7 @@ namespace zore {
 		}
 
 	private:
-		S Grow(S size) {
+		S grow(S size) {
 			S offset = static_cast<S>(m_data.size());
 			m_data.resize(offset + size);
 			return offset;
@@ -109,6 +109,6 @@ namespace zore {
 
 	private:
 		std::vector<T> m_data;
-		std::vector<Region> m_free_regions;
+		std::vector<region> m_free_regions;
 	};
 }

@@ -20,10 +20,10 @@ namespace zore {
 		Job(int priority = 0) : m_priority(priority) {}
 		virtual ~Job() = default;
 
-		virtual void Execute() = 0;
-		virtual void UpdatePriority() {}
-		void SetPriority(int priority) { m_priority = priority; }
-		int GetPriority() const { return m_priority; }
+		virtual void execute() = 0;
+		virtual void update_priority() {}
+		void set_priority(int priority) { m_priority = priority; }
+		int get_priority() const { return m_priority; }
 
 	private:
 		int m_priority;
@@ -33,78 +33,78 @@ namespace zore {
 	//	Job Callback Handler Class
 	//========================================================================
 
-	template<typename JobType>
-	using JobCallback = std::function<void(const JobType&)>;
+	template<typename T>
+	using job_callback = std::function<void(const T&)>;
 
-	class JobCallbackHandlerBase {
+	class job_callback_handler_base {
 	public:
-		virtual ~JobCallbackHandlerBase() = default;
-		virtual void Execute(const Job& e) const = 0;
+		virtual ~job_callback_handler_base() = default;
+		virtual void execute(const Job& e) const = 0;
 	};
 
-	template <typename JobType>
-	class JobCallbackHandler : public JobCallbackHandlerBase {
+	template <typename T>
+	class job_callback_handler : public job_callback_handler_base {
 	public:
-		explicit JobCallbackHandler(JobCallback<JobType> callback) : m_callback(callback) {}
-		JobCallbackHandler(const JobCallbackHandler&) = delete;
-		JobCallbackHandler& operator=(const JobCallbackHandler&) = delete;
-		~JobCallbackHandler() override = default;
+		explicit job_callback_handler(job_callback<T> callback) : m_callback(callback) {}
+		job_callback_handler(const job_callback_handler&) = delete;
+		job_callback_handler& operator=(const job_callback_handler&) = delete;
+		~job_callback_handler() override = default;
 
-		inline void Execute(const Job& e) const override { m_callback(static_cast<const JobType&>(e)); }
+		inline void execute(const Job& e) const override { m_callback(static_cast<const T&>(e)); }
 
 	private:
-		JobCallback<JobType> m_callback;
+		job_callback<T> m_callback;
 	};
 
 	//========================================================================
 	//	Threadpool Class
 	//========================================================================
 
-	class ThreadPool {
+	class thread_pool {
 	public:
-		ThreadPool(uint32_t num_threads);
-		ThreadPool(const ThreadPool&) = delete;
-		ThreadPool& operator=(const ThreadPool&) = delete;
-		~ThreadPool();
+		thread_pool(uint32_t num_threads);
+		thread_pool(const thread_pool&) = delete;
+		thread_pool& operator=(const thread_pool&) = delete;
+		~thread_pool();
 
-		static uint32_t GetMaximumThreadCount() { return std::thread::hardware_concurrency(); };
-		void UpdatePriorities();
+		static uint32_t get_max_thread_count() { return std::thread::hardware_concurrency(); };
+		void update_priorities();
 
-		template <typename JobType>
-		void RegisterCallback(void(*callback)(const JobType&)) {
-			RegisterCallback<JobType>(JobCallback<JobType>(std::bind(callback, std::placeholders::_1)));
+		template <typename T>
+		void register_callback(void(*callback)(const T&)) {
+			register_callback<T>(job_callback<T>(std::bind(callback, std::placeholders::_1)));
 		}
 
-		template <typename ClassType, typename JobType>
-		void RegisterCallback(void(ClassType::*callback)(const JobType&), ClassType* obj) {
-			RegisterCallback<JobType>(JobCallback<JobType>(std::bind(callback, obj, std::placeholders::_1)));
+		template <typename C, typename T>
+		void register_callback(void(C::*callback)(const T&), C* obj) {
+			register_callback<T>(job_callback<T>(std::bind(callback, obj, std::placeholders::_1)));
 		}
 
-		template <typename JobType>
-			requires(std::is_base_of_v<Job, JobType>&& std::is_copy_constructible_v<JobType>)
-		void RegisterCallback(std::function<void(const JobType&)> callback) {
+		template <typename T>
+			requires(std::is_base_of_v<Job, T>&& std::is_copy_constructible_v<T>)
+		void register_callback(std::function<void(const T&)> callback) {
 			std::lock_guard<std::mutex> lock(m_job_mutex);
-			if (m_callback_handlers.find(typeid(JobType)) != m_callback_handlers.end())
-				delete m_callback_handlers[typeid(JobType)];
-			m_callback_handlers[typeid(JobType)] = new JobCallbackHandler<JobType>(callback);
+			if (m_callback_handlers.find(typeid(T)) != m_callback_handlers.end())
+				delete m_callback_handlers[typeid(T)];
+			m_callback_handlers[typeid(T)] = new job_callback_handler<T>(callback);
 		}
 
-		template <typename JobType>
-			requires(std::is_base_of_v<Job, JobType>&& std::is_copy_constructible_v<JobType>)
-		void Enqueue(const JobType& job) {
+		template <typename T>
+			requires(std::is_base_of_v<Job, T>&& std::is_copy_constructible_v<T>)
+		void enqueue(const T& job) {
 			std::lock_guard<std::mutex> lock(m_job_mutex);
-			m_jobs.push_back(new JobType(job));
+			m_jobs.push_back(new T(job));
 			cv.notify_one();
 		}
 
 	private:
-		void ThreadLoop();
-		Job* GetNextJob();
+		void thread_loop();
+		Job* pop();
 
 	private:
 		std::vector<std::thread> m_threads;
 		std::vector<Job*> m_jobs;
-		std::unordered_map<std::type_index, JobCallbackHandlerBase*> m_callback_handlers;
+		std::unordered_map<std::type_index, job_callback_handler_base*> m_callback_handlers;
 		std::mutex m_job_mutex;
 		std::condition_variable cv;
 		bool m_running = true;

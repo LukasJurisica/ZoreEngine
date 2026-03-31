@@ -1,5 +1,6 @@
 #include "zore/graphics/render_engine.hpp"
 #include "zore/graphics/shader.hpp"
+#include "zore/graphics/buffers/multidraw_command_buffer.hpp"
 #include "zore/devices/window.hpp"
 #include "zore/debug.hpp"
 #include <glad/glad.h>
@@ -22,6 +23,21 @@ namespace zore {
 			Logger::Error("GL ERROR: (", severity, ")", message);
 		else if (id != 131185) // Using Video Memory
 			Logger::Info("GL INFO:", message);
+	}
+
+	void RenderEngine::SetGLFeature(uint32_t feature, bool& current, bool value) {
+		if (current != value) {
+			value ? glEnable(feature) : glDisable(feature);
+			current = value;
+		}
+	}
+
+	void* RenderEngine::GetIndexOffset(uint32_t index_offset) {
+		return reinterpret_cast<void*>(index_offset * s_index_size);
+	}
+
+	void* RenderEngine::GetCommandOffset(uint32_t command_offset, uint32_t stride) {
+		return reinterpret_cast<void*>(command_offset * stride);
 	}
 
 	//========================================================================
@@ -150,67 +166,28 @@ namespace zore {
 
 	void RenderEngine::DrawIndexed(uint32_t index_count, uint32_t offset) {
 		if (index_count > 0)
-			glDrawElements(s_topology, index_count, s_index_type, reinterpret_cast<void*>(offset * s_index_size));
+			glDrawElements(s_topology, index_count, s_index_type, GetIndexOffset(offset));
 	}
 
-	void RenderEngine::DrawLinearInstanced(uint32_t vertex_count, uint32_t model_count, uint32_t offset) {
-		if (vertex_count > 0 && model_count > 0)
-			glDrawArraysInstanced(s_topology, offset, vertex_count, model_count);
+	void RenderEngine::DrawLinearInstanced(uint32_t vertex_count, uint32_t object_count, uint32_t offset) {
+		if (vertex_count > 0 && object_count > 0)
+			glDrawArraysInstanced(s_topology, offset, vertex_count, object_count);
 	}
 
-	void RenderEngine::DrawIndexedInstanced(uint32_t index_count, uint32_t model_count, uint32_t offset) {
-		if (index_count > 0 && model_count > 0)
-			glDrawElementsInstanced(s_topology, index_count, s_index_type, reinterpret_cast<void*>(offset * s_index_size), model_count);
+	void RenderEngine::DrawIndexedInstanced(uint32_t index_count, uint32_t object_count, uint32_t offset) {
+		if (index_count > 0 && object_count > 0)
+			glDrawElementsInstanced(s_topology, index_count, s_index_type, GetIndexOffset(offset), object_count);
 	}
 
-	void RenderEngine::SetGLFeature(uint32_t feature, bool& current, bool value) {
-		if (current != value) {
-			value ? glEnable(feature) : glDisable(feature);
-			current = value;
-		}
+	void RenderEngine::MultiDrawLinearIndirect(uint32_t command_count, uint32_t command_offset, uint32_t stride) {
+		stride = stride ? stride : static_cast<uint32_t>(sizeof(multidraw::LinearCommand));
+		if (command_count > 0)
+			glMultiDrawArraysIndirect(s_topology, GetCommandOffset(command_offset, stride), command_count, stride);
 	}
 
-	//========================================================================
-	//	Multidraw Command Buffer Class
-	//========================================================================
-
-	MultidrawCommand::MultidrawCommand(uint32_t vertex_count, uint32_t vertex_offset, uint32_t instance_count, uint32_t instance_offset)
-		: m_vertex_count(vertex_count), m_vertex_offset(vertex_offset), m_instance_count(instance_count), m_instance_offset(instance_offset) {}
-
-	MultidrawCommandBuffer::MultidrawCommandBuffer(MultidrawCommand* data, uint32_t count, bool calculate_instance_offsets) {
-		glCreateBuffers(1, &m_id);
-		Set(data, count, calculate_instance_offsets);
-	}
-
-	MultidrawCommandBuffer::~MultidrawCommandBuffer() {
-		glDeleteBuffers(1, &m_id);
-	}
-
-	uint32_t MultidrawCommandBuffer::GetID() const {
-		return m_id;
-	}
-
-	void MultidrawCommandBuffer::Set(MultidrawCommand* data, uint32_t count, bool calculate_instance_offsets) {
-		if (calculate_instance_offsets)
-			CalculateInstanceOffsets(data, count, 0);
-		glNamedBufferData(m_id, sizeof(MultidrawCommand) * count, data, GL_STATIC_DRAW);
-	}
-
-	void MultidrawCommandBuffer::Update(MultidrawCommand* data, uint32_t count, uint32_t offset) {
-		void* ptr = glMapNamedBufferRange(m_id, sizeof(MultidrawCommand) * offset, sizeof(MultidrawCommand) * count, GL_MAP_WRITE_BIT);
-		memcpy(ptr, data, sizeof(MultidrawCommand) * count);
-		glUnmapNamedBuffer(m_id);
-	}
-
-	void MultidrawCommandBuffer::Bind() const {
-		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_id);
-	}
-
-	void MultidrawCommandBuffer::CalculateInstanceOffsets(MultidrawCommand* data, uint32_t count, uint32_t base_offset) {
-		uint32_t offset = base_offset;
-		for (uint32_t i = 0; i < count; i++) {
-			data[i].m_instance_offset = offset;
-			offset += data[i].m_instance_count;
-		}
+	void RenderEngine::MultiDrawIndexedIndirect(uint32_t command_count, uint32_t command_offset, uint32_t stride) {
+		stride = stride ? stride : static_cast<uint32_t>(sizeof(multidraw::IndexedCommand));
+		if (command_count > 0)
+			glMultiDrawElementsIndirect(s_topology, s_index_type, GetCommandOffset(command_offset, stride), command_count, stride);
 	}
 }

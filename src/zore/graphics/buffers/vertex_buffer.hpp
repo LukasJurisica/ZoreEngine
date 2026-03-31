@@ -1,7 +1,6 @@
 #pragma once
 
-#include "zore/utils/sized_integer.hpp"
-#include "zore/utils/span.hpp"
+#include "zore/graphics/buffers/buffer_base.hpp"
 
 namespace zore {
 
@@ -9,26 +8,21 @@ namespace zore {
 	//	Vertex Buffer
 	//========================================================================
 
-	class VertexBuffer {
+	class VertexBuffer : public Buffer::Base {
 	public:
 		VertexBuffer(bool instanced = false);
-		VertexBuffer(const VoidSpan& span, bool instanced = false);
-		VertexBuffer(const void* data, uint32_t size, uint32_t stride, bool instanced = false);
-		VertexBuffer(const VertexBuffer&) = delete;
-		VertexBuffer(VertexBuffer&&) = delete;
-		VertexBuffer& operator=(const VertexBuffer&) = delete;
-		VertexBuffer& operator=(VertexBuffer&&) = delete;
-		~VertexBuffer();
+		VertexBuffer(const void_span& span, bool instanced = false);
+		VertexBuffer(const void* data, size_t size, size_t stride = 0u, bool instanced = false);
+		VertexBuffer(VertexBuffer&&) = default;
+		VertexBuffer& operator=(VertexBuffer&&) = default;
+		~VertexBuffer() = default;
 
-		uint32_t GetID() const;
-		void Set(const VoidSpan& span);
-		void Set(const void* data, uint32_t size, uint32_t stride = 0u);
-		void Update(const void* data, uint32_t size, uint32_t offset = 0u);
+		void Set(const void_span& span);
+		void Set(const void* data, size_t size, size_t stride);
 		void Bind() const;
 
 	private:
-		uint32_t m_id;
 		uint32_t m_stride;
-		uint32_t m_index;
+		uint32_t m_instance;
 	};
 }

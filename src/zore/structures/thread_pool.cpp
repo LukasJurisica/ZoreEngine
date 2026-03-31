@@ -1,5 +1,4 @@
 #include "zore/structures/thread_pool.hpp"
-#include "zore/math/math.hpp"
 #include <algorithm>
 
 namespace zore {
@@ -8,14 +7,14 @@ namespace zore {
 	//	Threadpool
 	//=========================================================================
 
-	ThreadPool::ThreadPool(uint32_t num_threads) {
-		num_threads = zm::Min(zm::Max(num_threads, 1u), GetMaximumThreadCount());
+	thread_pool::thread_pool(uint32_t num_threads) {
+		num_threads = std::min(std::max(num_threads, 1u), get_max_thread_count());
 		m_threads.reserve(num_threads);
 		for (uint32_t i = 0; i < num_threads; i++)
-			m_threads.emplace_back(&ThreadPool::ThreadLoop, this);
+			m_threads.emplace_back(&thread_pool::thread_loop, this);
 	}
 
-	ThreadPool::~ThreadPool() {
+	thread_pool::~thread_pool() {
 		m_job_mutex.lock();
 		m_running = false;
 		m_job_mutex.unlock();
@@ -28,28 +27,28 @@ namespace zore {
 			delete handler;
 	}
 
-	void ThreadPool::UpdatePriorities() {
+	void thread_pool::update_priorities() {
 		std::lock_guard<std::mutex> lock(m_job_mutex);
 		for (Job* job : m_jobs)
-			job->UpdatePriority();
-		std::sort(m_jobs.begin(), m_jobs.end(), [](Job* a, Job* b) { return a->GetPriority() > b->GetPriority(); });
+			job->update_priority();
+		std::sort(m_jobs.begin(), m_jobs.end(), [](Job* a, Job* b) { return a->get_priority() > b->get_priority(); });
 	}
 
-	void ThreadPool::ThreadLoop() {
+	void thread_pool::thread_loop() {
 		while (m_running) {
-			Job* job = GetNextJob();
+			Job* job = pop();
 			if (!job)
 				continue;
-			job->Execute();
+			job->execute();
 
 			auto iter = m_callback_handlers.find(typeid(*job));
 			if (iter != m_callback_handlers.end())
-				iter->second->Execute(*job);
+				iter->second->execute(*job);
 			delete job;
 		}
 	}
 
-	Job* ThreadPool::GetNextJob() {
+	Job* thread_pool::pop() {
 		std::unique_lock<std::mutex> lock(m_job_mutex);
 		cv.wait(lock, [&] { return !m_jobs.empty() || !m_running; });
 

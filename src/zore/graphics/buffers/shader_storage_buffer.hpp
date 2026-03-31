@@ -1,7 +1,6 @@
 #pragma once
 
-#include "zore/utils/sized_integer.hpp"
-#include "zore/utils/span.hpp"
+#include "zore/graphics/buffers/buffer_base.hpp"
 
 namespace zore {
 
@@ -9,26 +8,20 @@ namespace zore {
 	//	Shader Storage Buffer
 	//========================================================================
 
-	class ShaderStorageBuffer {
+	class ShaderStorageBuffer : public Buffer::Base {
 	public:
 		ShaderStorageBuffer();
-		ShaderStorageBuffer(const VoidSpan& span);
-		ShaderStorageBuffer(const void* data, uint32_t size);
-		ShaderStorageBuffer(const ShaderStorageBuffer&) = delete;
-		ShaderStorageBuffer(ShaderStorageBuffer&&) = delete;
-		ShaderStorageBuffer& operator=(const ShaderStorageBuffer&) = delete;
-		ShaderStorageBuffer& operator=(ShaderStorageBuffer&&) = delete;
-		~ShaderStorageBuffer();
+		ShaderStorageBuffer(const void_span& span);
+		ShaderStorageBuffer(const void* data, size_t size);
+		ShaderStorageBuffer(ShaderStorageBuffer&&) = default;
+		ShaderStorageBuffer& operator=(ShaderStorageBuffer&&) = default;
+		ShaderStorageBuffer(const Buffer::Base& other);
+		~ShaderStorageBuffer() = default;
 
-		uint32_t GetID() const;
-		void Set(const VoidSpan& span);
-		void Set(const void* data, uint32_t size);
-		void Update(const void* data, uint32_t size, uint32_t offset);
 		void Bind() const;
-		void Bind(uint32_t index);
+		void Bind(uint32_t bind_point);
 
 	private:
-		uint32_t m_id;
-		uint32_t m_index;
+		uint32_t m_bind_point;
 	};
 }

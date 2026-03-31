@@ -1,7 +1,6 @@
 #pragma once
 
-#include "zore/utils/sized_integer.hpp"
-#include "zore/utils/span.hpp"
+#include "zore/graphics/buffers/buffer_base.hpp"
 
 namespace zore {
 
@@ -9,24 +8,15 @@ namespace zore {
 	//	Index Buffer
 	//========================================================================
 
-	class IndexBuffer {
+	class IndexBuffer : public Buffer::Base {
 	public:
-		IndexBuffer();
-		IndexBuffer(const VoidSpan& span);
-		IndexBuffer(const void* data, uint32_t size);
-		IndexBuffer(const IndexBuffer&) = delete;
-		IndexBuffer(IndexBuffer&&) = delete;
-		IndexBuffer& operator=(const IndexBuffer&) = delete;
-		IndexBuffer& operator=(IndexBuffer&&) = delete;
-		~IndexBuffer();
+		IndexBuffer() = default;
+		IndexBuffer(const void_span& span);
+		IndexBuffer(const void* data, size_t size);
+		IndexBuffer(IndexBuffer&&) = default;
+		IndexBuffer& operator=(IndexBuffer&&) = default;
+		~IndexBuffer() = default;
 
-		uint32_t GetID() const;
-		void Set(const VoidSpan& span);
-		void Set(const void* data, uint32_t size);
-		void Update(const void* data, uint32_t size, uint32_t offset = 0u);
 		void Bind() const;
-
-	private:
-		uint32_t m_id;
 	};
 }

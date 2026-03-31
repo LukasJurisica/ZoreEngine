@@ -1,13 +1,13 @@
 #pragma once
 #include <mutex>
 
-template <size_t SIZE, class TYPE>
+template <typename T, size_t S>
 class circular_queue {
 public:
 	explicit circular_queue() : m_head(0), m_tail(0), m_full(false) {};
 	~circular_queue() = default;
 
-	void push(const TYPE& item) {
+	void push(const T& item) {
 		std::lock_guard<std::mutex> lock(m_mutex);
 		m_data[m_head] = item;
 		increment_index(m_head);
@@ -17,9 +17,9 @@ public:
 			m_full = m_head == m_tail;
 	}
 
-	TYPE pop() {
+	T pop() {
 		std::lock_guard<std::mutex> lock(m_mutex);
-		TYPE item = m_data[m_tail];
+		T item = std::move(m_data[m_tail]);
 		increment_index(m_tail);
 		m_full = false;
 		return item;
@@ -40,23 +40,23 @@ public:
 	}
 
 	size_t size() const {
-		return m_head - m_tail + ((m_head < m_tail || m_full) ? SIZE : 0);
+		return m_head - m_tail + ((m_head < m_tail || m_full) ? S : 0);
 	}
 
 	size_t capacity() const {
-		return SIZE;
+		return S;
 	}
 
 private:
 	void increment_index(size_t& index) {
 		++index;
-		if (index == SIZE)
+		if (index == capacity())
 			index = 0;
 	}
 
 private:
 	std::mutex m_mutex;
-	TYPE m_data[SIZE];
+	T m_data[S];
 	size_t m_head, m_tail;
 	bool m_full;
 };
