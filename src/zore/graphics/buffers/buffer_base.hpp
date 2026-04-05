@@ -33,6 +33,5 @@ namespace zore::Buffer {
 
 	protected:
 		uint32_t m_index;
-		static inline bool s_context_active = false;
 	};
 }

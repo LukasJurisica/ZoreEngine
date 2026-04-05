@@ -43,6 +43,11 @@ namespace zm {
 		ALWAYS_INLINE mat2& operator*=(const mat2& m) { *this = (*this) * m; return *this; }
 		// Factories ----------------------
 		static ALWAYS_INLINE mat2 Identity() { return mat2(1.f); }
+		static ALWAYS_INLINE mat2 Rotation(float angle) {
+			float s = std::sin(angle);
+			float c = std::cos(angle);
+			return zm::mat2({ c, -s }, { s, c });
+		}
 		// Other --------------------------
 		ALWAYS_INLINE vec2& operator[](int i) { return rows[i]; }
 		ALWAYS_INLINE const vec2& operator[](int i) const { return rows[i]; }

@@ -1,5 +1,6 @@
 #include "zore/graphics/buffers/buffer_base.hpp"
 #include "zore/structures/object_pool.hpp"
+#include "zore/debug.hpp"
 #include <glad/glad.h>
 #include <cstring>
 
@@ -11,6 +12,7 @@ namespace zore::Buffer {
 	};
 
 	static object_pool<Buffer::Data> s_buffer_pool;
+	static bool* s_context_active;
 
 	//========================================================================
 	//	Buffer Base
@@ -56,7 +58,7 @@ namespace zore::Buffer {
 	}
 
 	Base::~Base() {
-		if (!s_context_active || m_index == s_buffer_pool.INVALID_INDEX)
+		if (s_context_active == nullptr || m_index == s_buffer_pool.INVALID_INDEX)
 			return;
 		if (s_buffer_pool[m_index].ref_count == 1) {
 			glDeleteBuffers(1, &s_buffer_pool[m_index].id);
@@ -68,11 +70,12 @@ namespace zore::Buffer {
 	}
 
 	void Base::Init() {
-		s_context_active = true;
+		s_context_active = new bool(true);
 	}
 
 	void Base::Cleanup() {
-		s_context_active = false;
+		delete s_context_active;
+		s_context_active = nullptr;
 		for (const Buffer::Data& data : s_buffer_pool)
 			if (data.id != GL_INVALID_NAME)
 				glDeleteBuffers(1, &data.id);
@@ -87,6 +90,7 @@ namespace zore::Buffer {
 	}
 
 	void Base::Set(const void* data, size_t size) {
+		DEBUG_ENSURE(s_context_active != nullptr, "Attempted to initialize a buffer without an active context.");
 		if (m_index == s_buffer_pool.INVALID_INDEX) {
 			m_index = s_buffer_pool.acquire(0, 1);
 			glCreateBuffers(1, &s_buffer_pool[m_index].id);
@@ -95,6 +99,7 @@ namespace zore::Buffer {
 	}
 
 	void Base::Update(const void* data, size_t size, size_t offset) {
+		DEBUG_ENSURE(s_context_active != nullptr, "Attempted to update a buffer without an active context.");
 		if (m_index == s_buffer_pool.INVALID_INDEX)
 			return;
 		void* ptr = glMapNamedBufferRange(s_buffer_pool[m_index].id, offset, size, GL_MAP_WRITE_BIT);

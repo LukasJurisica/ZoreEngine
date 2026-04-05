@@ -55,7 +55,7 @@ void DemoApplication::Run() {
 
 	m_panel_shader.SetSource("default_ui_panel.glsl").Compile();
 	m_text_shader.SetSource("default_ui_text.glsl").Compile();
-	VertexLayout layout(m_panel_shader, {}, { { "quad", VertexDataType::INT_32, 4} });
+	VertexLayout layout(m_panel_shader, {}, { { "quad", VertexElement::Type::INT_32, 4} });
 	layout.Bind();
 
 	// Initialize Font

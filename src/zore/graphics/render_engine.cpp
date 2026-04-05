@@ -1,6 +1,7 @@
 #include "zore/graphics/render_engine.hpp"
 #include "zore/graphics/shader.hpp"
 #include "zore/graphics/buffers/multidraw_command_buffer.hpp"
+#include "zore/graphics/vertex_layout.hpp"
 #include "zore/devices/window.hpp"
 #include "zore/debug.hpp"
 #include <glad/glad.h>
@@ -51,11 +52,16 @@ namespace zore {
 		glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &context);
 		Shader::SetShaderVersion(GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version), context & GL_CONTEXT_CORE_PROFILE_BIT);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		VertexLayout::Empty().Init();
 
 		if (IS_DEBUG) {
 			glEnable(GL_DEBUG_OUTPUT);
 			glDebugMessageCallback(MessageCallback, 0);
 		}
+	}
+
+	void RenderEngine::Free() {
+		VertexLayout::Empty().Free();
 	}
 
 	void RenderEngine::ResetViewport() {

@@ -46,8 +46,8 @@ namespace zore {
 	}
 
 	Shader& Shader::SetDefines(const std::vector<DefineItem>& defines) {
-		const Stage validStages[] = { Stage::VERTEX, Stage::GEOMETRY, Stage::FRAGMENT, Stage::COMPUTE };
-		for (const Stage& stage : validStages)
+		const Stage valid_stages[] = { Stage::VERTEX, Stage::GEOMETRY, Stage::FRAGMENT, Stage::COMPUTE };
+		for (const Stage& stage : valid_stages)
 			m_defines[stage] = "";
 		for (const DefineItem& item : defines)
 			m_defines[item.stage] += "#define " + item.entry + "\n";

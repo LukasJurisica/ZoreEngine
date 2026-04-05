@@ -19,9 +19,7 @@ namespace zore {
 	//	Frame Buffer
 	//========================================================================
 
-	FrameBuffer::FrameBuffer() : m_attachment_count(0) {
-		glCreateFramebuffers(1, &m_id);
-	}
+	FrameBuffer::FrameBuffer() : m_id(GL_INVALID_NAME), m_attachment_count(1) {}
 
 	FrameBuffer::FrameBuffer(uint32_t width, uint32_t height, uint32_t a_count, Texture::Format a_format, DepthFormat d_format) {
 		glCreateFramebuffers(1, &m_id);
@@ -45,6 +43,8 @@ namespace zore {
 	}
 
 	void FrameBuffer::Set(uint32_t width, uint32_t height) {
+		if (m_id == GL_INVALID_NAME)
+			glCreateFramebuffers(1, &m_id);
 		m_colour_buffer.Set(nullptr, width, height, m_attachment_count);
 		m_depth_buffer.Set(width, height);
 		UpdateAttachments();
@@ -52,6 +52,8 @@ namespace zore {
 
 	void FrameBuffer::Set(uint32_t width, uint32_t height, uint32_t a_count, Texture::Format a_format, DepthFormat d_format) {
 		ENSURE((m_attachment_count = a_count) <= MAX_FRAMEBUFFER_ATTACHMENTS, "Cannot create framebuffer: too many colour attachments requested.");
+		if (m_id == GL_INVALID_NAME)
+			glCreateFramebuffers(1, &m_id);
 		m_colour_buffer.Set(nullptr, width, height, m_attachment_count, a_format);
 		m_depth_buffer.Set(width, height, d_format);
 		UpdateAttachments();
