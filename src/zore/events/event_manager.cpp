@@ -42,7 +42,7 @@ namespace zore::event {
 		}
 	}
 
-	void Manager::Dispatch(std::type_index type, const EventBase& event) {
+	void Manager::Dispatch(std::type_index type, const event::Base& event) {
 		static EventHandlerMapType& event_handlers = EventHandlerMap();
 		auto iter = event_handlers.find(type);
 		if (iter != event_handlers.end()) {

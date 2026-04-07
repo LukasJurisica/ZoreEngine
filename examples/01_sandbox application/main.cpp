@@ -18,30 +18,23 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 	m_camera.Invert(false, true);
 	s_instance = this;
 
-	// Initialize Event Handlers
-	m_event_handler.Register(&DemoApplication::OnMousePress, this);
-	m_event_handler.Register(&DemoApplication::OnMouseRelease, this);
-	m_event_handler.Register(&DemoApplication::OnKeyPress, this);
-	m_event_handler.Register(&DemoApplication::OnKeyRelease, this);
+	// Initialize Event Handler
 	m_event_handler.Register(&DemoApplication::OnWindowResize, this);
 
 	// Initialize UI
 	CreateSimpleUI();
-	UI::Manager::Bind(action_map);
 	UI::Manager::Bind("main_menu");
 	zm::ivec2 resolution = Window::GetSize();
 	UI::Layer::Resize(resolution.x, resolution.y);
 
-	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
+	action_map.Register(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
 		s_display_console = !s_display_console;
 		});
 
-	action_map.RegisterAction(ActionMap::Source::KEYBOARD, KEY_F8, true, false, [](bool start) {
-		s_instance->ReloadShaders();
-		});
+	action_map.Register(ActionMap::Source::KEYBOARD, KEY_F8, true, false, &DemoApplication::ReloadShaders, this);
 }
 
-void DemoApplication::ReloadShaders() {
+void DemoApplication::ReloadShaders(ActionMap::Key) {
 	m_panel_shader.Compile();
 	m_text_shader.Compile();
 	m_compute_shader.Compile();
@@ -119,7 +112,7 @@ void DemoApplication::CreateSimpleUI() {
 	options_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("OPTIONS");
 	quit_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("QUIT");
 
-	action_map.RegisterAction(ActionMap::Source::INTERNAL, quit_button.GetUUID(), true, false, [](bool start) {
+	action_map.Register(ActionMap::Source::INTERNAL, quit_button.GetUUID(), true, false, [](ActionMap::Key) {
 		UI::Manager::Bind("confirm_quit_menu");
 		});
 
@@ -132,33 +125,13 @@ void DemoApplication::CreateSimpleUI() {
 	yes_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("YES");
 	no_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("NO");
 
-	action_map.RegisterAction(ActionMap::Source::INTERNAL, yes_button.GetUUID(), false, true, [](bool start) {
+	action_map.Register(ActionMap::Source::INTERNAL, yes_button.GetUUID(), false, true, [](ActionMap::Key) {
 		s_quit = true;
 		});
 
-	action_map.RegisterAction(ActionMap::Source::INTERNAL, no_button.GetUUID(), false, true, [](bool start) {
+	action_map.Register(ActionMap::Source::INTERNAL, no_button.GetUUID(), false, true, [](ActionMap::Key) {
 		UI::Manager::Bind("main_menu");
 		});
-}
-
-DemoApplication* DemoApplication::Get() {
-	return s_instance;
-}
-
-bool DemoApplication::OnMousePress(const MousePressedEvent& e) {
-	return action_map.HandleEvent(ActionMap::Source::MOUSE, e.button, 1);
-}
-
-bool DemoApplication::OnMouseRelease(const MouseReleasedEvent& e) {
-	return action_map.HandleEvent(ActionMap::Source::MOUSE, e.button, 0);
-}
-
-bool DemoApplication::OnKeyPress(const KeyPressedEvent& e) {
-	return action_map.HandleEvent(ActionMap::Source::KEYBOARD, e.key, 1);
-}
-
-bool DemoApplication::OnKeyRelease(const KeyReleasedEvent& e) {
-	return action_map.HandleEvent(ActionMap::Source::KEYBOARD, e.key, 0);
 }
 
 bool DemoApplication::OnWindowResize(const WindowResizedEvent& e) {

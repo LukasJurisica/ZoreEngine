@@ -7,7 +7,7 @@ namespace zore::net {
 	class Manager {
 	public:
 		static void Init();
-		static void Cleanup();
+		static void Free();
 		static std::string GetHostName();
 
 		static bool IsInitialized();

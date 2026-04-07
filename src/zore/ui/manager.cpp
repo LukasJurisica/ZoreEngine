@@ -5,7 +5,6 @@
 namespace zore::UI {
 
 	static std::unordered_map<std::string, UNIQUE<Layer>> s_layers;
-	static ActionMap* s_active_action_map = nullptr;
 
 	//========================================================================
 	//	UI Event Listener Class
@@ -29,24 +28,25 @@ namespace zore::UI {
 		}
 
 		static bool OnMousePress(const MousePressedEvent& e) {
-			uint32_t trigger = Layer::HandleMousePress(e.button);
-			if (trigger && s_active_action_map)
-				return s_active_action_map->HandleEvent(ActionMap::Source::INTERNAL, trigger, 1);
-			return false;
+			return HandleButton(Layer::HandleMousePress(e.button), true);
 		}
 
 		static bool OnMouseRelease(const MouseReleasedEvent& e) {
-			uint32_t trigger = Layer::HandleMouseRelease(e.button);
-			if (trigger && s_active_action_map)
-				return s_active_action_map->HandleEvent(ActionMap::Source::INTERNAL, trigger, 0);
-			return false;
+			return HandleButton(Layer::HandleMouseRelease(e.button), false);
 		}
 
 		static bool OnKeyPress(const KeyPressedEvent& e) {
-			uint32_t trigger = Layer::HandleKeyPress(e.key);
-			if (trigger && s_active_action_map)
-				return s_active_action_map->HandleEvent(ActionMap::Source::INTERNAL, trigger, 1);
-			return false;
+			return HandleButton(Layer::HandleKeyPress(e.key), true);
+		}
+
+		static bool HandleButton(uint32_t button_id, bool press) {
+			if (button_id != uuid_32::INVALID_ID) {
+				if (press)
+					event::Manager::Dispatch(ButtonPressedEvent(button_id));
+				else
+					event::Manager::Dispatch(ButtonReleasedEvent(button_id));
+			}
+			return button_id != uuid_32::INVALID_ID;
 		}
 
 		static bool OnWindowResize(const WindowResizedEvent& e) {
@@ -78,10 +78,6 @@ namespace zore::UI {
 		else
 			Logger::Warn("Attempted to bind layer with name that does not exist:", name);
 		return layer;
-	}
-
-	void Manager::Bind(ActionMap& action_map) {
-		s_active_action_map = &action_map;
 	}
 
 	Manager::Manager() {

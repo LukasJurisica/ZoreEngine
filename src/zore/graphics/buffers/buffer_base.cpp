@@ -73,7 +73,7 @@ namespace zore::Buffer {
 		s_context_active = new bool(true);
 	}
 
-	void Base::Cleanup() {
+	void Base::FreeAll() {
 		delete s_context_active;
 		s_context_active = nullptr;
 		for (const Buffer::Data& data : s_buffer_pool)

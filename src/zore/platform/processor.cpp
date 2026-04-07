@@ -24,7 +24,7 @@ namespace zore {
 			GetCPUID(i, &s_data[i * 4]);
 	}
 
-	void Processor::Cleanup() {
+	void Processor::Free() {
 		delete[] s_data;
 	}
 

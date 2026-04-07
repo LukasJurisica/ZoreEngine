@@ -1,12 +1,17 @@
 #pragma once
 
+#include <concepts>
+
 namespace zore::event {
 
 	//========================================================================
-	//	Event Base Class
+	//	Event Base
 	//========================================================================
 
-	struct EventBase {
-		virtual ~EventBase() = default;
+	struct Base {
+		virtual ~Base() = default;
 	};
+
+	template <typename T>
+	concept Derivative = std::derived_from<T, event::Base>;
 }

@@ -13,7 +13,6 @@ namespace zore::UI {
     public:
         static Layer& CreateLayer(const std::string& name);
         static Layer* Bind(const std::string& name);
-        static void Bind(ActionMap& action_map);
 
         virtual void OnLayerChange(Layer* layer, const std::string& name) {};
 

@@ -13,17 +13,11 @@ namespace zore {
 		DemoApplication(const LaunchOptions& options);
 		~DemoApplication() = default;
 
-		void ReloadShaders();
-
 	private:
 		void Run() override;
 		void CreateSimpleUI();
-		static DemoApplication* Get();
+		void ReloadShaders(ActionMap::Key);
 
-		bool OnMousePress(const MousePressedEvent& e);
-		bool OnMouseRelease(const MouseReleasedEvent& e);
-		bool OnKeyPress(const KeyPressedEvent& e);
-		bool OnKeyRelease(const KeyReleasedEvent& e);
 		bool OnWindowResize(const WindowResizedEvent& e);
 
 	private:

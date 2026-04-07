@@ -36,7 +36,6 @@ namespace zore {
 		Create();
 		Logger::Info("Window Creation Complete.");
 		RenderEngine::Init();
-		Logger::Info("Render Engine Initialization Complete.");
 		Update();
 	}
 
@@ -79,7 +78,8 @@ namespace zore {
 		glfwSetCursorEnterCallback(s_window_handle, Mouse::EnterCallback);
 	}
 
-	void Window::Cleanup() {
+	void Window::Free() {
+		RenderEngine::Free();
 		glfwDestroyWindow(s_window_handle);
 		glfwTerminate();
 		Logger::Info("Window Cleanup Complete.");

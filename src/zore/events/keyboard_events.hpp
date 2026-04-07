@@ -4,12 +4,12 @@
 
 namespace zore {
 
-	struct KeyPressedEvent : public event::EventBase {
+	struct KeyPressedEvent : public event::Base {
 		KeyPressedEvent(int key, int mods) : key(key), mods(mods) {}
 		int key, mods;
 	};
 
-	struct KeyReleasedEvent : public event::EventBase {
+	struct KeyReleasedEvent : public event::Base {
 		KeyReleasedEvent(int key) : key(key) {}
 		int key;
 	};

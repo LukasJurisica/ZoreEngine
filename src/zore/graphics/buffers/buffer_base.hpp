@@ -24,7 +24,7 @@ namespace zore::Buffer {
 
 	public:
 		static void Init();
-		static void Cleanup();
+		static void FreeAll();
 
 		uint32_t GetID() const;
 		void Set(const void_span& span);

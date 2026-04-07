@@ -14,7 +14,7 @@ namespace zore::audio {
 	class Manager {
 	public:
 		static void Init();
-		static void Cleanup();
+		static void Free();
 
 		static void update();
 		static void SetVolume(float volume);

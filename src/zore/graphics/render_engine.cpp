@@ -53,15 +53,19 @@ namespace zore {
 		Shader::SetShaderVersion(GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version), context & GL_CONTEXT_CORE_PROFILE_BIT);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		VertexLayout::Empty().Init();
+		Buffer::Base::Init();
 
 		if (IS_DEBUG) {
 			glEnable(GL_DEBUG_OUTPUT);
 			glDebugMessageCallback(MessageCallback, 0);
 		}
+		Logger::Info("Render Engine Initialization Complete.");
 	}
 
 	void RenderEngine::Free() {
+		Buffer::Base::FreeAll();
 		VertexLayout::Empty().Free();
+		Logger::Info("Render Engine Cleanup Complete.");
 	}
 
 	void RenderEngine::ResetViewport() {

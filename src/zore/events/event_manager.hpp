@@ -16,13 +16,10 @@ namespace zore::event {
 		static void Subscribe(std::type_index type, HandlerBase* handler);
 		static void Unsubscribe(std::type_index type, HandlerBase* handler);
 
-		template<typename EventType>
-		static inline void Dispatch(const EventType& event) {
-			static_assert(std::is_base_of<EventBase, EventType>::value, "EventType must derive from EventBase");
-			Dispatch(typeid(EventType), event);
-		}
+		template<event::Derivative E>
+		static inline void Dispatch(const E& event) { Dispatch(typeid(E), event); }
 
 	private:
-		static void Dispatch(std::type_index type, const EventBase& event);
+		static void Dispatch(std::type_index type, const event::Base& event);
 	};
 }

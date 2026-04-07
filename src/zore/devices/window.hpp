@@ -44,7 +44,7 @@ namespace zore {
 	private:
 		static void Init(bool transparent);
 		static void Create();
-		static void Cleanup();
+		static void Free();
 
 		static void ErrorCallback(int error, const char* description);
 		static void ResizeCallback(GLFWwindow* window_handle, int width, int height);
