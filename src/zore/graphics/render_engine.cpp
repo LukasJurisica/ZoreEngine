@@ -21,7 +21,7 @@ namespace zore {
 
 	void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* user_param) {
 		if (severity == GL_DEBUG_SEVERITY_HIGH)
-			__debugbreak();
+			throw ZORE_EXCEPTION("GL ERROR: " + std::string(message));
 		else if (type == GL_DEBUG_TYPE_ERROR)
 			Logger::Error("GL ERROR: (", severity, ")", message);
 		else if (id != 131185) // Using Video Memory

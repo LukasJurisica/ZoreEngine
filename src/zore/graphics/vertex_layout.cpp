@@ -31,6 +31,7 @@ namespace zore {
 	void VertexLayout::Init() {
 		if (m_id == GL_INVALID_NAME)
 			glCreateVertexArrays(1, &m_id);
+		glBindVertexArray(m_id);
 	}
 
 	void VertexLayout::Free() {
@@ -45,7 +46,7 @@ namespace zore {
 	}
 
 	void VertexLayout::Set(Shader& shader, const std::vector<VertexElement>& vertex_elements, const std::vector<VertexElement>& instance_elements, uint32_t interval) {
-		if (m_id)
+		if (m_id != GL_INVALID_NAME)
 			glDeleteVertexArrays(1, &m_id);
 		glCreateVertexArrays(1, &m_id);
 		glBindVertexArray(m_id);

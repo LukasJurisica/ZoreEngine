@@ -12,7 +12,7 @@ namespace zore::Buffer {
 	};
 
 	static object_pool<Buffer::Data> s_buffer_pool;
-	static bool* s_context_active;
+	static bool* s_context_active = nullptr;
 
 	//========================================================================
 	//	Buffer Base
@@ -20,11 +20,11 @@ namespace zore::Buffer {
 
 	Base::Base() : m_index(s_buffer_pool.INVALID_INDEX) {}
 
-	Base::Base(const void_span& span) {
+	Base::Base(const void_span& span) : m_index(s_buffer_pool.INVALID_INDEX) {
 		Set(span);
 	}
 
-	Base::Base(const void* data, size_t size) {
+	Base::Base(const void* data, size_t size) : m_index(s_buffer_pool.INVALID_INDEX) {
 		Set(data, size);
 	}
 
