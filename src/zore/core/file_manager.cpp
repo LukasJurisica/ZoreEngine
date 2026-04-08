@@ -54,10 +54,23 @@ namespace zore {
 	//	File Class
 	//========================================================================
 
-	File::File(const std::string& path, Mode mode) : m_filename(path), m_mode(mode), m_stream(path, std::ios::in | std::ios::out) {}
+	File::File(const std::string& filename, Mode mode) : m_filename(filename), m_mode(mode) {
+		int flags = 0;
+		switch (mode) {
+		case Mode::READ: flags = std::ios::in; break;
+		case Mode::APPEND: flags = std::ios::out | std::ios::app; break;
+		case Mode::TRUNCATE: flags = std::ios::out | std::ios::trunc; break;
+		}
 
-	File File::Open(const std::string& path, Mode mode) {
-		return File(path, mode);
+		m_stream.open(filename, flags);
+	}
+
+	bool File::Exists(const std::string& filename) {
+		return std::filesystem::exists(filename);
+	}
+
+	File File::Open(const std::string& filename, Mode mode) {
+		return File(filename, mode);
 	}
 
 	File::File(File&& other) noexcept {
@@ -99,14 +112,14 @@ namespace zore {
 		return static_cast<bool>(std::getline(m_stream, line));
 	}
 
-	void File::Write(const std::string& content) {
+	void File::Write(std::string_view content) {
 		m_stream.close();
 		m_stream = std::fstream(m_filename, std::ios::trunc);
 		m_stream.write(content.data(), content.size());
 		m_stream.flush();
 	}
 
-	void File::Append(const std::string& content) {
+	void File::Append(std::string_view content) {
 		m_stream.seekp(0, std::ios::end);
 		m_stream.write(content.data(), content.size());
 		m_stream.flush();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "zore/utils/uuid.hpp"
+#include "zore/utils/span.hpp"
 #include <string>
 #include <vector>
 #include <fstream>
@@ -49,11 +50,12 @@ namespace zore {
 		//	File Class Utiltiy
 		//------------------------------------------------------------------------
 
-		enum class Mode { BINARY, TEXT };
+		enum class Mode { READ, APPEND, TRUNCATE };
 
 	public:
-		File(const std::string& filename, Mode mode = Mode::TEXT);
-		static File Open(const std::string& filename, Mode mode = Mode::TEXT);
+		File(const std::string& filename, Mode mode = Mode::READ);
+		static bool Exists(const std::string& filename);
+		static File Open(const std::string& filename, Mode mode = Mode::READ);
 		File(const File&) = delete;
 		File(File&& other) noexcept;
 		File& operator=(const File&) = delete;
@@ -64,8 +66,8 @@ namespace zore {
 		void Close();
 		std::string Read();
 		bool ReadLine(std::string& line);
-		void Write(const std::string& content);
-		void Append(const std::string& content);
+		void Write(std::string_view content);
+		void Append(std::string_view content);
 		void Reset();
 		size_t Size();
 
