@@ -32,6 +32,8 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 		});
 
 	action_map.Register(ActionMap::Source::KEYBOARD, KEY_F8, true, false, &DemoApplication::ReloadShaders, this);
+
+	Logger::Log(File::Manager::Path(File::CommonPaths::LOCAL_APP_DATA) + "/illuminator");
 }
 
 void DemoApplication::ReloadShaders(ActionMap::Key) {

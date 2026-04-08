@@ -20,7 +20,9 @@ namespace zore {
 	//========================================================================
 
 	void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* user_param) {
-		if (type == GL_DEBUG_TYPE_ERROR)
+		if (severity == GL_DEBUG_SEVERITY_HIGH)
+			__debugbreak();
+		else if (type == GL_DEBUG_TYPE_ERROR)
 			Logger::Error("GL ERROR: (", severity, ")", message);
 		else if (id != 131185) // Using Video Memory
 			Logger::Info("GL INFO:", message);
@@ -57,6 +59,7 @@ namespace zore {
 
 		if (IS_DEBUG) {
 			glEnable(GL_DEBUG_OUTPUT);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 			glDebugMessageCallback(MessageCallback, 0);
 		}
 		Logger::Info("Render Engine Initialization Complete.");

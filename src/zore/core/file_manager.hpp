@@ -18,10 +18,13 @@ namespace zore {
 		//	File Management Utility
 		//------------------------------------------------------------------------
 
+		enum class CommonPaths { /*ASSETS, SHADERS, SCRIPTS, CONFIG, LOGS*/ LOCAL_APP_DATA };
+
 		class Manager {
 		public:
 			static void Init(const std::string& path = "/");
 			static std::string Path(const std::string& path);
+			static std::string Path(CommonPaths path);
 			static void EnsureDir(const std::string& path);
 		};
 
