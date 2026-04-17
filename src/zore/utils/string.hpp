@@ -279,6 +279,54 @@ namespace zore {
 		static inline std::string to_string(const std::wstring& string) {
 			return std::string(string.begin(), string.end());
 		}
+
+		static inline std::string EncodeUTF8(unsigned int codepoint) {
+			std::string result;
+			if (codepoint <= 0x7F) {
+				result += static_cast<char>(codepoint);
+			}
+			else if (codepoint <= 0x7FF) {
+				result += static_cast<char>(0xC0 | ((codepoint >> 6) & 0x1F));
+				result += static_cast<char>(0x80 | (codepoint& 0x3F));
+			}
+			else if (codepoint <= 0xFFFF) {
+				result += static_cast<char>(0xE0 | ((codepoint >> 12) & 0x0F));
+				result += static_cast<char>(0x80 | ((codepoint >> 6) & 0x3F));
+				result += static_cast<char>(0x80 | (codepoint& 0x3F));
+			}
+			else {
+				result += static_cast<char>(0xF0 | ((codepoint >> 18) & 0x07));
+				result += static_cast<char>(0x80 | ((codepoint >> 12) & 0x3F));
+				result += static_cast<char>(0x80 | ((codepoint >> 6) & 0x3F));
+				result += static_cast<char>(0x80 | (codepoint & 0x3F));
+			}
+			return result;
+		}
+
+		static inline uint32_t EncodeUTF8(unsigned int codepoint, char* buffer) {
+			if (codepoint <= 0x7F) {
+				*buffer++ = char(codepoint);
+				return 1;
+			}
+			else if (codepoint <= 0x7FF) {
+				*buffer++ = char(0xC0 | (codepoint >> 6));
+				*buffer++ = char(0x80 | (codepoint & 0x3F));
+				return 2;
+			}
+			else if (codepoint <= 0xFFFF) {
+				*buffer++ = char(0xE0 | (codepoint >> 12));
+				*buffer++ = char(0x80 | ((codepoint >> 6) & 0x3F));
+				*buffer++ = char(0x80 | (codepoint & 0x3F));
+				return 3;
+			}
+			else {
+				*buffer++ = char(0xF0 | (codepoint >> 18));
+				*buffer++ = char(0x80 | ((codepoint >> 12) & 0x3F));
+				*buffer++ = char(0x80 | ((codepoint >> 6) & 0x3F));
+				*buffer++ = char(0x80 | (codepoint & 0x3F));
+				return 4;
+			}
+		}
 	};
 
 	inline constexpr string_hash_t operator""_hash (const char* str, size_t len) {

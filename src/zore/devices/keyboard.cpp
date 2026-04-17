@@ -59,6 +59,8 @@ namespace zore {
 	//------------------------------------------------------------------------
 
 	void Keyboard::KeyCallback(GLFWwindow* windowHandle, int key, int scancode, int action, int mods) {
+		if (key == GLFW_KEY_UNKNOWN)
+			return;
 		s_key_held_states[key] = action;
 		if (Editor::WantsKeyboard())
 			return;
