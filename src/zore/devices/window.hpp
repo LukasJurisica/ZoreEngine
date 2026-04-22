@@ -1,6 +1,8 @@
 #pragma once
 
 #include "zore/math/vector/vec2.hpp"
+#include <string_view>
+#include <vector>
 
 struct GLFWwindow;
 struct GLFWMonitor;
@@ -16,7 +18,7 @@ namespace zore {
 	public:
 		static void Update();
 		static void Close(bool value = true);
-		static void SetTitle(const char* title);
+		static void SetTitle(std::string_view title);
 		static void SetResizable(bool value);
 		static void SetMaximized(bool value);
 		static void SetBorderless(bool value);
@@ -31,6 +33,7 @@ namespace zore {
 		static void ForceAspectRatio(int width = -1, int height = -1);
 		static void SetPosition(int x, int y);
 		static void Centre();
+		static void SetIcons(const std::vector<std::string_view>& paths, std::string_view root = "");
 
 		static bool ShouldClose();
 		static bool GetMaximized();

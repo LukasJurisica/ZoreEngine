@@ -5,7 +5,10 @@
 #include "zore/utils/time.hpp"
 #include "zore/debug/profiler.hpp"
 #include "zore/debug.hpp"
+#include <stb/stb_image.h>
 #include <GLFW/glfw3.h>
+
+//#include <numeric>
 
 namespace zore {
 
@@ -98,8 +101,8 @@ namespace zore {
 		glfwSetWindowShouldClose(s_window_handle, value);
 	}
 
-	void Window::SetTitle(const char* title) {
-		glfwSetWindowTitle(s_window_handle, title);
+	void Window::SetTitle(std::string_view title) {
+		glfwSetWindowTitle(s_window_handle, title.data());
 	}
 
 	void Window::SetResizable(bool value) {
@@ -178,6 +181,26 @@ namespace zore {
 			s_position.y = (video_mode->height - s_size.y) / 2;
 			glfwSetWindowPos(s_window_handle, s_position.x, s_position.y);
 		}
+	}
+
+	void Window::SetIcons(const std::vector<std::string_view>& paths, std::string_view root) {
+		std::vector<GLFWimage> images(paths.size());
+		for (int i = 0; i < paths.size(); i++) {
+			std::string path = std::string(root) + std::string(paths[i]);
+			images[i].pixels = stbi_load(path.data(), &images[i].width, &images[i].height, 0, 4);
+			if (!images[i].pixels)
+				Logger::Error("Could not load window icon:", paths[i]);
+		}
+		std::erase_if(images, [](GLFWimage& img) {
+			return img.pixels == nullptr;
+			});
+		if (images.size() > 0)
+			glfwSetWindowIcon(s_window_handle, images.size(), images.data());
+		else
+			Logger::Error("No window icons could be loaded");
+
+		for (GLFWimage& image : images)
+			stbi_image_free(image.pixels);
 	}
 
 	bool Window::ShouldClose() {

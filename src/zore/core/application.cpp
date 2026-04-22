@@ -20,6 +20,7 @@ namespace zore {
 		Processor::Init();
 		File::Manager::Init();
 		Window::Init(options.transparent_window);
+		Window::SetIcons({ "zore_256.png", "zore_48.png", "zore_32.png", "zore_16.png" }, "assets/icons/");
 		if (options.enable_networking)
 			net::Manager::Init();
 		if (options.enable_audio)
