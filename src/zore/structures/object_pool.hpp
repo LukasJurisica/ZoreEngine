@@ -7,13 +7,10 @@
 
 namespace zore {
 
-	template <typename T>
+	template <typename T, typename S = size_t>
 	class object_pool {
 	public:
-		object_pool(uint32_t count = 0) {
-			if (count > 0)
-				m_data.resize(count);
-		}
+		object_pool(S count = 0) { m_data.resize(count); }
 		object_pool(const object_pool&) = delete;
 		object_pool& operator=(const object_pool&) = delete;
 		~object_pool() = default;
@@ -21,25 +18,25 @@ namespace zore {
 	public:
 		template<typename... Args>
 			requires std::constructible_from<T, Args...>
-		uint32_t acquire(Args&&... args) {
+		S acquire(Args&&... args) {
 			if (m_free_indices.empty()) {
 				m_data.emplace_back(std::forward<Args>(args)...);
-				return static_cast<uint32_t>(m_data.size() - 1);
+				return static_cast<S>(m_data.size() - 1);
 			}
-			uint32_t index = get_free_index();
+			S index = get_free_index();
 			m_data[index] = T(std::forward<Args>(args)...);
 			return index;
 		}
 
-		void release(uint32_t index) {
+		void release(S index) {
 			m_free_indices.push(index);
 		}
 
-		T& operator[](uint32_t index) {
+		T& operator[](S index) {
 			return m_data[index];
 		}
 
-		const T& operator[](uint32_t index) const {
+		const T& operator[](S index) const {
 			return m_data[index];
 		}
 
@@ -60,17 +57,17 @@ namespace zore {
 		}
 
 	private:
-		uint32_t get_free_index() {
-			uint32_t index = m_free_indices.front();
+		S get_free_index() {
+			S index = m_free_indices.front();
 			m_free_indices.pop();
 			return index;
 		}
 
 	public:
-		static constexpr inline uint32_t INVALID_INDEX = uint32_max;
+		static constexpr inline S INVALID_INDEX = static_cast<S>(-1);
 
 	private:
 		std::vector<T> m_data;
-		std::queue<uint32_t> m_free_indices;
+		std::queue<S> m_free_indices;
 	};
 }
