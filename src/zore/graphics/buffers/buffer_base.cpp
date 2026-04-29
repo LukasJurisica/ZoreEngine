@@ -11,7 +11,7 @@ namespace zore::Buffer {
 		uint32_t ref_count = 1;
 	};
 
-	static object_pool<Buffer::Data> s_buffer_pool;
+	static object_pool<Buffer::Data, uint32_t> s_buffer_pool;
 	static bool* s_context_active = nullptr;
 
 	//========================================================================
