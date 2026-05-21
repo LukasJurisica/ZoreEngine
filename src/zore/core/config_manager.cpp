@@ -24,7 +24,7 @@ namespace zore::Config {
 		m_should_save = false;
 
 		File::Manager::EnsureDir("config");
-		File file("config/" + m_filename + ".cfg");
+		File file("config/" + m_filename + ".cfg", File::Mode::READ_OR_CREATE);
 		for (const std::string& line : file) {
 			size_t index = line.find("=");
 			std::string key = String::Trim(line.substr(0, index));
@@ -35,7 +35,7 @@ namespace zore::Config {
 
 	void Manager::Save() {
 		if (m_should_save) {
-			File file("config/" + m_filename + ".cfg");
+			File file("config/" + m_filename + ".cfg", File::Mode::TRUNCATE);
 			std::string output;
 			for (auto& iter : m_entries)
 				output += iter.first + "=" + iter.second + "\n";

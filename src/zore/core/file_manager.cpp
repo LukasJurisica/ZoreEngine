@@ -58,11 +58,14 @@ namespace zore {
 		int flags = 0;
 		switch (mode) {
 		case Mode::READ: flags = std::ios::in; break;
+		case Mode::READ_OR_CREATE: flags = std::ios::in | std::ios::out | std::ios::app; break;
 		case Mode::APPEND: flags = std::ios::out | std::ios::app; break;
 		case Mode::TRUNCATE: flags = std::ios::out | std::ios::trunc; break;
 		}
 
 		m_stream.open(filename, flags);
+		if (m_stream.is_open() && mode == Mode::READ_OR_CREATE)
+			m_stream.seekg(0, std::ios::beg);
 	}
 
 	bool File::Exists(const std::string& filename) {

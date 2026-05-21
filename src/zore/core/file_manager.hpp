@@ -50,7 +50,7 @@ namespace zore {
 		//	File Class Utiltiy
 		//------------------------------------------------------------------------
 
-		enum class Mode { READ, APPEND, TRUNCATE };
+		enum class Mode { READ, READ_OR_CREATE, APPEND, TRUNCATE };
 
 	public:
 		File(const std::string& filename, Mode mode = Mode::READ);
