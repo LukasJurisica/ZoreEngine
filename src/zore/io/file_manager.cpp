@@ -64,7 +64,8 @@ namespace zore {
 		}
 
 		m_stream.open(filename, flags);
-		if (m_stream.is_open() && mode == Mode::READ_OR_CREATE)
+		ENSURE(IsOpen(), "Error opening file: " + filename);
+		if (mode == Mode::READ_OR_CREATE)
 			m_stream.seekg(0, std::ios::beg);
 	}
 
@@ -80,17 +81,19 @@ namespace zore {
 		m_stream = std::move(other.m_stream);
 		m_filename = other.m_filename;
 		m_mode = other.m_mode;
+		other.m_stream = std::fstream();
 	}
 
 	File& File::operator=(File&& other) noexcept {
 		m_stream = std::move(other.m_stream);
 		m_filename = other.m_filename;
 		m_mode = other.m_mode;
+		other.m_stream = std::fstream();
 		return *this;
 	}
 
 	File::~File() {
-		m_stream.close();
+		Close();
 	}
 
 	bool File::IsOpen() const {
@@ -102,8 +105,7 @@ namespace zore {
 	}
 
 	std::string File::Read() {
-		if (!IsOpen())
-			throw ZORE_EXCEPTION("Error opening file: " + m_filename);
+		ENSURE(m_mode == Mode::READ || m_mode == Mode::READ_OR_CREATE, "File not opened in a readable mode: " + m_filename);
 		Reset();
 		size_t size = Size();
 		std::string buffer(size, '\0');
@@ -116,8 +118,7 @@ namespace zore {
 	}
 
 	void File::Write(std::string_view content) {
-		m_stream.close();
-		m_stream = std::fstream(m_filename, std::ios::trunc);
+		ENSURE(m_mode == Mode::APPEND || m_mode == Mode::TRUNCATE, "File not opened in a writable mode: " + m_filename);
 		m_stream.write(content.data(), content.size());
 		m_stream.flush();
 	}
