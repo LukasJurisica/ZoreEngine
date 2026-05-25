@@ -9,7 +9,7 @@ namespace zore::Config {
 
 	template<typename T>
 	void Manager::Set(std::string_view key, T value) {
-		m_entries[std::string(key)] = std::to_string(value);
+		Set(key, std::to_string(value));
 	}
 
 	template<typename T>

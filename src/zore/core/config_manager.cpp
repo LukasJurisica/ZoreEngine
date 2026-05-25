@@ -53,6 +53,7 @@ namespace zore::Config {
 
 	template<>
 	void Manager::Set(std::string_view key, std::string_view value) {
+		m_should_save = true;
 		m_entries[std::string(key)] = std::string(value);
 	}
 
