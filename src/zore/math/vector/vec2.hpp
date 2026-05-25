@@ -91,6 +91,10 @@ namespace zm {
 	typedef vec_base<bool, 2>     bvec2;
 	typedef vec_base<int32_t, 2>  ivec2;
 	typedef vec_base<uint32_t, 2> uvec2;
+	typedef vec_base<int16_t, 2>  sivec2;
+	typedef vec_base<uint16_t, 2> suvec2;
+	typedef vec_base<int8_t, 2>   civec2;
+	typedef vec_base<uint8_t, 2>  cuvec2;
 	typedef vec_base<double, 2>   dvec2;
 
 	template <zore::numeric T>

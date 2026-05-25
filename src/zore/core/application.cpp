@@ -1,6 +1,6 @@
 #include "zore/core/application.hpp"
 #include "zore/platform/processor.hpp"
-#include "zore/core/file_manager.hpp"
+#include "zore/io/file_manager.hpp"
 #include "zore/core/command.hpp"
 #include "zore/devices/window.hpp"
 #include "zore/networking/networking_manager.hpp"

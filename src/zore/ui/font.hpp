@@ -15,6 +15,7 @@ namespace zore::UI {
         Font(Font&&) noexcept = default;
         Font& operator=(Font&&) noexcept = default;
 		~Font() = default;
+
         static Font& Create(const std::string& name, const std::string& path, Texture::Format format = Texture::Format::RGBA);
         static Font& Create(const std::string& path, Texture::Format format = Texture::Format::RGBA);
         static Font* Get(const std::string& name);

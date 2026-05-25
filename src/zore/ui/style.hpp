@@ -1,8 +1,9 @@
 #pragma once
 
 #include "zore/utils/sized_integer.hpp"
+#include "zore/math/vector/vec2.hpp"
 #include "zore/utils/colour.hpp"
-#include <string>
+#include <string_view>
 
 namespace zore::UI {
 
@@ -33,19 +34,20 @@ namespace zore::UI {
 		~Unit() = default;
 
 		static inline constexpr Unit AUTO() { return Unit(Type::AUTO, 0); }
-		static inline constexpr Unit VW(float value) { return Unit(Type::VW, PercentageAsInt(value)); }
-		static inline constexpr Unit VH(float value) { return Unit(Type::VH, PercentageAsInt(value)); }
-		static inline constexpr Unit PW(float value) { return Unit(Type::PW, PercentageAsInt(value)); }
-		static inline constexpr Unit PH(float value) { return Unit(Type::PH, PercentageAsInt(value)); }
-		static inline constexpr Unit PC(float value) { return Unit(Type::PC, PercentageAsInt(value)); }
+		static inline constexpr Unit VW(float value) { return Unit(Type::VW, PackPercentage(value)); }
+		static inline constexpr Unit VH(float value) { return Unit(Type::VH, PackPercentage(value)); }
+		static inline constexpr Unit PW(float value) { return Unit(Type::PW, PackPercentage(value)); }
+		static inline constexpr Unit PH(float value) { return Unit(Type::PH, PackPercentage(value)); }
+		static inline constexpr Unit PC(float value) { return Unit(Type::PC, PackPercentage(value)); }
 		static inline constexpr Unit PX(int16_t value) { return Unit(Type::PX, value); }
 
 		Type GetType() const { return m_type; }
-		int16_t Get(const int16_t* viewport_size, const int16_t* parent_size, int16_t auto_size, int16_t axis) const;
+		int16_t Get(const zm::sivec2& viewport_size, const zm::sivec2& parent_size, int16_t auto_size, int16_t axis) const;
 
 	private:
 		constexpr Unit(Type type, int16_t value) : m_type(type), m_value(value) {};
-		static int16_t PercentageAsInt(float value);
+		static inline int16_t PackPercentage(float value);
+		static inline int16_t UnpackPercentage(int16_t driver, int16_t value);
 
 	private:
 		int16_t m_value;
@@ -71,7 +73,7 @@ namespace zore::UI {
 	//	Positioning Enums
 	//========================================================================
 
-	enum class FlowDirection : uint8_t { HORIZONTAL, VERTICAL };
+	enum class Axis : uint8_t { HORIZONTAL, VERTICAL, NONE };
 
 	//========================================================================
 	//	Style Class
@@ -80,9 +82,9 @@ namespace zore::UI {
 	class Style {
 	public:
 		Style();
-		static Style& Create(const std::string& name);
-		static Style& Clone(const Style& style, const std::string& new_name);
-		static Style* Get(const std::string& name);
+		static Style& Create(std::string_view name);
+		static Style& Clone(const Style& style, std::string_view new_name);
+		static Style& Get(std::string_view name);
 
 		Style& SetWidth(Unit width);
 		Style& SetHeight(Unit height);
@@ -116,13 +118,15 @@ namespace zore::UI {
 		Style& SetMaxPadding(Unit horizontal, Unit vertical);
 		Style& SetMaxPadding(Unit left, Unit top, Unit right, Unit bottom);
 
-		Style& SetFlowDirection(FlowDirection flow_direction);
 		Style& SetGap(Unit gap);
 		Style& SetGap(Unit horizontal, Unit vertical);
 		Style& SetMinGap(Unit gap);
 		Style& SetMinGap(Unit horizontal, Unit vertical);
 		Style& SetMaxGap(Unit gap);
 		Style& SetMaxGap(Unit horizontal, Unit vertical);
+
+		Style& SetFlowDirection(Axis flow_direction);
+		Style& SetScrollAxis(Axis scroll_axis);
 		Style& SetColour(Colour colour);
 
 	public:
@@ -140,8 +144,9 @@ namespace zore::UI {
 		Unit m_max_gap[2];
 		Colour m_colour;
 		float m_aspect_ratio;
-		bool m_text_scaled;
+		bool m_text_warped;
 		uint8_t m_dependent_axis;
-		FlowDirection m_flow_direction;
+		Axis m_flow_direction;
+		Axis m_scroll_axis;
 	};
 }

@@ -1,7 +1,10 @@
 //#include "zore/ui/manager.hpp"
 //#include "zore/events.hpp"
+//#include "zore/debug.hpp"
 //
 //namespace zore::UI {
+//
+//	static std::unordered_map<std::string, UNIQUE<Layer>> s_layers;
 //
 //	//========================================================================
 //	//	UI Event Listener Class

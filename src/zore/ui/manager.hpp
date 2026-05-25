@@ -1,8 +1,5 @@
 #pragma once
 
-#include "zore/ui/layer.hpp"
-#include "zore/core/action_map.hpp"
-
 namespace zore::UI {
 
     //========================================================================
@@ -11,10 +8,6 @@ namespace zore::UI {
 
     class Manager {
     public:
-        static Layer& CreateLayer(const std::string& name);
-        static Layer* Bind(const std::string& name);
-
-        virtual void OnLayerChange(Layer* layer, const std::string& name) {};
 
     protected:
 		Manager();

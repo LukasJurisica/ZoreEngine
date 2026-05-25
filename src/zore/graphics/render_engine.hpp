@@ -26,6 +26,7 @@ namespace zore {
 		static void SetDepthWrite(bool value);
 		static void SetFaceCulling(bool value);
 		static void SetFaceCulling(CullingMode mode);
+		static void SetClippingPlaneCount(uint32_t count);
 		static void SetDepthTest(bool value);
 		static void SetDepthTest(DepthTest mode);
 		static void SetStencilTest(bool value);

@@ -1,31 +1,28 @@
 #include "zore/ui/style.hpp"
 #include "zore/math/math.hpp"
+#include "zore/structures/string_unordered_map.hpp"
 #include "zore/debug.hpp"
-#include <unordered_map>
 
 namespace zore::UI {
-
-#define INT16_MAX_VALUE 32767
 
 	//========================================================================
 	//	Unit Class
 	//========================================================================
 
-	int16_t Unit::Get(const int16_t* viewport_size, const int16_t* parent_size, int16_t auto_size, int16_t axis) const {
-		static constexpr float recip = 1.f / INT16_MAX_VALUE;
+	int16_t Unit::Get(const zm::sivec2& viewport_size, const zm::sivec2& parent_size, int16_t auto_size, int16_t axis) const {
 		switch (m_type) {
 		case Type::AUTO:
 			return auto_size;
 		case Type::VW:
-			return static_cast<int16_t>(viewport_size[W] * recip * m_value + 0.5f);
+			return UnpackPercentage(viewport_size[W], m_value);
 		case Type::VH:
-			return static_cast<int16_t>(viewport_size[H] * recip * m_value + 0.5f);
+			return UnpackPercentage(viewport_size[H], m_value);
 		case Type::PW:
-			return static_cast<int16_t>(parent_size[W] * recip * m_value + 0.5f);
+			return UnpackPercentage(parent_size[W], m_value);
 		case Type::PH:
-			return static_cast<int16_t>(parent_size[H] * recip * m_value + 0.5f);
+			return UnpackPercentage(parent_size[H], m_value);
 		case Type::PC:
-			return static_cast<int16_t>(parent_size[axis] * recip * m_value + 0.5f);
+			return UnpackPercentage(parent_size[axis], m_value);
 		case Type::PX:
 			return m_value;
 		default:
@@ -33,63 +30,69 @@ namespace zore::UI {
 		}
 	}
 
-	int16_t Unit::PercentageAsInt(float value) {
-		static constexpr float upper_bound = INT16_MAX_VALUE / 100.f;
-		return static_cast<int16_t>(std::round(upper_bound * zm::Clamp(value, 0.f, 100.f)));
+	int16_t Unit::PackPercentage(float value) {
+		static constexpr float upper_bound = int16_max / 100.f;
+		return static_cast<int16_t>(upper_bound * zm::Clamp(value, 0.f, 100.f) + 0.5f);
+	}
+
+	int16_t Unit::UnpackPercentage(int16_t driver, int16_t value) {
+		static constexpr float recip = 1.f / int16_max;
+		return static_cast<int16_t>(driver * recip * value + 0.5f);
 	}
 
 	//========================================================================
 	//	Style Class
 	//========================================================================
 
-	static std::unordered_map<std::string, Style> s_styles;
+	static zore::string_unordered_map<Style> s_styles;
 
 	Style::Style() {
 		SetSize(Unit::PC(100), Unit::PC(100));
 		SetMinSize(Unit::PX(0), Unit::PX(0));
-		SetMaxSize(Unit::PX(INT16_MAX_VALUE), Unit::PX(INT16_MAX_VALUE));
+		SetMaxSize(Unit::PX(int16_max), Unit::PX(int16_max));
 		SetMargin(Unit::PX(0));
 		SetMinMargin(Unit::PX(0));
-		SetMaxMargin(Unit::PX(INT16_MAX_VALUE));
+		SetMaxMargin(Unit::PX(int16_max));
 		SetPadding(Unit::PX(0));
 		SetMinPadding(Unit::PX(0));
-		SetMaxPadding(Unit::PX(INT16_MAX_VALUE));
+		SetMaxPadding(Unit::PX(int16_max));
 		SetGap(Unit::PX(0));
 		SetMinGap(Unit::PX(0));
-		SetMaxGap(Unit::PX(INT16_MAX_VALUE));
-		SetFlowDirection(FlowDirection::VERTICAL);
-		SetColour(0x00000000);
+		SetMaxGap(Unit::PX(int16_max));
+		SetFlowDirection(Axis::VERTICAL);
+		SetScrollAxis(Axis::NONE);
+		SetColour(Colour(0x00000000));
 	}
 
-	Style& Style::Create(const std::string & name) {
-		return s_styles.insert({ name, Style() }).first->second;
+	Style& Style::Create(std::string_view name) {
+		return s_styles.insert({ std::string(name), Style() }).first->second;
 	}
 
-	Style& Style::Clone(const Style& style, const std::string& new_name) {
-		return s_styles.insert({ new_name, style }).first->second;
+	Style& Style::Clone(const Style& style, std::string_view new_name) {
+		return s_styles.insert({ std::string(new_name), style }).first->second;
 	}
 
-	Style* Style::Get(const std::string& name) {
+	Style& Style::Get(std::string_view name) {
 		auto iter = s_styles.find(name);
 		if (iter != s_styles.end())
-			return &iter->second;
+			return iter->second;
 		else if (name != "")
-			Logger::Warn("Attempted to use UI Style that doesn't exist:", name);
-		static Style style;
-		return &style;
+			Logger::Warn("Requested UI Style doesn't exist:", name);
+		static Style default_style;
+		return default_style;
 	}
 
 	Style& Style::SetWidth(Unit width) {
 		m_size[W] = width;
-		m_dependent_axis = 1;
-		m_text_scaled = true;
+		m_dependent_axis = 2;
+		m_text_warped = false;
 		return *this;
 	}
 
 	Style& Style::SetHeight(Unit height) {
 		m_size[H] = height;
-		m_dependent_axis = 0;
-		m_text_scaled = true;
+		m_dependent_axis = 2;
+		m_text_warped = false;
 		return *this;
 	}
 
@@ -97,7 +100,7 @@ namespace zore::UI {
 		m_size[W] = width;
 		m_aspect_ratio = aspect_ratio;
 		m_dependent_axis = 1;
-		m_text_scaled = false;
+		m_text_warped = true;
 		return *this;
 	}
 
@@ -105,46 +108,53 @@ namespace zore::UI {
 		m_size[H] = height;
 		m_aspect_ratio = aspect_ratio;
 		m_dependent_axis = 0;
-		m_text_scaled = false;
+		m_text_warped = true;
 		return *this;
 	}
 
 	Style& Style::SetSize(Unit width, Unit height) {
 		m_size[W] = width;
 		m_size[H] = height;
-		m_aspect_ratio = 0.f;
 		m_dependent_axis = 2;
-		m_text_scaled = false;
+		m_text_warped = true;
 		return *this;
 	}
 
 	Style& Style::SetMinWidth(Unit width) {
+		ENSURE(width.GetType() != Unit::Type::AUTO, "Minimum size cannot be auto");
 		m_min_size[W] = width;
 		return *this;
 	}
 
 	Style& Style::SetMinHeight(Unit height) {
+		ENSURE(height.GetType() != Unit::Type::AUTO, "Minimum size cannot be auto");
 		m_min_size[H] = height;
 		return *this;
 	}
 
 	Style& Style::SetMinSize(Unit width, Unit height) {
+		ENSURE(width.GetType() != Unit::Type::AUTO, "Minimum size cannot be auto");
+		ENSURE(height.GetType() != Unit::Type::AUTO, "Minimum size cannot be auto");
 		m_min_size[W] = width;
 		m_min_size[H] = height;
 		return *this;
 	}
 
 	Style& Style::SetMaxWidth(Unit width) {
+		ENSURE(width.GetType() != Unit::Type::AUTO, "Maximum size cannot be auto");
 		m_max_size[W] = width;
 		return *this;
 	}
 
 	Style& Style::SetMaxHeight(Unit height) {
+		ENSURE(height.GetType() != Unit::Type::AUTO, "Maximum size cannot be auto");
 		m_max_size[H] = height;
 		return *this;
 	}
 
 	Style& Style::SetMaxSize(Unit width, Unit height) {
+		ENSURE(width.GetType() != Unit::Type::AUTO, "Maximum size cannot be auto");
+		ENSURE(height.GetType() != Unit::Type::AUTO, "Maximum size cannot be auto");
 		m_max_size[W] = width;
 		m_max_size[H] = height;
 		return *this;
@@ -175,6 +185,7 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMinMargin(Unit margin) {
+		ENSURE(margin.GetType() != Unit::Type::AUTO, "Minimum margin cannot be auto");
 		m_min_margin[T] = margin;
 		m_min_margin[R] = margin;
 		m_min_margin[B] = margin;
@@ -183,6 +194,8 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMinMargin(Unit horizontal, Unit vertical) {
+		ENSURE(vertical.GetType() != Unit::Type::AUTO, "Minimum margin cannot be auto");
+		ENSURE(horizontal.GetType() != Unit::Type::AUTO, "Minimum margin cannot be auto");
 		m_min_margin[T] = vertical;
 		m_min_margin[R] = horizontal;
 		m_min_margin[B] = vertical;
@@ -191,6 +204,10 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMinMargin(Unit left, Unit top, Unit right, Unit bottom) {
+		ENSURE(left.GetType() != Unit::Type::AUTO, "Minimum margin cannot be auto");
+		ENSURE(top.GetType() != Unit::Type::AUTO, "Minimum margin cannot be auto");
+		ENSURE(right.GetType() != Unit::Type::AUTO, "Minimum margin cannot be auto");
+		ENSURE(bottom.GetType() != Unit::Type::AUTO, "Minimum margin cannot be auto");
 		m_min_margin[T] = top;
 		m_min_margin[R] = right;
 		m_min_margin[B] = bottom;
@@ -215,6 +232,10 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMaxMargin(Unit left, Unit top, Unit right, Unit bottom) {
+		ENSURE(left.GetType() != Unit::Type::AUTO, "Maximum margin cannot be auto");
+		ENSURE(top.GetType() != Unit::Type::AUTO, "Maximum margin cannot be auto");
+		ENSURE(right.GetType() != Unit::Type::AUTO, "Maximum margin cannot be auto");
+		ENSURE(bottom.GetType() != Unit::Type::AUTO, "Maximum margin cannot be auto");
 		m_max_margin[T] = top;
 		m_max_margin[R] = right;
 		m_max_margin[B] = bottom;
@@ -294,11 +315,6 @@ namespace zore::UI {
 		return *this;
 	}
 
-	Style& Style::SetFlowDirection(FlowDirection flow_direction) {
-		m_flow_direction = flow_direction;
-		return *this;
-	}
-
 	Style& Style::SetGap(Unit gap) {
 		m_gap[W] = gap;
 		m_gap[H] = gap;
@@ -332,6 +348,16 @@ namespace zore::UI {
 	Style& Style::SetMaxGap(Unit horizontal, Unit vertical) {
 		m_max_gap[W] = horizontal;
 		m_max_gap[H] = vertical;
+		return *this;
+	}
+
+	Style& Style::SetFlowDirection(Axis flow_direction) {
+		m_flow_direction = flow_direction;
+		return *this;
+	}
+
+	Style& Style::SetScrollAxis(Axis scroll_axis) {
+		m_scroll_axis = scroll_axis;
 		return *this;
 	}
 

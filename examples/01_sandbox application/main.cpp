@@ -1,5 +1,5 @@
 #include "main.hpp"
-#include <zore/core/file_manager.hpp>
+#include <zore/io/file_manager.hpp>
 #include <zore/audio/audio_manager.hpp>
 #include <zore/ui.hpp>
 #include <zore/debug.hpp>
@@ -11,29 +11,28 @@ static bool s_quit = false;
 static DemoApplication* s_instance = nullptr;
 
 DemoApplication::DemoApplication(const LaunchOptions& options) : Application(options), m_camera(Window::GetAspectRatio(), 4.f) {
+	Window::SetIcons({ "zore_256.png", "zore_48.png", "zore_32.png", "zore_16.png" }, "assets/icons/");
 	File::Manager::Init("/examples/01_sandbox application/");
 	RenderEngine::SetVSync(false);
 	m_camera.SetHeight(static_cast<float>(Window::GetSize().y));
 	m_camera.SetPosition({ Window::GetSize().x >> 1, Window::GetSize().y >> 1 });
 	m_camera.Invert(false, true);
 	s_instance = this;
+	zm::ivec2 resolution = Window::GetSize();
 
 	// Initialize Event Handler
 	m_event_handler.Register(&DemoApplication::OnWindowResize, this);
 
 	// Initialize UI
 	CreateSimpleUI();
-	UI::Manager::Bind("main_menu");
-	zm::ivec2 resolution = Window::GetSize();
-	UI::Layer::Resize(resolution.x, resolution.y);
+	//UI::Manager::Bind("main_menu");
+	//UI::Layer::Resize(resolution.x, resolution.y);
 
 	action_map.Register(ActionMap::Source::KEYBOARD, KEY_ESCAPE, true, false, [](bool start) {
 		s_display_console = !s_display_console;
 		});
 
 	action_map.Register(ActionMap::Source::KEYBOARD, KEY_F8, true, false, &DemoApplication::ReloadShaders, this);
-
-	Logger::Log(File::Manager::Path(File::CommonPaths::LOCAL_APP_DATA) + "/illuminator");
 }
 
 void DemoApplication::ReloadShaders(ActionMap::Key) {
@@ -62,17 +61,17 @@ void DemoApplication::Run() {
 	sampler.Bind(1);
 
 	std::unordered_map <int, Shader*> ui_shaders;
-	ui_shaders[static_cast<int>(UI::Element::Type::PANEL)] = &m_panel_shader;
-	ui_shaders[static_cast<int>(UI::Element::Type::LABEL)] = &m_text_shader;
+	//ui_shaders[static_cast<int>(UI::Element::Type::PANEL)] = &m_panel_shader;
+	//ui_shaders[static_cast<int>(UI::Element::Type::LABEL)] = &m_text_shader;
 
 	while (!Window::ShouldClose() && !s_quit) {
 		RenderEngine::Clear();
 
-		for (const UI::DrawCommand& command : UI::Layer::GetDrawList()) {
-			ui_shaders[static_cast<int>(command.type)]->SetFloat4("camera", { m_camera.GetPosition(), m_camera.GetScale() });
-			command.buffer->Bind();
-			RenderEngine::DrawLinearInstanced(4, command.count);
-		}
+		//for (const UI::DrawCommand& command : UI::Layer::GetDrawList()) {
+		//	ui_shaders[static_cast<int>(command.type)]->SetFloat4("camera", { m_camera.GetPosition(), m_camera.GetScale() });
+		//	command.buffer->Bind();
+		//	RenderEngine::DrawLinearInstanced(4, command.count);
+		//}
 
 		Editor::BeginFrame();
 		if (s_display_console)
@@ -84,56 +83,56 @@ void DemoApplication::Run() {
 }
 
 void DemoApplication::CreateSimpleUI() {
-	using namespace UI::literals;
+	//using namespace UI::literals;
 
-	// Define Styles
-	UI::Style& standard_menu_style = UI::Style::Create("standard_menu")
-		.SetMaxHeight(500_px)
-		.SetMargin(0_px, AUTO());
+	//// Define Styles
+	//UI::Style& standard_menu_style = UI::Style::Create("standard_menu")
+	//	.SetMaxHeight(500_px)
+	//	.SetMargin(0_px, AUTO());
 
-	float perc = 100.f / 18.f;
-	UI::Style& standard_button_style = UI::Style::Create("standard_button")
-		.SetHeight(UI::Unit::PC(perc * 4), 4.f)
-		.SetMargin(AUTO(), UI::Unit::PC(perc))
-		.SetPadding(3_ph, 6_ph, 3_ph, 3_ph)
-		.SetColour(Colour::nhsv(0.f, 0.f, 1.f));
+	//float perc = 100.f / 18.f;
+	//UI::Style& standard_button_style = UI::Style::Create("standard_button")
+	//	.SetHeight(UI::Unit::PC(perc * 4), 4.f)
+	//	.SetMargin(AUTO(), UI::Unit::PC(perc))
+	//	.SetPadding(3_ph, 6_ph, 3_ph, 3_ph)
+	//	.SetColour(Colour::nhsv(0.f, 0.f, 1.f));
 
-	UI::Style& standard_text_style = UI::Style::Create("standard_text")
-		.SetHeight(100_ph)
-		.SetMargin(AUTO(), 0_px)
-		.SetColour(Colour::nhsv(0.f, 0.f, 0.65f));
+	//UI::Style& standard_text_style = UI::Style::Create("standard_text")
+	//	.SetHeight(100_ph)
+	//	.SetMargin(AUTO(), 0_px)
+	//	.SetColour(Colour::nhsv(0.f, 0.f, 0.65f));
 
-	// Main Menu Demo UI
-	UI::Layer& main_menu = UI::Manager::CreateLayer("main_menu");
-	UI::Element& button_container = main_menu.AddChild(UI::Element::Type::PANEL, "standard_menu");
-	UI::Element& play_button = button_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
-	UI::Element& options_button = button_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
-	UI::Element& quit_button = button_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
+	//// Main Menu Demo UI
+	//UI::Layer& main_menu = UI::Manager::CreateLayer("main_menu");
+	//UI::Element& button_container = main_menu.AddChild(UI::Element::Type::PANEL, "standard_menu");
+	//UI::Element& play_button = button_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
+	//UI::Element& options_button = button_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
+	//UI::Element& quit_button = button_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
 
-	play_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("PLAY");
-	options_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("OPTIONS");
-	quit_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("QUIT");
+	//play_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("PLAY");
+	//options_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("OPTIONS");
+	//quit_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("QUIT");
 
-	action_map.Register(ActionMap::Source::INTERNAL, quit_button.GetUUID(), true, false, [](ActionMap::Key) {
-		UI::Manager::Bind("confirm_quit_menu");
-		});
+	//action_map.Register(ActionMap::Source::INTERNAL, quit_button.GetUUID(), true, false, [](ActionMap::Key) {
+	//	UI::Manager::Bind("confirm_quit_menu");
+	//	});
 
-	// Sub Menu Demo UI
-	UI::Layer& confirm_quit_menu = UI::Manager::CreateLayer("confirm_quit_menu");
-	UI::Element& confirm_container = confirm_quit_menu.AddChild(UI::Element::Type::PANEL, "standard_menu");
-	UI::Element& yes_button = confirm_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
-	UI::Element& no_button = confirm_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
+	//// Sub Menu Demo UI
+	//UI::Layer& confirm_quit_menu = UI::Manager::CreateLayer("confirm_quit_menu");
+	//UI::Element& confirm_container = confirm_quit_menu.AddChild(UI::Element::Type::PANEL, "standard_menu");
+	//UI::Element& yes_button = confirm_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
+	//UI::Element& no_button = confirm_container.AddChild(UI::Element::Type::BUTTON, "standard_button");
 
-	yes_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("YES");
-	no_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("NO");
+	//yes_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("YES");
+	//no_button.AddChild(UI::Element::Type::LABEL, "standard_text").SetText("NO");
 
-	action_map.Register(ActionMap::Source::INTERNAL, yes_button.GetUUID(), false, true, [](ActionMap::Key) {
-		s_quit = true;
-		});
+	//action_map.Register(ActionMap::Source::INTERNAL, yes_button.GetUUID(), false, true, [](ActionMap::Key) {
+	//	s_quit = true;
+	//	});
 
-	action_map.Register(ActionMap::Source::INTERNAL, no_button.GetUUID(), false, true, [](ActionMap::Key) {
-		UI::Manager::Bind("main_menu");
-		});
+	//action_map.Register(ActionMap::Source::INTERNAL, no_button.GetUUID(), false, true, [](ActionMap::Key) {
+	//	UI::Manager::Bind("main_menu");
+	//	});
 }
 
 bool DemoApplication::OnWindowResize(const WindowResizedEvent& e) {

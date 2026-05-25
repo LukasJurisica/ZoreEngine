@@ -1,34 +1,6 @@
-#pragma once
-
-#include "zore/ui/element.hpp"
-#include "zore/graphics/buffer.hpp"
-
-namespace zore::UI {
-
-    struct DrawCommand {
-        VertexBuffer* buffer;
-        Element::Type type;
-        uint32_t count;
-    };
-	
-    //========================================================================
-    //  UI Layer
-    //========================================================================
-
-    class Layer : private Element {
-    public:
-        Layer();
-        ~Layer() = default;
-
-        void Resize(uint32_t width, uint32_t height);
-        void Flush();
-        const std::vector<DrawCommand>& GetDrawList();
-
-    private:
-    
-    };
-}
-
+//#pragma once
+//
+//#include "zore/ui/element.hpp"
 //#include "zore/graphics/buffer.hpp"
 //
 //namespace zore::UI {

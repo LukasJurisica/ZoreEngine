@@ -26,6 +26,7 @@ namespace zore {
 
         uint32_t GetWidth() { return m_width; }
         uint32_t GetHeight() { return m_height; }
+		float GetAspectRatio() { return static_cast<float>(m_width) / static_cast<float>(m_height); }
         uint32_t GetCount() { return m_layers; }
 
     private:

@@ -1,5 +1,5 @@
 #include "zore/graphics/shader.hpp"
-#include "zore/core/file_manager.hpp"
+#include "zore/io/file_manager.hpp"
 #include "zore/utils/string.hpp"
 #include "zore/debug.hpp"
 #include <glad/glad.h>

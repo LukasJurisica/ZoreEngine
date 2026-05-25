@@ -10,7 +10,7 @@ namespace zore {
 	template <typename T, typename S = size_t>
 	class object_pool {
 	public:
-		object_pool(S count = 0) { m_data.resize(count); }
+		object_pool(S count = 0) { m_data.reserve(count); }
 		object_pool(const object_pool&) = delete;
 		object_pool& operator=(const object_pool&) = delete;
 		~object_pool() = default;

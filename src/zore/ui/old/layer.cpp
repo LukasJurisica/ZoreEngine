@@ -1,28 +1,4 @@
-#include "zore/ui/layer.hpp"
-
-
-
-namespace zore::UI {
-
-	Layer::Layer() : Element(Type::PANEL, nullptr) {}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//#include "zore/ui/layer.hpp"
 //#include "zore/graphics/render_engine.hpp"
 //#include "zore/math/math.hpp"
 //#include "zore/utils/uuid.hpp"

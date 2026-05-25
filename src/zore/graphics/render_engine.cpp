@@ -111,6 +111,15 @@ namespace zore {
 		s_face_culling_mode = mode;
 	}
 
+	void RenderEngine::SetClippingPlaneCount(uint32_t count) {
+		static uint32_t s_clip_count = 0;
+		for (uint32_t i = count; i < s_clip_count; i++)
+			glDisable(GL_CLIP_DISTANCE0 + i);
+		for (uint32_t i = s_clip_count; i < count; i++)
+			glEnable(GL_CLIP_DISTANCE0 + i);
+		s_clip_count = count;
+	}
+
 	void RenderEngine::SetDepthTest(bool value) {
 		static bool s_depth_test_enabled = false;
 		SetGLFeature(GL_DEPTH_TEST, s_depth_test_enabled, value);
