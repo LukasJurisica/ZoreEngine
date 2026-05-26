@@ -21,8 +21,8 @@ namespace zore {
 
 		AssetPack& Add(std::string_view path, std::string_view root = "");
 		void Save(std::string_view filename);
-		bool Has(std::string_view path);
-		std::span<const char> Get(std::string_view path);
+		bool Has(std::string_view path) const;
+		std::span<const char> Get(std::string_view path) const;
 
 	private:
 

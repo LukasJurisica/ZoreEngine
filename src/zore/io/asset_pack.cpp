@@ -111,11 +111,11 @@ namespace zore {
 		file.write(buffer.data(), buffer.size());
 	}
 
-	bool AssetPack::Has(std::string_view path) {
+	bool AssetPack::Has(std::string_view path) const {
 		return m_assets.find(path) != m_assets.end();
 	}
 
-	std::span<const char> AssetPack::Get(std::string_view path) {
+	std::span<const char> AssetPack::Get(std::string_view path) const {
 		auto iter = m_assets.find(path);
 		if (iter != m_assets.end())
 			return std::span<const char>(iter->second.data(), iter->second.size());
