@@ -10,12 +10,9 @@ namespace zore::net {
 	Packet::Packet(const void_span& span) : Packet(span.data(), static_cast<uint32_t>(span.size())) {}
 
 	Packet::Packet(const void* payload, uint32_t length, uint8_t flags) : m_position(0) {
-		if (payload && (length > 0)) {
-			Resize(HeaderSize() + length);
+		Resize(HeaderSize() + length);
+		if (payload)
 			std::memcpy(m_data.data() + HeaderSize(), payload, length);
-		} else {
-            Resize(HeaderSize());
-        }
 	}
 
 	uint8_t* Packet::Data() {

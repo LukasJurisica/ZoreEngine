@@ -26,8 +26,7 @@ namespace zore::net::http {
 				request.SetField("Content-Type", "application/x-www-form-urlencoded", false);
 			std::string req = request.Build();
 
-			Packet packet(req);
-			if (m_socket.Send(packet) != Socket::Status::DONE)
+			if (m_socket.Send(req.data(), req.size()) != Socket::Status::DONE)
 				Logger::Error(GetLastError("send"));
 
 			std::string response;
