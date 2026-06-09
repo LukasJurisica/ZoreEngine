@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
 namespace zore {
 
 	//========================================================================
@@ -21,13 +24,17 @@ namespace zore {
 		};
 
 	public:
-		static void Init();
+		static void Init(const std::vector<std::wstring>& command_line_arguments = {});
 		virtual void Run() = 0;
 		static void Cleanup();
+		static const std::vector<std::wstring>& GetArguments() { return s_command_line_arguments; }
 
 	protected:
 		Application(const LaunchOptions& options = {});
 		virtual ~Application() = default;
+
+	protected:
+		static inline std::vector<std::wstring> s_command_line_arguments;
 
 	private:
 		static Application* Create();

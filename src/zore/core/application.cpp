@@ -28,7 +28,8 @@ namespace zore {
 		Editor::Init(options.enable_multi_viewports, options.enable_docking, options.enable_keyboard_navigation);
 	}
 
-	void Application::Init() {
+	void Application::Init(const std::vector<std::wstring>& command_line_arguments) {
+		s_command_line_arguments = command_line_arguments;
 		if (s_initialized)
 			return;
 

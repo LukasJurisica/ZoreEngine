@@ -1,13 +1,23 @@
 #include "zore/platform/win32/win32_core.hpp"
 #include "zore/core/application.hpp"
 #include "zore/debug.hpp"
+#include <shellapi.h>
 #include <WinDef.h>
 
-int WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
 	int return_code = EXIT_FAILURE;
 
 	try {
-		zore::Application::Init();
+		int argc;
+		LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+		std::vector<std::wstring> command_line_arguments;
+		if (argv != NULL) {
+			for (int i = 1; i < argc; i++)
+				command_line_arguments.emplace_back(argv[i]);
+			LocalFree(argv);
+		}
+
+		zore::Application::Init(command_line_arguments);
 		return_code = EXIT_SUCCESS;
 	}
 	catch (const zore::Exception& e) {
