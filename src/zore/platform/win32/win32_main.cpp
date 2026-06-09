@@ -12,7 +12,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 		std::vector<std::wstring> command_line_arguments;
 		if (argv != NULL) {
-			for (int i = 1; i < argc; i++)
+			for (int i = 0; i < argc; i++)
 				command_line_arguments.emplace_back(argv[i]);
 			LocalFree(argv);
 		}
