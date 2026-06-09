@@ -1,5 +1,6 @@
 #include "zore/platform/win32/win32_core.hpp"
 #include "zore/core/application.hpp"
+#include "zore/devices/window.hpp"
 #include "zore/debug.hpp"
 #include <shellapi.h>
 #include <WinDef.h>

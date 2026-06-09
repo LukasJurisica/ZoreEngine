@@ -28,9 +28,11 @@ namespace zore {
 
 		template<Loggable... Args>
 		static void Info(Args... args) {
+#ifdef _DEBUG
 			std::stringstream result;
 			((result << args << ' '), ...);
 			Console::Print(result.str(), Console::LogLevel::INFO);
+#endif
 		}
 
 		template<Loggable... Args>
@@ -46,18 +48,5 @@ namespace zore {
 			((result << args << ' '), ...);
 			Console::Print(result.str(), Console::LogLevel::ERR);
 		}
-
-	private:
-		template <Loggable T>
-		inline static void Append(std::stringstream& result, const T& t) {
-			result << t;
-		};
-
-		template <Loggable T, Loggable... Args>
-		inline static void Append(std::stringstream& result, const T& t, Args... args) {
-			Append(result, t);
-			result << " ";
-			Append(result, args...);
-		};
 	};
 }
