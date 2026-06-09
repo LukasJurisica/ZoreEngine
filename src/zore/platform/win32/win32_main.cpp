@@ -6,6 +6,7 @@
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
 	int return_code = EXIT_FAILURE;
+	HWND hwnd = nullptr;
 
 	try {
 		int argc;
@@ -22,14 +23,17 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	}
 	catch (const zore::Exception& e) {
 		zore::Logger::Error(e.what());
-		MessageBox(nullptr, e.what(), e.GetType(), MB_OK | MB_ICONEXCLAMATION);
+		zore::Window::GetNativeHandle(&hwnd);
+		MessageBox(hwnd, e.what(), e.GetType(), MB_OK | MB_ICONEXCLAMATION | MB_APPLMODAL);
 	}
 	catch (const std::exception& e) {
 		zore::Logger::Error(e.what());
-		MessageBox(nullptr, e.what(), "Generic Exception", MB_OK | MB_ICONEXCLAMATION);
+		zore::Window::GetNativeHandle(&hwnd);
+		MessageBox(hwnd, e.what(), "Generic Exception", MB_OK | MB_ICONEXCLAMATION | MB_APPLMODAL);
 	}
 	catch (...) {
-		MessageBox(nullptr, "No details available", "Unknown Exception", MB_OK | MB_ICONEXCLAMATION);
+		zore::Window::GetNativeHandle(&hwnd);
+		MessageBox(hwnd, "No details available", "Unknown Exception", MB_OK | MB_ICONEXCLAMATION | MB_APPLMODAL);
 	}
 	
 	if (return_code == EXIT_FAILURE)
