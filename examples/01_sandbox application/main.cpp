@@ -4,6 +4,8 @@
 #include <zore/ui.hpp>
 #include <zore/debug.hpp>
 
+#include <zore/structures/object_pool.hpp>
+
 using namespace zore;
 
 static bool s_display_console = false;

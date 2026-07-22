@@ -8,7 +8,7 @@ namespace zore::event {
 	class HandlerBase;
 
 	//========================================================================
-	//	Event Manager Class
+	//	Event Manager
 	//========================================================================
 
 	class Manager {

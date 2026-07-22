@@ -3,11 +3,11 @@
 #include "zore/utils/sized_integer.hpp"
 #include <concepts>
 #include <vector>
-#include <queue>
 
 namespace zore {
 
 	template <typename T, typename S = size_t>
+		requires (sizeof(T) >= sizeof(S))
 	class object_pool {
 	public:
 		object_pool(S count = 0) { m_data.reserve(count); }
@@ -19,17 +19,20 @@ namespace zore {
 		template<typename... Args>
 			requires std::constructible_from<T, Args...>
 		S acquire(Args&&... args) {
-			if (m_free_indices.empty()) {
+			if (m_next_free_index == INVALID_INDEX) {
 				m_data.emplace_back(std::forward<Args>(args)...);
 				return static_cast<S>(m_data.size() - 1);
 			}
-			S index = get_free_index();
+			S index = m_next_free_index;
+			m_next_free_index = reinterpret_cast<S&>(m_data[index]);
 			m_data[index] = T(std::forward<Args>(args)...);
 			return index;
 		}
 
 		void release(S index) {
-			m_free_indices.push(index);
+			//m_free_indices.push(index);
+			reinterpret_cast<S&>(m_data[index]) = m_next_free_index;
+			m_next_free_index = index;
 		}
 
 		T& operator[](S index) {
@@ -56,11 +59,12 @@ namespace zore {
 			return m_data.end();
 		}
 
-	private:
-		S get_free_index() {
-			S index = m_free_indices.front();
-			m_free_indices.pop();
-			return index;
+		const T* data() const {
+			return m_data.data();
+		}
+
+		size_t size() const {
+			return m_data.size();
 		}
 
 	public:
@@ -68,6 +72,7 @@ namespace zore {
 
 	private:
 		std::vector<T> m_data;
-		std::queue<S> m_free_indices;
+		//std::queue<S> m_free_indices;
+		S m_next_free_index = INVALID_INDEX;
 	};
 }
