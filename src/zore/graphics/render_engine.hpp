@@ -43,8 +43,8 @@ namespace zore {
 
 		static void DrawLinear(uint32_t count, uint32_t offset = 0u);
 		static void DrawIndexed(uint32_t count, uint32_t offset = 0u);
-		static void DrawLinearInstanced(uint32_t vertex_count, uint32_t object_count, uint32_t offset = 0u);
-		static void DrawIndexedInstanced(uint32_t index_count, uint32_t object_count, uint32_t offset = 0u);
+		static void DrawLinearInstanced(uint32_t vertex_count, uint32_t object_count, uint32_t vertex_offset = 0u, uint32_t instance_offset = 0u);
+		static void DrawIndexedInstanced(uint32_t index_count, uint32_t object_count, uint32_t vertex_offset = 0u, uint32_t instance_offset = 0u);
 		static void MultiDrawLinearIndirect(uint32_t command_count, uint32_t command_offset = 0u, uint32_t stride = 0u);
 		static void MultiDrawIndexedIndirect(uint32_t command_count, uint32_t command_offset = 0u, uint32_t stride = 0u);
 

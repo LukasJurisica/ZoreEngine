@@ -26,7 +26,7 @@ namespace zore {
 		Base::Set(data, size);
 	}
 
-	void VertexBuffer::Bind() const {
-		glBindVertexBuffer(m_instance, GetID(), 0, m_stride);
+	void VertexBuffer::Bind(size_t offset) const {
+		glBindVertexBuffer(m_instance, GetID(), offset * m_stride, m_stride);
 	}
 }

@@ -191,14 +191,14 @@ namespace zore {
 			glDrawElements(s_topology, index_count, s_index_type, GetIndexOffset(offset));
 	}
 
-	void RenderEngine::DrawLinearInstanced(uint32_t vertex_count, uint32_t object_count, uint32_t offset) {
+	void RenderEngine::DrawLinearInstanced(uint32_t vertex_count, uint32_t object_count, uint32_t vertex_offset, uint32_t instance_offset) {
 		if (vertex_count > 0 && object_count > 0)
-			glDrawArraysInstanced(s_topology, offset, vertex_count, object_count);
+			glDrawArraysInstancedBaseInstance(s_topology, vertex_offset, vertex_count, object_count, instance_offset);
 	}
 
-	void RenderEngine::DrawIndexedInstanced(uint32_t index_count, uint32_t object_count, uint32_t offset) {
+	void RenderEngine::DrawIndexedInstanced(uint32_t index_count, uint32_t object_count, uint32_t vertex_offset, uint32_t instance_offset) {
 		if (index_count > 0 && object_count > 0)
-			glDrawElementsInstanced(s_topology, index_count, s_index_type, GetIndexOffset(offset), object_count);
+			glDrawElementsInstancedBaseInstance(s_topology, index_count, s_index_type, GetIndexOffset(vertex_offset), object_count, instance_offset);
 	}
 
 	void RenderEngine::MultiDrawLinearIndirect(uint32_t command_count, uint32_t command_offset, uint32_t stride) {

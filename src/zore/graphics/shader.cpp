@@ -64,6 +64,8 @@ namespace zore {
 	Shader& Shader::Compile() {
 		std::string source;
 		if (m_asset_pack) {
+			if (!m_asset_pack->Contains(m_filename))
+				throw ZORE_EXCEPTION("Shader file not found in asset pack: " + m_filename);
 			std::span<const char> data = m_asset_pack->Get(m_filename);
 			source = std::string(data.data(), data.size());
 		}

@@ -19,10 +19,10 @@ namespace zore {
 
 		void Set(const void_span& span);
 		void Set(const void* data, size_t size, size_t stride);
-		void Bind() const;
+		void Bind(size_t offset = 0) const;
 
 	private:
-		uint32_t m_stride;
-		uint32_t m_instance;
+		size_t m_stride;
+		size_t m_instance;
 	};
 }
