@@ -111,7 +111,7 @@ namespace zore {
 		file.write(buffer.data(), buffer.size());
 	}
 
-	bool AssetPack::Has(std::string_view path) const {
+	bool AssetPack::Contains(std::string_view path) const {
 		return m_assets.find(path) != m_assets.end();
 	}
 
