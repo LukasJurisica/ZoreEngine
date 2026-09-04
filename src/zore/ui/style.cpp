@@ -47,7 +47,12 @@ namespace zore::UI {
 	static zore::string_unordered_map<Style> s_styles;
 
 	Style::Style() {
+		m_aspect_ratio = 1.f;
+		m_text_aspect_ratio = 12.f / 18.f;
+		m_stretch_text = false;
+		m_dependent_axis = 2;
 		SetSize(Unit::PC(100), Unit::PC(100));
+		m_stretch_text = false;
 		SetMinSize(Unit::PX(0), Unit::PX(0));
 		SetMaxSize(Unit::PX(int16_max), Unit::PX(int16_max));
 		SetMargin(Unit::PX(0));
@@ -85,14 +90,12 @@ namespace zore::UI {
 	Style& Style::SetWidth(Unit width) {
 		m_size[W] = width;
 		m_dependent_axis = 2;
-		m_text_warped = false;
 		return *this;
 	}
 
 	Style& Style::SetHeight(Unit height) {
 		m_size[H] = height;
 		m_dependent_axis = 2;
-		m_text_warped = false;
 		return *this;
 	}
 
@@ -100,7 +103,6 @@ namespace zore::UI {
 		m_size[W] = width;
 		m_aspect_ratio = aspect_ratio;
 		m_dependent_axis = 1;
-		m_text_warped = true;
 		return *this;
 	}
 
@@ -108,7 +110,6 @@ namespace zore::UI {
 		m_size[H] = height;
 		m_aspect_ratio = aspect_ratio;
 		m_dependent_axis = 0;
-		m_text_warped = true;
 		return *this;
 	}
 
@@ -116,7 +117,6 @@ namespace zore::UI {
 		m_size[W] = width;
 		m_size[H] = height;
 		m_dependent_axis = 2;
-		m_text_warped = true;
 		return *this;
 	}
 
@@ -216,6 +216,7 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMaxMargin(Unit margin) {
+		ENSURE(margin.GetType() != Unit::Type::AUTO, "Maximum margin cannot be auto");
 		m_max_margin[T] = margin;
 		m_max_margin[R] = margin;
 		m_max_margin[B] = margin;
@@ -224,6 +225,8 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMaxMargin(Unit horizontal, Unit vertical) {
+		ENSURE(horizontal.GetType() != Unit::Type::AUTO, "Maximum margin cannot be auto");
+		ENSURE(vertical.GetType() != Unit::Type::AUTO, "Maximum margin cannot be auto");
 		m_max_margin[T] = vertical;
 		m_max_margin[R] = horizontal;
 		m_max_margin[B] = vertical;
@@ -268,6 +271,7 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMinPadding(Unit padding) {
+		ENSURE(padding.GetType() != Unit::Type::AUTO, "Minimum padding cannot be auto");
 		m_min_padding[T] = padding;
 		m_min_padding[R] = padding;
 		m_min_padding[B] = padding;
@@ -276,6 +280,8 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMinPadding(Unit horizontal, Unit vertical) {
+		ENSURE(horizontal.GetType() != Unit::Type::AUTO, "Minimum padding cannot be auto");
+		ENSURE(vertical.GetType() != Unit::Type::AUTO, "Minimum padding cannot be auto");
 		m_min_padding[T] = vertical;
 		m_min_padding[R] = horizontal;
 		m_min_padding[B] = vertical;
@@ -284,6 +290,8 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMinPadding(Unit left, Unit top, Unit right, Unit bottom) {
+		ENSURE(left.GetType() != Unit::Type::AUTO && top.GetType() != Unit::Type::AUTO &&
+			right.GetType() != Unit::Type::AUTO && bottom.GetType() != Unit::Type::AUTO, "Minimum padding cannot be auto");
 		m_min_padding[T] = top;
 		m_min_padding[R] = right;
 		m_min_padding[B] = bottom;
@@ -292,6 +300,7 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMaxPadding(Unit padding) {
+		ENSURE(padding.GetType() != Unit::Type::AUTO, "Maximum padding cannot be auto");
 		m_max_padding[T] = padding;
 		m_max_padding[R] = padding;
 		m_max_padding[B] = padding;
@@ -300,6 +309,8 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMaxPadding(Unit horizontal, Unit vertical) {
+		ENSURE(horizontal.GetType() != Unit::Type::AUTO, "Maximum padding cannot be auto");
+		ENSURE(vertical.GetType() != Unit::Type::AUTO, "Maximum padding cannot be auto");
 		m_max_padding[T] = vertical;
 		m_max_padding[R] = horizontal;
 		m_max_padding[B] = vertical;
@@ -308,6 +319,8 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMaxPadding(Unit left, Unit top, Unit right, Unit bottom) {
+		ENSURE(left.GetType() != Unit::Type::AUTO && top.GetType() != Unit::Type::AUTO &&
+			right.GetType() != Unit::Type::AUTO && bottom.GetType() != Unit::Type::AUTO, "Maximum padding cannot be auto");
 		m_max_padding[T] = top;
 		m_max_padding[R] = right;
 		m_max_padding[B] = bottom;
@@ -328,24 +341,30 @@ namespace zore::UI {
 	}
 
 	Style& Style::SetMinGap(Unit gap) {
+		ENSURE(gap.GetType() != Unit::Type::AUTO, "Minimum gap cannot be auto");
 		m_min_gap[W] = gap;
 		m_min_gap[H] = gap;
 		return *this;
 	}
 
 	Style& Style::SetMinGap(Unit horizontal, Unit vertical) {
+		ENSURE(horizontal.GetType() != Unit::Type::AUTO, "Minimum gap cannot be auto");
+		ENSURE(vertical.GetType() != Unit::Type::AUTO, "Minimum gap cannot be auto");
 		m_min_gap[W] = horizontal;
 		m_min_gap[H] = vertical;
 		return *this;
 	}
 
 	Style& Style::SetMaxGap(Unit gap) {
+		ENSURE(gap.GetType() != Unit::Type::AUTO, "Maximum gap cannot be auto");
 		m_max_gap[W] = gap;
 		m_max_gap[H] = gap;
 		return *this;
 	}
 
 	Style& Style::SetMaxGap(Unit horizontal, Unit vertical) {
+		ENSURE(horizontal.GetType() != Unit::Type::AUTO, "Maximum gap cannot be auto");
+		ENSURE(vertical.GetType() != Unit::Type::AUTO, "Maximum gap cannot be auto");
 		m_max_gap[W] = horizontal;
 		m_max_gap[H] = vertical;
 		return *this;
@@ -363,6 +382,17 @@ namespace zore::UI {
 
 	Style& Style::SetColour(Colour colour) {
 		m_colour = colour;
+		return *this;
+	}
+
+	Style& Style::SetStretchText(bool stretch) {
+		m_stretch_text = stretch;
+		return *this;
+	}
+
+	Style& Style::SetTextAspectRatio(float aspect_ratio) {
+		ENSURE(aspect_ratio > 0.f, "Text aspect ratio must be greater than zero");
+		m_text_aspect_ratio = aspect_ratio;
 		return *this;
 	}
 }

@@ -1,49 +1,29 @@
 #include "zore/ui/element.hpp"
 #include "zore/structures/object_pool.hpp"
+#include <algorithm>
+#include <cmath>
 
 namespace zore::UI {
 
 	static zore::object_pool<Element::Data, Element::ID> s_element_pool;
 
-	//========================================================================
-	//  UI Element structs
-	//========================================================================
-
-	void Element::Segment::Add(Unit unit, zm::suvec2 viewport_size, zm::suvec2 parent_size, int16_t axis, float scale) {
-		if (unit.GetType() == Unit::Type::AUTO)
-			auto_count++;
-		else
-			size += unit.Get(viewport_size, parent_size, 0, axis) * scale;
+	static int32_t clamp_value(int32_t value, int32_t minimum, int32_t maximum) {
+		return std::clamp(value, minimum, std::max(minimum, maximum));
 	}
 
-	//========================================================================
-	//	UI Element
-	//========================================================================
+	void Element::Segment::Add(Unit minimum, Unit value, Unit maximum, zm::sivec2 viewport, zm::sivec2 parent, int16_t axis, float scale) {
+		const int32_t lo = minimum.Get(viewport, parent, 0, axis);
+		const int32_t hi = std::max<int32_t>(lo, maximum.Get(viewport, parent, 0, axis));
+		min_size += static_cast<int32_t>(std::lround(lo * scale));
+		max_size += static_cast<int32_t>(std::lround(hi * scale));
+		if (value.GetType() == Unit::Type::AUTO)
+			++auto_count;
+		else
+			size += static_cast<int32_t>(std::lround(clamp_value(value.Get(viewport, parent, 0, axis), lo, hi) * scale));
+	}
 
 	Element::Element(Type type, const Style* style) {
-		m_id = s_element_pool.acquire(type, style);
-		s_element_pool[m_id].m_style = (style ? style : &Style::Get(""));
-	}
-
-	void Element::UpdateConstraints(zm::suvec2 viewport_size, zm::suvec2 parent_size) {
-		const Style* style = s_element_pool[m_id].m_style;
-		for (uint8_t axis = 0; axis < 2; axis++) {
-			s_element_pool[m_id].m_min_margin[axis] = style->m_min_margin[axis].Get(viewport_size, parent_size, 0, axis);
-			s_element_pool[m_id].m_min_margin[axis + 2] = style->m_min_margin[axis + 2].Get(viewport_size, parent_size, 0, axis);
-			s_element_pool[m_id].m_max_margin[axis] = style->m_max_margin[axis].Get(viewport_size, parent_size, 0, axis);
-			s_element_pool[m_id].m_max_margin[axis + 2] = style->m_max_margin[axis + 2].Get(viewport_size, parent_size, 0, axis);
-			s_element_pool[m_id].m_min_size[axis] = style->m_min_size[axis].Get(viewport_size, parent_size, 0, axis);
-			s_element_pool[m_id].m_max_size[axis] = style->m_max_size[axis].Get(viewport_size, parent_size, 0, axis);
-		}
-	}
-
-	Element::Segment Element::GetSize(zm::suvec2 viewport_size, zm::suvec2 parent_size, uint8_t axis) {
-		const Style* style = s_element_pool[m_id].m_style;
-		Element::Segment segment;
-		segment.Add(style->m_size[axis], viewport_size, parent_size, axis);
-		segment.Add(style->m_margin[axis], viewport_size, parent_size, axis);
-		segment.Add(style->m_margin[axis + 2], viewport_size, parent_size, axis);
-		return segment;
+		m_id = s_element_pool.acquire(type, style ? style : &Style::Get(""));
 	}
 
 	Element Element::Append(Type type, const Style* style) {
@@ -53,226 +33,225 @@ namespace zore::UI {
 	}
 
 	Element Element::Append(Type type, std::string_view style) {
-		Element child(type, &Style::Get(style));
-		s_element_pool[m_id].m_children.push_back(child.m_id);
-		return child;
+		return Append(type, &Style::Get(style));
 	}
 
 	Element& Element::SetStyle(const Style* style) {
-		s_element_pool[m_id].m_style = style;
+		s_element_pool[m_id].m_style = style ? style : &Style::Get("");
 		return *this;
 	}
 
 	Element& Element::SetStyle(std::string_view style) {
-		s_element_pool[m_id].m_style = &Style::Get(style);
+		return SetStyle(&Style::Get(style));
+	}
+
+	Element& Element::SetText(std::string_view text) {
+		s_element_pool[m_id].m_text.assign(text);
 		return *this;
 	}
 
-	Element::Data& Element::GetData() {
-		return s_element_pool[m_id];
+	Element::ID Element::GetID() const {
+		return m_id;
+	}
+
+	Element::Type Element::GetType() const {
+		return s_element_pool[m_id].m_type;
+	}
+
+	const Style& Element::GetStyle() const {
+		return *s_element_pool[m_id].m_style;
+	}
+
+	const std::string& Element::GetText() const {
+		return s_element_pool[m_id].m_text;
+	}
+
+	const Element::Bounds& Element::GetBounds() const {
+		return s_element_pool[m_id].m_bounds;
+	}
+
+	std::vector<Element> Element::Children() const {
+		std::vector<Element> children;
+		children.reserve(s_element_pool[m_id].m_children.size());
+		for (ID id : s_element_pool[m_id].m_children)
+			children.push_back(Element(id));
+		return children;
+	}
+
+	void Element::UpdateConstraints(zm::sivec2 viewport, zm::sivec2 parent) {
+		Data& data = s_element_pool[m_id];
+		const Style& style = *data.m_style;
+		for (uint8_t axis = 0; axis < 2; ++axis) {
+			data.m_min_size[axis] = style.m_min_size[axis].Get(viewport, parent, 0, axis);
+			data.m_max_size[axis] = std::max<int32_t>(data.m_min_size[axis], style.m_max_size[axis].Get(viewport, parent, 0, axis));
+			for (uint8_t side : { axis, static_cast<uint8_t>(axis + 2) }) {
+				data.m_min_margin[side] = style.m_min_margin[side].Get(viewport, parent, 0, axis);
+				data.m_max_margin[side] = std::max<int32_t>(data.m_min_margin[side], style.m_max_margin[side].Get(viewport, parent, 0, axis));
+			}
+		}
+	}
+
+	Element::Segment Element::GetSize(zm::sivec2 viewport, zm::sivec2 parent, uint8_t axis) const {
+		const Style& style = *(s_element_pool[m_id].m_style);
+		Segment result;
+		result.Add(style.m_min_size[axis], style.m_size[axis], style.m_max_size[axis], viewport, parent, axis);
+		result.Add(style.m_min_margin[axis], style.m_margin[axis], style.m_max_margin[axis], viewport, parent, axis);
+		result.Add(style.m_min_margin[axis + 2], style.m_margin[axis + 2], style.m_max_margin[axis + 2], viewport, parent, axis);
+		return result;
+	}
+
+	int32_t Element::Resolve(Unit value, Unit minimum, Unit maximum, zm::sivec2 viewport,
+		zm::sivec2 parent, uint8_t axis, bool& automatic) {
+		const int32_t lo = minimum.Get(viewport, parent, 0, axis);
+		const int32_t hi = std::max<int32_t>(lo, maximum.Get(viewport, parent, 0, axis));
+		automatic = value.GetType() == Unit::Type::AUTO;
+		return automatic ? 0 : clamp_value(value.Get(viewport, parent, 0, axis), lo, hi);
+	}
+
+	void Element::Distribute(int32_t available, std::vector<AutoSlot>& slots) {
+		if (slots.empty()) return;
+		available = std::max(0, available);
+		std::vector<size_t> active(slots.size());
+		for (size_t i = 0; i < slots.size(); ++i) active[i] = i;
+		while (!active.empty()) {
+			const int32_t share = available / static_cast<int32_t>(active.size());
+			bool constrained = false;
+			for (auto it = active.begin(); it != active.end();) {
+				AutoSlot& slot = slots[*it];
+				if (share < slot.min || share > slot.max) {
+					*slot.value = share < slot.min ? slot.min : slot.max;
+					available -= *slot.value;
+					it = active.erase(it);
+					constrained = true;
+				} else ++it;
+			}
+			if (!constrained) {
+				for (size_t i = 0; i < active.size(); ++i) {
+					AutoSlot& slot = slots[active[i]];
+					*slot.value = share + (i < static_cast<size_t>(available % active.size()) ? 1 : 0);
+				}
+				break;
+			}
+			available = std::max(0, available);
+		}
+	}
+
+	void Element::ResolveIndependentAxis(Data& data, zm::sivec2 viewport, zm::sivec2 parent, uint8_t axis) {
+		const Style& s = *data.m_style;
+		std::vector<AutoSlot> slots;
+		int32_t fixed = 0;
+		bool automatic = false;
+		for (uint8_t side : { axis, static_cast<uint8_t>(axis + 2) }) {
+			data.m_margin[side] = Resolve(s.m_margin[side], s.m_min_margin[side], s.m_max_margin[side], viewport, parent, axis, automatic);
+			if (automatic) slots.push_back({ &data.m_margin[side], data.m_min_margin[side], data.m_max_margin[side] });
+			else fixed += data.m_margin[side];
+		}
+		data.m_size[axis] = Resolve(s.m_size[axis], s.m_min_size[axis], s.m_max_size[axis], viewport, parent, axis, automatic);
+		if (automatic) slots.push_back({ &data.m_size[axis], data.m_min_size[axis], data.m_max_size[axis] });
+		else fixed += data.m_size[axis];
+		Distribute(parent[axis] - fixed, slots);
+	}
+
+	int32_t Element::ProportionalSize(const Data& data, uint8_t axis) {
+		float ratio = data.m_style->m_aspect_ratio;
+		if (data.m_type == Type::LABEL && !data.m_text.empty() && axis == W)
+			ratio = static_cast<float>(data.m_text.size()) * data.m_style->m_text_aspect_ratio;
+		return static_cast<int32_t>(std::lround(data.m_size[1 - axis] * ratio));
+	}
+
+	void Element::Layout(zm::sivec2 viewport, const Bounds& bounds) {
+		Data& data = s_element_pool[m_id];
+		data.m_bounds = bounds;
+		data.m_size = { bounds.middle[W], bounds.middle[H] };
+		LayoutChildren(viewport);
+	}
+
+	void Element::LayoutChildren(zm::sivec2 viewport) {
+		Data& parent_data = s_element_pool[m_id];
+		if (parent_data.m_children.empty()) return;
+		const Style& parent_style = *parent_data.m_style;
+		const zm::sivec2 parent_size(parent_data.m_bounds.inner[W], parent_data.m_bounds.inner[H]);
+		const uint8_t flow = parent_style.m_flow_direction == Axis::HORIZONTAL ? W : H;
+		const uint8_t cross = 1 - flow;
+		std::vector<AutoSlot> slots;
+		int32_t fixed = 0;
+
+		for (ID id : parent_data.m_children) {
+			Data& child = s_element_pool[id];
+			Element handle(id);
+			handle.UpdateConstraints(viewport, parent_size);
+			const Style& s = *child.m_style;
+			// A cross-axis size which depends on the flow size must wait until flow-axis auto distribution has completed.
+			if (s.m_dependent_axis != cross)
+				ResolveIndependentAxis(child, viewport, parent_size, cross);
+			bool automatic = false;
+			for (uint8_t side : { flow, static_cast<uint8_t>(flow + 2) }) {
+				child.m_margin[side] = Resolve(s.m_margin[side], s.m_min_margin[side], s.m_max_margin[side], viewport, parent_size, flow, automatic);
+				if (automatic) slots.push_back({ &child.m_margin[side], child.m_min_margin[side], child.m_max_margin[side] });
+				else fixed += child.m_margin[side];
+			}
+			if (s.m_dependent_axis == flow) {
+				child.m_size[flow] = clamp_value(ProportionalSize(child, flow), child.m_min_size[flow], child.m_max_size[flow]);
+				fixed += child.m_size[flow];
+			} else {
+				child.m_size[flow] = Resolve(s.m_size[flow], s.m_min_size[flow], s.m_max_size[flow], viewport, parent_size, flow, automatic);
+				if (automatic) slots.push_back({ &child.m_size[flow], child.m_min_size[flow], child.m_max_size[flow] });
+				else fixed += child.m_size[flow];
+			}
+		}
+
+		const size_t gap_count = parent_data.m_children.size() - 1;
+		std::vector<int32_t> gaps(gap_count, 0);
+		for (size_t i = 0; i < gap_count; ++i) {
+			bool automatic = false;
+			gaps[i] = Resolve(parent_style.m_gap[flow], parent_style.m_min_gap[flow], parent_style.m_max_gap[flow], viewport, parent_size, flow, automatic);
+			const int32_t lo = parent_style.m_min_gap[flow].Get(viewport, parent_size, 0, flow);
+			const int32_t hi = std::max<int32_t>(lo, parent_style.m_max_gap[flow].Get(viewport, parent_size, 0, flow));
+			if (automatic) slots.push_back({ &gaps[i], lo, hi }); else fixed += gaps[i];
+		}
+		Distribute(parent_size[flow] - fixed, slots);
+
+		int32_t cursor = parent_data.m_bounds.inner[flow == W ? X : Y];
+		for (size_t index = 0; index < parent_data.m_children.size(); ++index) {
+			ID id = parent_data.m_children[index];
+			Data& child = s_element_pool[id];
+			const Style& s = *child.m_style;
+			if (s.m_dependent_axis == cross) {
+				child.m_size[cross] = clamp_value(ProportionalSize(child, cross), child.m_min_size[cross], child.m_max_size[cross]);
+				std::vector<AutoSlot> cross_slots;
+				int32_t cross_fixed = child.m_size[cross];
+				bool automatic = false;
+				for (uint8_t side : { cross, static_cast<uint8_t>(cross + 2) }) {
+					child.m_margin[side] = Resolve(s.m_margin[side], s.m_min_margin[side], s.m_max_margin[side], viewport, parent_size, cross, automatic);
+					if (automatic) cross_slots.push_back({ &child.m_margin[side], child.m_min_margin[side], child.m_max_margin[side] });
+					else cross_fixed += child.m_margin[side];
+				}
+				Distribute(parent_size[cross] - cross_fixed, cross_slots);
+			}
+			const int32_t outer_x = flow == W ? cursor : parent_data.m_bounds.inner[X];
+			const int32_t outer_y = flow == H ? cursor : parent_data.m_bounds.inner[Y];
+			Bounds bounds;
+			bounds.outer = {
+				child.m_size[W] + child.m_margin[L] + child.m_margin[R],
+				child.m_size[H] + child.m_margin[T] + child.m_margin[B],
+				outer_x, outer_y };
+			bounds.middle = {
+				child.m_size[W], child.m_size[H],
+				outer_x + child.m_margin[L], outer_y + child.m_margin[T] };
+			int32_t padding[4];
+			for (uint8_t side = 0; side < 4; ++side) {
+				const uint8_t axis = side & 1;
+				const int32_t lo = s.m_min_padding[side].Get(viewport, child.m_size, 0, axis);
+				const int32_t hi = std::max<int32_t>(lo, s.m_max_padding[side].Get(viewport, child.m_size, 0, axis));
+				padding[side] = clamp_value(s.m_padding[side].Get(viewport, child.m_size, 0, axis), lo, hi);
+			}
+			bounds.inner = {
+				std::max(0, bounds.middle[W] - padding[L] - padding[R]),
+				std::max(0, bounds.middle[H] - padding[T] - padding[B]),
+				bounds.middle[X] + padding[L], bounds.middle[Y] + padding[T] };
+			Element handle(id);
+			handle.Layout(viewport, bounds);
+			cursor += bounds.outer[flow] + (index < gaps.size() ? gaps[index] : 0);
+		}
 	}
 }
-
-
-//#include "zore/ui/element.hpp"
-//#include "zore/utils/uuid.hpp"
-//#include "zore/math/math.hpp"
-//#include "zore/debug.hpp"
-//#include <algorithm>
-//
-//namespace zore::UI {
-//
-//#define INT16_MAX_VALUE 32767
-//
-//	//========================================================================
-//	//	Element Class
-//	//========================================================================
-//
-//	int16_t Element::AutoParams::GetAutoSize(int16_t parent_size) {
-//		if (count <= 0)
-//			return 0;
-//
-//		int16_t l_count = count, l_required_size = required_size;
-//		int16_t size = (parent_size - required_size) / count;
-//
-//		std::sort(auto_max_sizes.begin(), auto_max_sizes.end());
-//		for (int16_t x : auto_max_sizes) {
-//			if (count == 1)
-//				return parent_size - required_size;
-//			else if (x > size)
-//				break;
-//			size = (parent_size - (required_size += x)) / (--count);
-//		}
-//
-//		std::sort(auto_min_sizes.rbegin(), auto_min_sizes.rend());
-//		for (int16_t x : auto_min_sizes) {
-//			if (count == 1)
-//				return parent_size - required_size;
-//			else if (x < size)
-//				break;
-//			size = (parent_size - (required_size += x)) / (--count);
-//		}
-//
-//		return size;
-//	}
-//
-//	Element::LayoutParams::LayoutParams(const Bounds& bounds, int16_t viewport_width, int16_t viewport_height, FlowDirection direction)
-//		: parent_bounds(bounds), viewport_size{ viewport_width, viewport_height }, flow_axis(static_cast<int16_t>(direction)) {
-//	}
-//
-//	Element::Element(Type type, const std::string& style) : Element(type, Style::Get(style)) {}
-//
-//	Element::Element(Type type, const Style* style) :
-//		m_type(type), m_style(style ? style : Style::Get("")),
-//		m_size{}, m_max_size{}, m_min_size{}, m_margin{}, m_min_margin{}, m_max_margin{} {
-//	}
-//
-//	Element& Element::AddChild(Type type, const Style* style) {
-//		m_children.push_back(MAKE_UNIQUE<Element>(type, style));
-//		return *m_children.back();
-//	}
-//
-//	Element& Element::AddChild(Type type, const std::string& style) {
-//		m_children.push_back(MAKE_UNIQUE<Element>(type, style));
-//		return *m_children.back();
-//	}
-//
-//	Element& Element::SetStyle(const Style* style) {
-//		m_style = style;
-//		return *this;
-//	}
-//	
-//	Element& Element::SetStyle(const std::string& style) {
-//		m_style = Style::Get(style);
-//		return *this;
-//	}
-//	
-//	Element& Element::SetText(const std::string& text) {
-//		if (m_type == Type::LABEL)
-//			m_text = text;
-//		return *this;
-//	}
-//
-//	Element::Bounds Element::ComputeBounds(LayoutParams& layout, int16_t auto_size) {
-//		// Compute size of element if any used auto specifier
-//		int16_t axis = layout.flow_axis;
-//		UpdateIfAuto(m_style->m_margin[axis + 0].GetType(), m_margin[axis + 0], zm::Clamp(auto_size, m_min_margin[axis + 0], m_max_margin[axis + 0]));
-//		UpdateIfAuto(m_style->m_margin[axis + 2].GetType(), m_margin[axis + 2], zm::Clamp(auto_size, m_min_margin[axis + 2], m_max_margin[axis + 2]));
-//		UpdateIfAuto(m_style->m_size[axis].GetType(), m_size[axis], zm::Clamp(auto_size, m_min_size[axis], m_max_size[axis]));
-//
-//		// Compute size of secondary axis if it relies on the primary axis, and primary axis was auto
-//		if (m_style->m_dependent_axis == (1 - layout.flow_axis) and m_style->m_size[layout.flow_axis].GetType() == Unit::Type::AUTO)
-//			ComputeSizeOfSecondaryAxis(layout);
-//
-//		Bounds bounds;
-//
-//		// Compute the size and position of the middle content (self)
-//		bounds.middle[X] = layout.parent_bounds.inner[X] + m_margin[L];
-//		bounds.middle[Y] = layout.parent_bounds.inner[Y] + m_margin[T];
-//		bounds.middle[W] = m_size[W];
-//		bounds.middle[H] = m_size[H];
-//
-//		// Compute the size and position of the outer content (self + margins)
-//		bounds.outer[X] = layout.parent_bounds.inner[X];
-//		bounds.outer[Y] = layout.parent_bounds.inner[Y];
-//		bounds.outer[W] = bounds.middle[W] + m_margin[L] + m_margin[R];
-//		bounds.outer[H] = bounds.middle[H] + m_margin[T] + m_margin[B];
-//
-//		// Compute the size and position of the contained inner content (self - padding)
-//		int16_t min_padding[4] = {
-//			m_style->m_min_padding[T].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H),
-//			m_style->m_min_padding[R].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W),
-//			m_style->m_min_padding[B].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H),
-//			m_style->m_min_padding[L].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W)
-//		};
-//		int16_t max_padding[4] = {
-//			m_style->m_max_padding[T].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H),
-//			m_style->m_max_padding[R].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W),
-//			m_style->m_max_padding[B].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H),
-//			m_style->m_max_padding[L].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W)
-//		};
-//		int16_t padding_t = zm::Clamp(m_style->m_padding[T].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H), min_padding[T], max_padding[T]);
-//		int16_t padding_r = zm::Clamp(m_style->m_padding[R].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W), min_padding[R], max_padding[R]);
-//		int16_t padding_b = zm::Clamp(m_style->m_padding[B].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H), min_padding[B], max_padding[B]);
-//		int16_t padding_l = zm::Clamp(m_style->m_padding[L].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W), min_padding[L], max_padding[L]);
-//		bounds.inner[X] = bounds.middle[X] + padding_l;
-//		bounds.inner[Y] = bounds.middle[Y] + padding_t;
-//		bounds.inner[W] = bounds.middle[W] - padding_l - padding_r;
-//		bounds.inner[H] = bounds.middle[H] - padding_t - padding_b;
-//
-//		return bounds;
-//	}
-//
-//	void Element::ComputeRequiredSize(LayoutParams& layout, int16_t axis) {
-//		m_min_size[W] = m_style->m_min_size[W].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
-//		m_min_size[H] = m_style->m_min_size[H].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
-//		m_max_size[W] = m_style->m_max_size[W].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
-//		m_max_size[H] = m_style->m_max_size[H].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
-//
-//		m_min_margin[T] = m_style->m_min_margin[T].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
-//		m_min_margin[R] = m_style->m_min_margin[R].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
-//		m_min_margin[B] = m_style->m_min_margin[B].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
-//		m_min_margin[L] = m_style->m_min_margin[L].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
-//
-//		m_max_margin[T] = m_style->m_max_margin[T].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
-//		m_max_margin[R] = m_style->m_max_margin[R].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
-//		m_max_margin[B] = m_style->m_max_margin[B].Get(layout.viewport_size, layout.parent_bounds.inner, 0, H);
-//		m_max_margin[L] = m_style->m_max_margin[L].Get(layout.viewport_size, layout.parent_bounds.inner, 0, W);
-//
-//		// Compute size of element along primary axis if it is not dependent on the secondary axis
-//		if (m_style->m_dependent_axis != axis)
-//			ComputeRequiredSize(layout, axis, m_style->m_size[axis], m_min_size[axis], m_max_size[axis], m_size[axis]);
-//		// Compute size of secondary axis if it does not rely on the primary axis, or the primary axis is calculable
-//		if (m_style->m_dependent_axis != (1 - axis) or m_style->m_size[axis].GetType() != Unit::Type::AUTO) {
-//			ComputeSizeOfSecondaryAxis(layout);
-//			if (m_style->m_dependent_axis == axis)
-//				ComputeProportionalSize(layout, axis);
-//		}
-//
-//		// Compute size of margins on primary axis
-//		ComputeRequiredSize(layout, axis, m_style->m_margin[axis + 0], m_min_margin[axis + 0], m_max_margin[axis + 0], m_margin[axis + 0]);
-//		ComputeRequiredSize(layout, axis, m_style->m_margin[axis + 2], m_min_margin[axis + 2], m_max_margin[axis + 2], m_margin[axis + 2]);
-//	}
-//
-//	void Element::ComputeSizeOfSecondaryAxis(LayoutParams& layout) {
-//		int16_t axis = 1 - layout.flow_axis;
-//		layout.auto_params[axis].required_size = 0;
-//		layout.auto_params[axis].count = 0;
-//		ComputeRequiredSize(layout, axis, m_style->m_margin[axis + 0], m_min_margin[axis + 0], m_max_margin[axis + 0], m_margin[axis + 0]);
-//		ComputeRequiredSize(layout, axis, m_style->m_margin[axis + 2], m_min_margin[axis + 2], m_max_margin[axis + 2], m_margin[axis + 2]);
-//		if (m_style->m_dependent_axis == axis)
-//			ComputeProportionalSize(layout, axis);
-//		else
-//			ComputeRequiredSize(layout, axis, m_style->m_size[axis], m_min_size[axis], m_max_size[axis], m_size[axis]);
-//		int16_t auto_size = layout.GetAutoSize(axis);
-//		UpdateIfAuto(m_style->m_margin[axis + 0].GetType(), m_margin[axis + 0], zm::Clamp(auto_size, m_min_margin[axis + 0], m_max_margin[axis + 0]));
-//		UpdateIfAuto(m_style->m_margin[axis + 2].GetType(), m_margin[axis + 2], zm::Clamp(auto_size, m_min_margin[axis + 2], m_max_margin[axis + 2]));
-//		UpdateIfAuto(m_style->m_size[axis].GetType(), m_size[axis], zm::Clamp(auto_size, m_min_size[axis], m_max_size[axis]));
-//	}
-//
-//	void Element::ComputeRequiredSize(LayoutParams& layout, int16_t axis, Unit value, int16_t min, int16_t max, int16_t& result) {
-//		if (value.GetType() == Unit::Type::AUTO) {
-//			layout.auto_params[axis].count++;
-//			layout.auto_params[axis].auto_max_sizes.push_back(max);
-//			layout.auto_params[axis].auto_min_sizes.push_back(min);
-//		}
-//		else {
-//			result = zm::Clamp(value.Get(layout.viewport_size, layout.parent_bounds.inner, 0, axis), min, max);
-//			layout.auto_params[axis].required_size += result;
-//		}
-//	}
-//
-//	void Element::UpdateIfAuto(Unit::Type type, int16_t& value, int16_t auto_size) {
-//		if (type == Unit::Type::AUTO)
-//			value = auto_size;
-//	}
-//
-//	void Element::ComputeProportionalSize(LayoutParams& layout, int16_t axis) {
-//		if (m_type == Type::LABEL)
-//			m_size[axis] = static_cast<int16_t>(std::round(m_size[1 - axis] * m_text.length() * (12.f / 18.f)));
-//			// 12x18
-//		else
-//			m_size[axis] = static_cast<int16_t>(std::round(m_size[1 - axis] * m_style->m_aspect_ratio));
-//		layout.auto_params[axis].required_size += m_size[axis];
-//	}
-//}

@@ -1,85 +1,90 @@
-//#include "zore/ui/manager.hpp"
-//#include "zore/events.hpp"
-//
-//namespace zore::UI {
-//
-//	//========================================================================
-//	//	UI Event Listener Class
-//	//========================================================================
-//
-//	class EventListener {
-//	public:
-//		EventListener() {
-//			event::MultiHandler& handler = event::MultiHandler::Get();
-//			handler.Register(&OnMouseMove, 100);
-//			handler.Register(&OnMousePress, 100);
-//			handler.Register(&OnMouseRelease, 100);
-//			handler.Register(&OnKeyPress, 100);
-//			handler.Register(&OnWindowResize, 100);
-//		}
-//		~EventListener() = default;
-//
-//		static bool OnMouseMove(const MouseMovedEvent& e) {
-//			Layer::HandleMouseMove(static_cast<uint32_t>(e.x), static_cast<uint32_t>(e.y));
-//			return false;
-//		}
-//
-//		static bool OnMousePress(const MousePressedEvent& e) {
-//			return HandleButton(Layer::HandleMousePress(e.button), true);
-//		}
-//
-//		static bool OnMouseRelease(const MouseReleasedEvent& e) {
-//			return HandleButton(Layer::HandleMouseRelease(e.button), false);
-//		}
-//
-//		static bool OnKeyPress(const KeyPressedEvent& e) {
-//			return HandleButton(Layer::HandleKeyPress(e.key), true);
-//		}
-//
-//		static bool HandleButton(uint32_t button_id, bool press) {
-//			if (button_id != uuid_32::INVALID_ID) {
-//				if (press)
-//					event::Manager::Dispatch(ButtonPressedEvent(button_id));
-//				else
-//					event::Manager::Dispatch(ButtonReleasedEvent(button_id));
-//			}
-//			return button_id != uuid_32::INVALID_ID;
-//		}
-//
-//		static bool OnWindowResize(const WindowResizedEvent& e) {
-//			Layer::Resize(e.width, e.height);
-//			return false;
-//		}
-//	};
-//
-//	//========================================================================
-//	//	UI Manager Class
-//	//========================================================================
-//
-//	static Manager* s_manager_instance = nullptr;
-//
-//	Layer& Manager::CreateLayer(const std::string& name) {
-//		static EventListener s_event_listener;
-//		s_layers[name] = MAKE_UNIQUE<Layer>();
-//		return *s_layers[name];
-//	}
-//
-//	Layer* Manager::Bind(const std::string& name) {
-//		auto iter = s_layers.find(name);
-//		Layer* layer = (iter != s_layers.end()) ? iter->second.get() : nullptr;
-//		if (layer) {
-//			layer->Bind();
-//			if (s_manager_instance)
-//				s_manager_instance->OnLayerChange(layer, name);
-//		}
-//		else
-//			Logger::Warn("Attempted to bind layer with name that does not exist:", name);
-//		return layer;
-//	}
-//
-//	Manager::Manager() {
-//		ENSURE(!s_manager_instance, "Attempted to create multiple UI Managers - this is not supported.");
-//		Logger::Info("UI Manager Initialized");
-//		s_manager_instance = this;
-//	}
-//}
+#include "zore/ui/manager.hpp"
+#include "zore/devices/window.hpp"
+#include "zore/events.hpp"
+#include "zore/structures/string_unordered_map.hpp"
+#include <algorithm>
+#include <memory>
+
+namespace zore::UI {
+
+	static zore::string_unordered_map<std::unique_ptr<Layer>> s_layers;
+	static Layer* s_active_layer = nullptr;
+
+	class EventListener {
+	public:
+		EventListener() {
+			event::MultiHandler::Get().Register(&OnMouseMove, 100);
+			event::MultiHandler::Get().Register(&OnMousePress, 100);
+			event::MultiHandler::Get().Register(&OnMouseRelease, 100);
+			event::MultiHandler::Get().Register(&OnWindowResize, 100);
+		}
+
+		static bool OnMouseMove(const MouseMovedEvent& event) {
+			if (s_active_layer)
+				s_active_layer->HandleMouseMove(static_cast<int32_t>(event.x), static_cast<int32_t>(event.y));
+			return false;
+		}
+
+		static bool OnMousePress(const MousePressedEvent& event) {
+			if (!s_active_layer) return false;
+			const Element::ID id = s_active_layer->HandleMousePress(static_cast<uint32_t>(event.button));
+			if (id == uint32_max) return false;
+			event::Manager::Dispatch(ButtonPressedEvent(id));
+			return true;
+		}
+
+		static bool OnMouseRelease(const MouseReleasedEvent& event) {
+			if (!s_active_layer) return false;
+			const Element::ID id = s_active_layer->HandleMouseRelease(static_cast<uint32_t>(event.button));
+			if (id == uint32_max) return false;
+			event::Manager::Dispatch(ButtonReleasedEvent(id));
+			return true;
+		}
+
+		static bool OnWindowResize(const WindowResizedEvent& event) {
+			Manager::Resize(static_cast<uint32_t>(event.width), static_cast<uint32_t>(event.height));
+			return false;
+		}
+	};
+
+	Layer& Manager::CreateLayer(std::string_view name) {
+		static EventListener listener;
+		auto layer = std::make_unique<Layer>();
+		Layer& result = *layer;
+		s_layers.insert_or_assign(std::string(name), std::move(layer));
+		if (!s_active_layer)
+			Bind(name);
+		return result;
+	}
+
+	Layer* Manager::GetLayer(std::string_view name) {
+		auto it = s_layers.find(name);
+		return it == s_layers.end() ? nullptr : it->second.get();
+	}
+
+	Layer* Manager::Bind(std::string_view name) {
+		Layer* layer = GetLayer(name);
+		if (!layer)
+			return nullptr;
+		s_active_layer = layer;
+		const zm::ivec2& size = Window::GetSize();
+		Resize(static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y));
+		return layer;
+	}
+
+	Layer* Manager::GetActiveLayer() {
+		return s_active_layer;
+	}
+
+	void Manager::Resize(uint32_t width, uint32_t height) {
+		if (!s_active_layer)
+			return;
+		s_active_layer->Resize(width, height);
+		s_active_layer->Flush();
+	}
+
+	void Manager::Clear() {
+		s_active_layer = nullptr;
+		s_layers.clear();
+	}
+}

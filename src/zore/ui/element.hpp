@@ -2,147 +2,83 @@
 
 #include "zore/ui/style.hpp"
 #include "zore/math/vector/vec2.hpp"
+#include "zore/math/vector/vec4.hpp"
+#include <string>
 #include <string_view>
 #include <vector>
 
 namespace zore::UI {
-
-	//========================================================================
-	//  UI Element
-	//========================================================================
 
 	class Element {
 	public:
 		enum class Type { PANEL, BUTTON, LABEL, SLIDER };
 		using ID = uint32_t;
 
+		struct Bounds {
+			// Stored as width, height, x, y to match the W/H/X/Y UI indices.
+			zm::ivec4 outer{};  // including margins
+			zm::ivec4 middle{}; // the element itself
+			zm::ivec4 inner{};  // content box (after padding)
+		};
+
 		struct Data {
-			Data(Type type, const Style* style) : m_type(type), m_style(style) {}
-			std::vector<Element::ID> m_children;
-			zm::suvec4 m_min_margin = { 0, 0, 0, 0 };
-			zm::suvec4 m_max_margin = { 0, 0, 0, 0 };
-			zm::suvec4 m_margin = { 0, 0, 0, 0 };
-			zm::suvec2 m_min_size = { 0, 0 };
-			zm::suvec2 m_max_size = { 0, 0 };
-			zm::suvec2 m_size = { 0, 0 };
+			Data(Type type, const Style* style) : m_style(style), m_type(type) {}
+			std::vector<ID> m_children;
+			// Margins use the L/T/R/B indices; bounds use W/H/X/Y.
+			zm::ivec4 m_min_margin{}, m_max_margin{}, m_margin{};
+			zm::ivec2 m_min_size{}, m_max_size{}, m_size{};
+			Bounds m_bounds{};
+			std::string m_text;
 			const Style* m_style;
 			Type m_type;
 		};
 
 		struct Segment {
-			uint16_t size;
-			uint8_t auto_count = 0;
-
-			void Add(Unit unit, zm::suvec2 viewport_size, zm::suvec2 parent_size, int16_t axis, float scale = 1.f);
+			int32_t min_size = 0, size = 0, max_size = 0;
+			uint16_t auto_count = 0;
+			void Add(Unit min_size, Unit size, Unit max_size, zm::sivec2 viewport_size, zm::sivec2 parent_size, int16_t axis, float scale = 1.f);
 		};
 
-	public:
-		Element(Type type, const Style* style);
+		Element(Type type, const Style* style = nullptr);
 		~Element() = default;
-
-		void UpdateConstraints(zm::suvec2 viewport_size, zm::suvec2 parent_size);
-		Segment GetSize(zm::suvec2 viewport_size, zm::suvec2 parent_size, uint8_t axis);
 
 		Element Append(Type type, const Style* style);
 		Element Append(Type type, std::string_view style = "");
+
 		Element& SetStyle(const Style* style);
 		Element& SetStyle(std::string_view style);
+		Element& SetText(std::string_view text);
+
+		ID GetID() const;
+		Type GetType() const;
+		const Style& GetStyle() const;
+		const std::string& GetText() const;
+		const Bounds& GetBounds() const;
+		std::vector<Element> Children() const;
+
+		void UpdateConstraints(zm::sivec2 viewport_size, zm::sivec2 parent_size);
+		Segment GetSize(zm::sivec2 viewport_size, zm::sivec2 parent_size, uint8_t axis) const;
+
+	protected:
+		void Layout(zm::sivec2 viewport_size, const Bounds& bounds);
 
 	private:
-		Data& GetData();
+		struct AutoSlot {
+			int32_t* value;
+			int32_t min, max;
+		};
 
 	private:
-		Element::ID m_id = uint32_max;
+		Element(ID id) : m_id(id) {}
+
+		static void Distribute(int32_t available, std::vector<AutoSlot>& slots);
+		static int32_t Resolve(Unit value, Unit minimum, Unit maximum, zm::sivec2 viewport, zm::sivec2 parent, uint8_t axis, bool& automatic);
+		static void ResolveIndependentAxis(Data& data, zm::sivec2 viewport, zm::sivec2 parent, uint8_t axis);
+		static int32_t ProportionalSize(const Data& data, uint8_t axis);
+
+		void LayoutChildren(zm::sivec2 viewport_size);
+
+	private:
+		ID m_id = uint32_max;
 	};
 }
-
-//#pragma once
-//
-//#include "zore/ui/style.hpp"
-//#include "zore/utils/memory.hpp"
-//#include "zore/utils/uuid.hpp"
-//#include <vector>
-//
-//namespace zore::UI {
-//
-//	//========================================================================
-//	//	Element Class
-//	//========================================================================
-//
-//	class Element {
-//	public:
-//		enum class Type { PANEL, BUTTON, LABEL, SLIDER };
-//		struct Bounds {
-//		public:
-//			int16_t outer[4];
-//			int16_t middle[4];
-//			int16_t inner[4];
-//		};
-//
-//		struct AutoParams {
-//		public:
-//			int16_t GetAutoSize(int16_t parent_size);
-//
-//		public:
-//			std::vector<int16_t> auto_max_sizes;
-//			std::vector<int16_t> auto_min_sizes;
-//			int16_t required_size = 0;
-//			int16_t count = 0;
-//		};
-//
-//		struct LayoutParams {
-//		public:
-//			LayoutParams(const Bounds& bounds, int16_t viewport_width, int16_t viewport_height, FlowDirection direction);
-//			int16_t GetAutoSize(int16_t axis) { return auto_params[axis].GetAutoSize(parent_bounds.inner[axis]); }
-//
-//		public:
-//			const Bounds& parent_bounds;
-//			AutoParams auto_params[2];
-//			int16_t viewport_size[2];
-//			int16_t flow_axis;
-//		};
-//
-//	public:
-//		Element(Type type, const Style* style);
-//		Element(Type type, const std::string& style = "");
-//		Element(const Element&) = delete;
-//		Element(Element&&) = delete;
-//		Element& operator=(const Element&) = delete;
-//		Element& operator=(Element&&) = delete;
-//		~Element() = default;
-//
-//		Element& AddChild(Type type, const Style* style);
-//		Element& AddChild(Type type, const std::string& style = "");
-//		Element& SetStyle(const Style* style);
-//		Element& SetStyle(const std::string& style);
-//		Element& SetText(const std::string& text);
-//
-//		inline Type GetType() const { return m_type; }
-//		inline uint32_t GetUUID() const { return m_id; }
-//		inline const std::string& GetText() const { return m_text; }
-//		inline const Style* GetStyle() const { return m_style; }
-//		inline std::vector<UNIQUE<Element>>& Children() { return m_children; }
-//
-//		Bounds ComputeBounds(LayoutParams& layout, int16_t auto_size);
-//		void ComputeRequiredSize(LayoutParams& layout, int16_t axis);
-//
-//	private:
-//		void ComputeSizeOfSecondaryAxis(LayoutParams& layout);
-//		void ComputeRequiredSize(LayoutParams& layout, int16_t axis, Unit value, int16_t min, int16_t max, int16_t& result);
-//		void UpdateIfAuto(Unit::Type type, int16_t& value, int16_t auto_size);
-//		void ComputeProportionalSize(LayoutParams& layout, int16_t axis);
-//
-//	protected:
-//		std::string m_text;
-//		std::vector<UNIQUE<Element>> m_children;
-//		Type m_type;
-//		const Style* m_style;
-//		uuid_32 m_id;
-//		int16_t m_min_margin[4];
-//		int16_t m_max_margin[4];
-//		int16_t m_margin[4];
-//		int16_t m_min_size[2];
-//		int16_t m_max_size[2];
-//		int16_t m_size[2];
-//	};
-//}

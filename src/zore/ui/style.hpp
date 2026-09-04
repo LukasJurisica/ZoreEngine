@@ -46,8 +46,8 @@ namespace zore::UI {
 
 	private:
 		constexpr Unit(Type type, int16_t value) : m_type(type), m_value(value) {};
-		static inline int16_t PackPercentage(float value);
-		static inline int16_t UnpackPercentage(int16_t driver, int16_t value);
+		static int16_t PackPercentage(float value);
+		static int16_t UnpackPercentage(int16_t driver, int16_t value);
 
 	private:
 		int16_t m_value;
@@ -128,6 +128,8 @@ namespace zore::UI {
 		Style& SetFlowDirection(Axis flow_direction);
 		Style& SetScrollAxis(Axis scroll_axis);
 		Style& SetColour(Colour colour);
+		Style& SetStretchText(bool stretch = true);
+		Style& SetTextAspectRatio(float aspect_ratio);
 
 	public:
 		Unit m_size[2];
@@ -144,7 +146,11 @@ namespace zore::UI {
 		Unit m_max_gap[2];
 		Colour m_colour;
 		float m_aspect_ratio;
-		bool m_text_warped;
+		float m_text_aspect_ratio;
+		union {
+			bool m_stretch_text;
+			bool m_text_warped; // Backward-compatible name.
+		};
 		uint8_t m_dependent_axis;
 		Axis m_flow_direction;
 		Axis m_scroll_axis;
