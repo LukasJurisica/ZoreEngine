@@ -1,7 +1,6 @@
 #pragma once
-#include <string_view>
+#include "zore/structures/string_unordered_map.hpp"
 #include <typeindex>
-#include <type_traits>
 
 namespace zore::Resource {
 
@@ -14,16 +13,20 @@ namespace zore::Resource {
 		void Cleanup();
 
 		template<typename T, typename... Args>
-		requires std::constructible_from<T, Args...>
+			requires std::constructible_from<T, Args...>
 		T* Create(std::string_view name, Args... args);
 
-		//typeid(T)
+		template<typename T>
+		bool Exists(std::string_view name);
 
 		template<typename T>
 		T* Get(std::string_view name);
 
-	private:
+		template<typename T>
+		bool Destroy(std::string_view name);
 
+	private:
+		static inline std::unordered_map<std::type_index, zore::string_unordered_map<void*>> s_resources;
 	};
 }
 
