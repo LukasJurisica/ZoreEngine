@@ -2,7 +2,6 @@
 #include "zore/math/matrix/mat2.hpp"
 #include "zore/math/matrix/mat3.hpp"
 #include "zore/math/matrix/mat4.hpp"
-#include "zore/core/resource.hpp"
 #include "zore/io/asset_pack.hpp"
 #include "zore/structures/string_unordered_map.hpp"
 #include <string>
