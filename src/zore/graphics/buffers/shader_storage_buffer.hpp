@@ -15,7 +15,6 @@ namespace zore {
 		ShaderStorageBuffer(const void* data, size_t size);
 		ShaderStorageBuffer(ShaderStorageBuffer&&) = default;
 		ShaderStorageBuffer& operator=(ShaderStorageBuffer&&) = default;
-		ShaderStorageBuffer(const Buffer::Base& other);
 		~ShaderStorageBuffer() = default;
 
 		void Bind() const;

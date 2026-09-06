@@ -30,7 +30,6 @@ namespace zore {
 		}
 
 		void release(S index) {
-			//m_free_indices.push(index);
 			reinterpret_cast<S&>(m_data[index]) = m_next_free_index;
 			m_next_free_index = index;
 		}
@@ -72,7 +71,6 @@ namespace zore {
 
 	private:
 		std::vector<T> m_data;
-		//std::queue<S> m_free_indices;
 		S m_next_free_index = INVALID_INDEX;
 	};
 }

@@ -1,6 +1,7 @@
 #include "zore/graphics/render_engine.hpp"
-#include "zore/graphics/shader.hpp"
 #include "zore/graphics/buffers/multidraw_command_buffer.hpp"
+#include "zore/graphics/gl_handle.hpp"
+#include "zore/graphics/shader.hpp"
 #include "zore/graphics/vertex_layout.hpp"
 #include "zore/devices/window.hpp"
 #include "zore/debug.hpp"
@@ -9,6 +10,7 @@
 
 namespace zore {
 
+	static bool s_context_active = false;
 	static uint32_t s_clear_mode = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 	static uint32_t s_topology = GL_TRIANGLES;
 	static uint32_t s_index_type = GL_UNSIGNED_INT;
@@ -54,8 +56,8 @@ namespace zore {
 		glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &context);
 		Shader::SetShaderVersion(GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version), context & GL_CONTEXT_CORE_PROFILE_BIT);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		s_context_active = true;
 		VertexLayout::Empty().Init();
-		Buffer::Base::Init();
 
 		if (IS_DEBUG) {
 			glEnable(GL_DEBUG_OUTPUT);
@@ -65,9 +67,14 @@ namespace zore {
 		Logger::Info("Render Engine Initialization Complete.");
 	}
 
-	void RenderEngine::Free() {
-		Buffer::Base::FreeAll();
+	bool RenderEngine::Active() {
+		return s_context_active;
+	}
+
+	void RenderEngine::Cleanup() {
 		VertexLayout::Empty().Free();
+		GLHandleRegistry::Cleanup();
+		s_context_active = false;
 		Logger::Info("Render Engine Cleanup Complete.");
 	}
 

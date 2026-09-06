@@ -6,8 +6,6 @@
 
 namespace zore {
 
-	using string_hash_t = size_t;
-
 	class String {
 	public:
 		static inline size_t Count(std::string_view s, char delimiter) {
@@ -263,8 +261,8 @@ namespace zore {
 			return ec == std::errc();
 		}
 
-		static inline constexpr string_hash_t Hash(std::string_view s) {
-			string_hash_t hash = 14695981039346656037ull;
+		static inline constexpr uint64_t Hash(std::string_view s) {
+			uint64_t hash = 14695981039346656037ull;
 			for (auto c : s) {
 				hash ^= static_cast<uint8_t>(c);
 				hash *= 1099511628211ull;
@@ -329,7 +327,7 @@ namespace zore {
 		}
 	};
 
-	inline constexpr string_hash_t operator""_hash (const char* str, size_t len) {
+	inline constexpr uint64_t operator""_hash (const char* str, size_t len) {
 		return String::Hash(std::string_view(str, len));
 	}
 }

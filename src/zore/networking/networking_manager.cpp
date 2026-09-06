@@ -16,7 +16,7 @@ namespace zore::net {
 		Logger::Info("Networking Initialization Complete.");
 	}
 
-	void Manager::Free() {
+	void Manager::Cleanup() {
 #ifdef PLATFORM_WINDOWS
 		WSACleanup();
 #endif

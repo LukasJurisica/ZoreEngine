@@ -1,17 +1,14 @@
 #pragma once
 
+#include "zore/utils/string.hpp"
 #include <unordered_map>
-#include <string>
 
 namespace zore {
 
     struct string_hash {
         using is_transparent = void;
-        std::size_t operator()(const std::string& v) const noexcept {
-            return std::hash<std::string>{}(v);
-        }
         size_t operator()(std::string_view v) const noexcept {
-            return std::hash<std::string_view>{}(v);
+            return static_cast<size_t>(zore::String::Hash(v));
         }
     };
 

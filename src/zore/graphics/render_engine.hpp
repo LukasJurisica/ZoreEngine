@@ -17,7 +17,8 @@ namespace zore {
 	class RenderEngine {
 	public:
 		static void Init();
-		static void Free();
+		static bool Active();
+		static void Cleanup();
 
 		static void ResetViewport();
 		static void SetIndexType(IndexType type);

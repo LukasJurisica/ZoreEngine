@@ -25,8 +25,12 @@ namespace zore::Resource {
 
 	template<typename T>
 	T* Manager::Get(std::string_view name) {
-		void* resource = s_resources[std::type_index(typeid(T))].at(name);
-		return static_cast<T*>(resource);
+		auto iter = s_resources.find(std::type_index(typeid(T)));
+		if (iter != s_resources.end()) {
+			auto res = iter->second.find(name);
+			return res != iter->second.end() ? static_cast<T*>(res->second) : nullptr;
+		}
+		return nullptr;
 	}
 
 	template<typename T>

@@ -42,10 +42,10 @@ namespace zore {
 	void Application::Cleanup() {
 		Command::UnregisterAll();
 		Editor::Cleanup();
-		audio::Manager::Free();
-		net::Manager::Free();
-		Window::Free();
-		Processor::Free();
+		audio::Manager::Cleanup();
+		net::Manager::Cleanup();
+		Window::Cleanup();
+		Processor::Cleanup();
 		s_initialized = false;
 	}
 }

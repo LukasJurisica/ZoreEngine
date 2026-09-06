@@ -7,7 +7,7 @@ namespace zore {
 	class Processor {
 	public:
 		static void Init();
-		static void Free();
+		static void Cleanup();
 		static std::string GetVendor();
 
 	private:

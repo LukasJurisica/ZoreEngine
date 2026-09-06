@@ -15,7 +15,7 @@ namespace zore::audio {
 		Logger::Info("Audio Engine Initialization Complete.");
 	}
 
-	void Manager::Free() {
+	void Manager::Cleanup() {
 		ma_engine_uninit(&s_audio_engine);
 		Logger::Info("Audio Engine Cleanup Complete.");
 	}

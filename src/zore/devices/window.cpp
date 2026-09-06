@@ -81,8 +81,8 @@ namespace zore {
 		glfwSetCursorEnterCallback(s_window_handle, Mouse::EnterCallback);
 	}
 
-	void Window::Free() {
-		RenderEngine::Free();
+	void Window::Cleanup() {
+		RenderEngine::Cleanup();
 		glfwDestroyWindow(s_window_handle);
 		glfwTerminate();
 		Logger::Info("Window Cleanup Complete.");

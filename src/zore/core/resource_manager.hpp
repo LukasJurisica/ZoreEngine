@@ -10,20 +10,20 @@ namespace zore::Resource {
 
 	class Manager {
 	public:
-		void Cleanup();
+		static void Cleanup();
 
 		template<typename T, typename... Args>
 			requires std::constructible_from<T, Args...>
-		T* Create(std::string_view name, Args... args);
+		static T* Create(std::string_view name, Args... args);
 
 		template<typename T>
-		bool Exists(std::string_view name);
+		static bool Exists(std::string_view name);
 
 		template<typename T>
-		T* Get(std::string_view name);
+		static T* Get(std::string_view name);
 
 		template<typename T>
-		bool Destroy(std::string_view name);
+		static bool Destroy(std::string_view name);
 
 	private:
 		static inline std::unordered_map<std::type_index, zore::string_unordered_map<void*>> s_resources;

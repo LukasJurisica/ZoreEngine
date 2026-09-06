@@ -13,8 +13,6 @@ namespace zore {
 
 	ShaderStorageBuffer::ShaderStorageBuffer(const void* data, size_t size) : Base(data, size), m_bind_point(0) {}
 
-	ShaderStorageBuffer::ShaderStorageBuffer(const Buffer::Base& other) : Base(other), m_bind_point(0) {}
-
 	void ShaderStorageBuffer::Bind() const {
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bind_point, GetID());
 	}
