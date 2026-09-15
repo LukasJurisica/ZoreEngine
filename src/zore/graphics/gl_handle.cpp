@@ -1,7 +1,6 @@
 #pragma once
 
 #include "zore/graphics/gl_handle.hpp"
-#include <glad/glad.h>
 
 namespace zore {
 

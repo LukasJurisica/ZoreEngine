@@ -123,7 +123,8 @@ namespace zore::UI {
 					available -= *slot.value;
 					it = active.erase(it);
 					constrained = true;
-				} else ++it;
+				}
+				else ++it;
 			}
 			if (!constrained) {
 				for (size_t i = 0; i < active.size(); ++i) {
@@ -193,7 +194,8 @@ namespace zore::UI {
 			if (s.m_dependent_axis == flow) {
 				child.m_size[flow] = clamp_value(ProportionalSize(child, flow), child.m_min_size[flow], child.m_max_size[flow]);
 				fixed += child.m_size[flow];
-			} else {
+			}
+			else {
 				child.m_size[flow] = Resolve(s.m_size[flow], s.m_min_size[flow], s.m_max_size[flow], viewport, parent_size, flow, automatic);
 				if (automatic) slots.push_back({ &child.m_size[flow], child.m_min_size[flow], child.m_max_size[flow] });
 				else fixed += child.m_size[flow];

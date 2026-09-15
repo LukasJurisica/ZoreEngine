@@ -23,9 +23,6 @@ namespace zore::Texture {
         void Load(const std::string& path, Format requested_format = Format::RGBA);
         void Free();
 
-    private:
-        uint32_t GetChannelCount(Format format);
-
     public:
         uint8_t* data = nullptr;
         int width = 0;

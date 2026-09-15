@@ -7,11 +7,11 @@ layout(location = 0) in ivec4 quad;
 out flat vec4 colour;
 
 void main() {
-	vec2 pos = vec2(quad[0] >> 16, quad[0] & 0xffff);
+	vec2 pos = vec2(quad[0] >> 16, (quad[0] << 16) >> 16);
 	vec2 size = vec2(quad[1] >> 16, quad[1] & 0xffff);
 	uint hovered = quad[3] & 1;
 	uint pressed = (quad[3] >> 1) & 1;
-	uint depth = quad[3] >> 16;
+	uint depth = uint(quad[3]) >> 16;
 
 	uint r = (quad[2] >> 24) & 0xff;
 	uint g = (quad[2] >> 16) & 0xff;
@@ -27,7 +27,7 @@ void main() {
 		
 	vec2 uv = vec2(gl_VertexID >> 1, gl_VertexID & 1);
 	pos = ((uv * size) + pos - camera.xy) * camera.zw;
-	gl_Position = vec4(pos, -(float(depth) / 16.0) + 0.999, 1.0);
+	gl_Position = vec4(pos, 0.999 - float(depth) * (1.998 / 65535.0), 1.0);
 }
 
 
@@ -41,4 +41,4 @@ out vec4 FragColor;
 
 void main() {
 	FragColor = colour;
-} 
+}

@@ -43,7 +43,7 @@ namespace zore::Texture {
         if (data)
             Free();
         stbi_set_flip_vertically_on_load(true);
-        data = stbi_load(path.c_str(), &width, &height, &channels, GetChannelCount(requested_format));
+        data = stbi_load(path.c_str(), &width, &height, &channels, Base::GetChannelCount(requested_format));
 		ENSURE(data, "Failed to load texture: " + path + ". " + stbi_failure_reason());
     }
 
@@ -53,14 +53,5 @@ namespace zore::Texture {
         width = 0;
         height = 0;
         channels = 0;
-    }
-
-    uint32_t Data::GetChannelCount(Format format) {
-        static constexpr uint32_t S_FORMAT_TO_COUNT[] = {
-            1, 2, 3, 4, // R  , RG  , RGB  , RGBA
-            1, 2, 3, 4, // R8U, RG8U, RGB8U, RGBA8U
-            1		    // R32
-        };
-        return S_FORMAT_TO_COUNT[static_cast<uint32_t>(format)];
     }
 }

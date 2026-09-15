@@ -36,9 +36,8 @@ namespace zm {
 		ALWAYS_INLINE vec4  operator* (const vec4& v) const { return vec4(rows[0].Dot(v), rows[1].Dot(v), rows[2].Dot(v), rows[3].Dot(v)); }
 		ALWAYS_INLINE mat4  operator* (const mat4& m) const {
 			mat4 result;
-			mat4 t = m.Transposed();
 			for (int r = 0; r < 4; ++r)
-				result[r] = vec4(rows[r].Dot(t[0]), rows[r].Dot(t[1]), rows[r].Dot(t[2]), rows[r].Dot(t[3]));
+				result[r] = (m[0] * rows[r].x) + (m[1] * rows[r].y) + (m[2] * rows[r].z) + (m[3] * rows[r].w);
 			return result;
 		}
 		ALWAYS_INLINE mat4& operator*=(const mat4& m) { *this = (*this) * m; return *this; }

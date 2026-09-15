@@ -41,21 +41,24 @@ namespace zm {
 			if constexpr (simd_enabled<U, 4>)
 				v = simd<T, 4>(o.v);
 			else
-				v = { o.x, o.y, o.z, o.w };
+				v = simd<T, 4>(static_cast<T>(o.x), static_cast<T>(o.y), static_cast<T>(o.z), static_cast<T>(o.w));
 		}
 		ALWAYS_INLINE vec_base(const simd<T, 4>& o) : v(o) {}
 
 	public:
 		// Comparison ---------------------
-		ALWAYS_INLINE bool operator== (const vec_base& o) const { return mask(v == o.v) == 0xFFFF; }
-		ALWAYS_INLINE bool operator!= (const vec_base& o) const { return mask(v == o.v) != 0xFFFF; }
+		ALWAYS_INLINE bool operator== (const vec_base& o) const {
+			constexpr int m = std::floating_point<T> ? 0xF : 0xFFFF;
+			return mask(v == o.v) == m;
+		}
+		ALWAYS_INLINE bool operator!= (const vec_base& o) const { return !(*this == o); }
 		// Bit Operations -----------------
 		ALWAYS_INLINE vec_base  operator>> (T s) const requires std::integral<T> { return { v >> s }; }
 		ALWAYS_INLINE vec_base& operator>>=(T s)       requires std::integral<T> { v >>= s; return *this; }
 		ALWAYS_INLINE vec_base  operator<< (T s) const requires std::integral<T> { return { v << s }; }
 		ALWAYS_INLINE vec_base& operator<<=(T s)       requires std::integral<T> { v <<= s; return *this; }
 		// Arithmetic ---------------------
-		ALWAYS_INLINE vec_base& operator+  () const { return *this; }
+		ALWAYS_INLINE vec_base  operator+  () const { return *this; }
 		ALWAYS_INLINE vec_base  operator+  (const vec_base& o) const { return { v + o.v }; }
 		ALWAYS_INLINE vec_base& operator+= (const vec_base& o) { v += o.v; return *this; }
 		ALWAYS_INLINE vec_base  operator-  () const { return -v; }

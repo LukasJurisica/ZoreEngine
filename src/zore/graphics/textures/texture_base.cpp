@@ -133,10 +133,19 @@ namespace zore::Texture {
 		return 0;
 	}
 
+	uint32_t Base::GetChannelCount(Format format) {
+		static constexpr uint32_t S_FORMAT_TO_COUNT[] = {
+			1, 2, 3, 4, // R  , RG , RGB , RGBA
+			1, 2, 3, 4, // RU , RGU, RGBU, RGBAU
+			1           // R32
+		};
+		return S_FORMAT_TO_COUNT[static_cast<uint32_t>(format)];
+	}
+
 	uint32_t Base::GetInternalFormat() {
         static constexpr uint32_t S_FORMAT_TO_INTERNAL_TYPE[] = {
-            GL_R8  , GL_RG8  , GL_RGB8  , GL_RGBA8  , // R  , RG  , RGB  , RGBA
-            GL_R8UI, GL_RG8UI, GL_RGB8UI, GL_RGBA8UI, // R8U, RG8U, RGB8U, RGBA8U
+            GL_R8  , GL_RG8  , GL_RGB8  , GL_RGBA8  , // R , RG , RGB , RGBA
+            GL_R8UI, GL_RG8UI, GL_RGB8UI, GL_RGBA8UI, // RU, RGU, RGBU, RGBAU
             GL_R32UI                                  // R32
         };
 		return S_FORMAT_TO_INTERNAL_TYPE[static_cast<uint32_t>(m_format)];
@@ -144,10 +153,18 @@ namespace zore::Texture {
 
 	uint32_t Base::GetBaseFormat() {
         static constexpr uint32_t S_FORMAT_TO_BASE_TYPE[] = {
-            GL_RED        , GL_RG        , GL_RGB        , GL_RGBA        , // R  , RG  , RGB  , RGBA
-            GL_RED_INTEGER, GL_RG_INTEGER, GL_RGB_INTEGER, GL_RGBA_INTEGER, // R8U, RG8U, RGB8U, RGBA8U
+            GL_RED        , GL_RG        , GL_RGB        , GL_RGBA        , // R , RG , RGB , RGBA
+            GL_RED_INTEGER, GL_RG_INTEGER, GL_RGB_INTEGER, GL_RGBA_INTEGER, // RU, RGU, RGBU, RGBAU
             GL_RED_INTEGER                                                  // R32
         };
 		return S_FORMAT_TO_BASE_TYPE[static_cast<uint32_t>(m_format)];
+	}
+
+	void Base::UpdateUnpackAlignment(uint32_t width) {
+		uint32_t row_bytes = width * GetChannelCount(m_format);
+		uint32_t alignment = 1;
+		while (alignment < 8 && row_bytes % (alignment * 2) == 0)
+			alignment *= 2;
+		glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
 	}
 }

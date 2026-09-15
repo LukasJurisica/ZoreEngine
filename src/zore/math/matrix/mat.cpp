@@ -40,10 +40,10 @@ namespace zm {
 		vec3 u = Cross(s, f);
 
 		return mat4(
-			vec4(s.x, u.x, -f.x, 0.f),
-			vec4(s.y, u.y, -f.y, 0.f),
-			vec4(s.z, u.z, -f.z, 0.f),
-			vec4(-Dot(s, eye), -Dot(u, eye), Dot(f, eye), 1.f)
+			vec4(s.x, s.y, s.z, -Dot(s, eye)),
+			vec4(u.x, u.y, u.z, -Dot(u, eye)),
+			vec4(-f.x, -f.y, -f.z, Dot(f, eye)),
+			vec4(0.f, 0.f, 0.f, 1.f)
 		);
 	}
 
@@ -54,8 +54,8 @@ namespace zm {
 		return mat4(
 			vec4(f / aspect, 0.f, 0.f, 0.f),
 			vec4(0.f, f, 0.f, 0.f),
-			vec4(0.f, 0.f, (farZ + nearZ) * nf, -1.0f),
-			vec4(0.f, 0.f, (2.0f * farZ * nearZ) * nf, 0.f)
+			vec4(0.f, 0.f, (farZ + nearZ) * nf, (2.0f * farZ * nearZ) * nf),
+			vec4(0.f, 0.f, -1.0f, 0.f)
 		);
 	}
 
@@ -65,10 +65,10 @@ namespace zm {
 		float fn = far - near;
 
 		return mat4(
-			vec4(2.f / rl, 0.f, 0.f, 0.f),
-			vec4(0.f, 2.f / tb, 0.f, 0.f),
-			vec4(0.f, 0.f, -2.f / fn, 0.f),
-			vec4(-(right + left) / rl, -(top + bottom) / tb, -(far + near) / fn, 1.f)
+			vec4(2.f / rl, 0.f, 0.f, -(right + left) / rl),
+			vec4(0.f, 2.f / tb, 0.f, -(top + bottom) / tb),
+			vec4(0.f, 0.f, -2.f / fn, -(far + near) / fn),
+			vec4(0.f, 0.f, 0.f, 1.f)
 		);
 	}
 }

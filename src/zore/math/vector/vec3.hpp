@@ -49,8 +49,9 @@ namespace zm {
 		ALWAYS_INLINE const T& operator[](int index) const { return data[index]; }
 		ALWAYS_INLINE T Sum() const { return x + y + z; }
 		ALWAYS_INLINE T Dot(const vec_base& v) const { return ((*this) * v).Sum(); }
-		ALWAYS_INLINE float Length() const { return std::sqrtf(static_cast<float>(Dot(*this))); }
-		ALWAYS_INLINE vec_base& Normalize() requires std::floating_point<T> { (*this) *= (1.f / Length()); return *this; }
+		using LT = std::conditional_t<(sizeof(T) <= 4), float, double>;
+		ALWAYS_INLINE LT Length() const { return std::sqrt(static_cast<LT>(Dot(*this))); }
+		ALWAYS_INLINE vec_base& Normalize() requires std::floating_point<T> { (*this) *= (T{ 1 } / Length()); return *this; }
 		ALWAYS_INLINE vec_base Cross(const vec_base& v) const { return { (y * v.z) - (z * v.y), (z * v.x) - (x * v.z), (x * v.y) - (y * v.x) }; }
 
 	public:
@@ -69,9 +70,9 @@ namespace zm {
 	template <zore::numeric T>
 	ALWAYS_INLINE T Dot(const vec_base<T, 3>& a, const vec_base<T, 3>& b) { return a.Dot(b); }
 	template <zore::numeric T>
-	ALWAYS_INLINE float Length(const vec_base<T, 3>& v) { return v.Length(); }
+	ALWAYS_INLINE auto Length(const vec_base<T, 3>& v) { return v.Length(); }
 	template <zore::numeric T>
-	ALWAYS_INLINE float Distance(const vec_base<T, 3>& a, const vec_base<T, 3>& b) { return Length(a - b); }
+	ALWAYS_INLINE auto Distance(const vec_base<T, 3>& a, const vec_base<T, 3>& b) { return Length(a - b); }
 	template <zore::numeric T>
 	ALWAYS_INLINE vec_base<T, 3> Min(const vec_base<T, 3>& a, const vec_base<T, 3>& b) { return { zm::Min(a.x, b.x), zm::Min(a.y, b.y), zm::Min(a.z, b.z) }; }
 	template <zore::numeric T>
@@ -79,7 +80,7 @@ namespace zm {
 	template <zore::numeric T>
 	ALWAYS_INLINE vec_base<T, 3> Cross(const vec_base<T, 3>& a, const vec_base<T, 3>& b) { return a.Cross(b); }
 	template <std::floating_point T>
-	ALWAYS_INLINE vec_base<T, 3> Normalize(const vec_base<T, 3>& v) { return v / v.Length(); }
+	ALWAYS_INLINE vec_base<T, 3> Normalize(const vec_base<T, 3>& v) { return v * (T{ 1 } / v.Length()); }
 	template <std::floating_point T>
 	ALWAYS_INLINE vec_base<T, 3> Floor(const vec_base<T, 3>& v) { return { std::floor(v.x), std::floor(v.y), std::floor(v.z) }; }
 	template <std::floating_point T>

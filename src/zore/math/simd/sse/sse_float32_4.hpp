@@ -51,7 +51,7 @@ namespace zm {
 		template<zore::numeric T>
 		ALWAYS_INLINE simd& operator^= (const T o) { v = _mm_xor_ps(v, _mm_set_ps1(static_cast<float>(o))); return *this; }
 		ALWAYS_INLINE simd  operator^= (const simd& o) { v = _mm_xor_ps(v, o.v); return *this; }
-		ALWAYS_INLINE simd  operator~  () { return simd(internal::bit_not(v)); }
+		ALWAYS_INLINE simd  operator~  () const { return simd(internal::bit_not(v)); }
 		// Arithmetic ---------------------
 		template<zore::numeric T>
 		ALWAYS_INLINE simd  operator+  (const T o) const { return simd(_mm_add_ps(v, _mm_set_ps1(static_cast<float>(o)))); }
@@ -80,7 +80,7 @@ namespace zm {
 		ALWAYS_INLINE simd& operator/= (const T o) { v = _mm_div_ps(v, _mm_set_ps1(static_cast<float>(o))); return *this; }
 		ALWAYS_INLINE simd& operator/= (const simd& o) { v = _mm_div_ps(v, o.v); return *this; }
 		// Other --------------------------
-		ALWAYS_INLINE float extract(int index) { return internal::extract(v, index); }
+		ALWAYS_INLINE float extract(int index) const { return internal::extract(v, index); }
 		ALWAYS_INLINE void insert(int index, float s) { v = internal::insert(v, index, s); }
 		ALWAYS_INLINE float hsum() const { return internal::hsum(v); }
 		ALWAYS_INLINE float dot(const simd& o) const { return internal::dot(v, o.v); }

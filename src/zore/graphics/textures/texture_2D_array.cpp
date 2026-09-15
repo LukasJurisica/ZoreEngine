@@ -22,6 +22,7 @@ namespace zore {
 	void Texture2DArray::Update(void* data, uint32_t offset, uint32_t count) {
 		if (data && count > 0 && m_id != GL_INVALID_NAME) {
             ENSURE(offset + count <= m_layers, "Attempted to update a texture array with invalid offset and count");
+			UpdateUnpackAlignment(m_width);
 			glTextureSubImage3D(m_id, 0, 0, 0, offset, m_width, m_height, count, GetBaseFormat(), GL_UNSIGNED_BYTE, data);
 		}
 	}

@@ -49,10 +49,12 @@ namespace zore::Texture {
 
 		static void SetNamedTextureSlot(const std::string& name, uint32_t slot);
 		static uint32_t GetNamedTextureSlot(const std::string& name);
+		static uint32_t GetChannelCount(Format format);
 
 	protected:
 		uint32_t GetInternalFormat();
 		uint32_t GetBaseFormat();
+		void UpdateUnpackAlignment(uint32_t width);
 
 	protected:
 		uint32_t m_id;

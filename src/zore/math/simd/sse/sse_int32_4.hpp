@@ -35,10 +35,10 @@ namespace zm {
 		ALWAYS_INLINE simd  operator>  (const simd& o) const { return simd(_mm_cmpgt_epi32(v, o.v)); }
 		ALWAYS_INLINE simd  operator>= (const simd& o) const { return simd(internal::bit_not(_mm_cmplt_epi32(v, o.v))); }
 		// Bit Operations -----------------
-		ALWAYS_INLINE simd  operator<< (const int32_t s) const { return simd(_mm_slli_epi32(v, s)); }
-		ALWAYS_INLINE simd  operator<<=(const int32_t s) { v = _mm_slli_epi32(v, s); return *this; }
-		ALWAYS_INLINE simd  operator>> (const int32_t s) const { return simd(_mm_srli_epi32(v, s)); }
-		ALWAYS_INLINE simd  operator>>=(const int32_t s) { v = _mm_srli_epi32(v, s); return *this; }
+		ALWAYS_INLINE simd  operator<< (const int32_t s) const { return simd(_mm_sll_epi32(v, _mm_cvtsi32_si128(s))); }
+		ALWAYS_INLINE simd  operator<<=(const int32_t s) { v = _mm_sll_epi32(v, _mm_cvtsi32_si128(s)); return *this; }
+		ALWAYS_INLINE simd  operator>> (const int32_t s) const { return simd(_mm_sra_epi32(v, _mm_cvtsi32_si128(s))); }
+		ALWAYS_INLINE simd  operator>>=(const int32_t s) { v = _mm_sra_epi32(v, _mm_cvtsi32_si128(s)); return *this; }
 		template<zore::numeric T>
 		ALWAYS_INLINE simd  operator&  (const T o) const { return simd(_mm_and_si128(v, _mm_set1_epi32(static_cast<int32_t>(o)))); }
 		ALWAYS_INLINE simd  operator&  (const simd& o) const { return simd(_mm_and_si128(v, o.v)); }
@@ -57,7 +57,7 @@ namespace zm {
 		template<zore::numeric T>
 		ALWAYS_INLINE simd& operator^= (const T o) { v = _mm_xor_si128(v, _mm_set1_epi32(static_cast<int32_t>(o))); return *this; }
 		ALWAYS_INLINE simd  operator^= (const simd& o) { v = _mm_xor_si128(v, o.v); return *this; }
-		ALWAYS_INLINE simd  operator~  () { return simd(internal::bit_not(v)); }
+		ALWAYS_INLINE simd  operator~  () const { return simd(internal::bit_not(v)); }
 		// Arithmetic ---------------------
 		template<zore::numeric T>
 		ALWAYS_INLINE simd  operator+  (const T o) const { return simd(_mm_add_epi32(v, _mm_set1_epi32(static_cast<int32_t>(o)))); }
@@ -86,8 +86,8 @@ namespace zm {
 		ALWAYS_INLINE simd& operator/= (const T o) { v = internal::div_i32(v, _mm_set1_epi32(static_cast<int32_t>(o))); return *this; }
 		ALWAYS_INLINE simd& operator/= (const simd& o) { v = internal::div_i32(v, o.v); return *this; }
 		// Other --------------------------
-		ALWAYS_INLINE int32_t extract(int index) { return internal::extract(v, index); }
-		ALWAYS_INLINE int32_t insert(int index, int32_t s) { v = internal::insert(v, index, s); }
+		ALWAYS_INLINE int32_t extract(int index) const { return internal::extract(v, index); }
+		ALWAYS_INLINE void insert(int index, int32_t s) { v = internal::insert(v, index, s); }
 		ALWAYS_INLINE int32_t hsum() const { return internal::hsum(v); }
 		ALWAYS_INLINE int32_t dot(const simd& o) const { return internal::dot(v, o.v); }
 		template<int x, int y = 0, int z = 0, int w = 0>

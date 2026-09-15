@@ -21,14 +21,20 @@
 #define SIMD_SSE ENCODE_VERSION(2, 0, 0)
 #elif defined(__SSE2__)
 #define SIMD_SSE ENCODE_VERSION(2, 0, 0)
+#else
+#define SIMD_SSE ENCODE_VERSION(0, 0, 0)
 #endif
 
-#if defined(__AVX512F__)
+#if defined(__AVX512VL__)
+#define SIMD_AVX ENCODE_VERSION(3, 1, 0)
+#elif defined(__AVX512F__)
 #define SIMD_AVX ENCODE_VERSION(3, 0, 0)
 #elif defined(__AVX2__)
 #define SIMD_AVX ENCODE_VERSION(2, 0, 0)
 #elif defined(__AVX__)
 #define SIMD_AVX ENCODE_VERSION(1, 0, 0)
+#else
+#define SIMD_AVX ENCODE_VERSION(0, 0, 0)
 #endif
 
 namespace zm {

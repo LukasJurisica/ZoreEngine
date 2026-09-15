@@ -20,8 +20,10 @@ namespace zore {
 	}
 
 	void Texture2D::Update(void* data) {
-		if (data && m_id != GL_INVALID_NAME)
+		if (data && m_id != GL_INVALID_NAME) {
+			UpdateUnpackAlignment(m_width);
 			glTextureSubImage2D(m_id, 0, 0, 0, m_width, m_height, GetBaseFormat(), GL_UNSIGNED_BYTE, data);
+		}
 	}
 
 	void Texture2D::Set(void* data, uint32_t width, uint32_t height) {

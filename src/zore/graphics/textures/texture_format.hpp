@@ -2,5 +2,5 @@
 
 namespace zore::Texture {
     
-    enum class Format { R, RG, RGB, RGBA, R8U, RG8U, RGB8U, RGBA8U, R32 };
+    enum class Format { R, RG, RGB, RGBA, RU, RGU, RGBU, RGBAU, R32 };
 }

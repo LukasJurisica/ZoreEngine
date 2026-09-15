@@ -52,7 +52,7 @@ void DemoApplication::Run() {
 	layout.Bind();
 
 	// Initialize Font
-	UI::Font& font = UI::Font::Create("assets/fonts/ZoreFont.zbt", Texture::Format::R8U);
+	UI::Font& font = UI::Font::Create("assets/fonts/ZoreFont.zbt", Texture::Format::RU);
 	Texture::Base::SetNamedTextureSlot("font", 1);
 	font.GetTextureArray().Bind("font");
 	Texture::Sampler sampler;
