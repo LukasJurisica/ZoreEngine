@@ -35,7 +35,7 @@ namespace zore {
 		static void SetVSync(bool value);
 		static void SetTopology(MeshTopology topology);
 		static void EnableColourChannels(bool r = true, bool g = true, bool b = true, bool a = true);
-
+		static void SetMultiDrawStride(uint32_t stride);
 		static void SetClearDepthValue(float depth);
 		static void SetClearStencilValue(int32_t stencil);
 		static void SetClearColour(float r, float g, float b, float a = 1.0f);
@@ -46,8 +46,8 @@ namespace zore {
 		static void DrawIndexed(uint32_t count, uint32_t offset = 0u);
 		static void DrawLinearInstanced(uint32_t vertex_count, uint32_t object_count, uint32_t vertex_offset = 0u, uint32_t instance_offset = 0u);
 		static void DrawIndexedInstanced(uint32_t index_count, uint32_t object_count, uint32_t vertex_offset = 0u, uint32_t instance_offset = 0u);
-		static void MultiDrawLinearIndirect(uint32_t command_count, uint32_t command_offset = 0u, uint32_t stride = 0u);
-		static void MultiDrawIndexedIndirect(uint32_t command_count, uint32_t command_offset = 0u, uint32_t stride = 0u);
+		static void MultiDrawLinearIndirect(uint32_t command_count, uint32_t command_offset = 0u);
+		static void MultiDrawIndexedIndirect(uint32_t command_count, uint32_t command_offset = 0u);
 
 	private:
 		static void SetGLFeature(uint32_t feature, bool& current, bool value);

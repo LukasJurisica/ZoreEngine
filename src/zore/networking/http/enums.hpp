@@ -1,6 +1,10 @@
 #pragma once
 
 namespace zore::net::http {
+	
+	enum class Method { GET, PUT, POST, DELETE, PATCH, HEAD, OPTIONS, TRACE, CONNECT };
+	
+	enum class ContentType { JSON, XML, TEXT, OCTET_STREAM };
 
     enum class Status {
         // 1xx: Informational.

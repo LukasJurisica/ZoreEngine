@@ -1,17 +1,24 @@
 #include "zore/networking/networking_manager.hpp"
 #include "zore/networking/networking_core.hpp"
 #include "zore/debug.hpp"
+#include <tlse.h>
 
 namespace zore::net {
 
 	static bool s_initialized = false;
 
 	void Manager::Init() {
+		if (s_initialized)
+			return;
+
 #ifdef PLATFORM_WINDOWS
 		WSADATA wsa_data;
 		ENSURE(WSAStartup(MAKEWORD(2, 2), &wsa_data) == 0, "Failed to initialize Winsock.");
 		ENSURE(LOBYTE(wsa_data.wVersion) == 2 && HIBYTE(wsa_data.wVersion) == 2, "Version 2.2 of Winsock is not available.");
+#else
+		signal(SIGPIPE, SIG_IGN);
 #endif
+		tls_init();
 		s_initialized = true;
 		Logger::Info("Networking Initialization Complete.");
 	}

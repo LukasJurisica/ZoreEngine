@@ -9,10 +9,29 @@ namespace zore::net {
 	//	Base Socket
 	//========================================================================
 
-	AbstractSocket::AbstractSocket(socket_t socket_id, bool blocking) : m_socket_id(socket_id), m_blocking(blocking) {}
+	AbstractSocket::AbstractSocket(socket_t socket_id, bool blocking) : m_socket_id(socket_id) {
+		SetBlocking(blocking);
+	}
+
+	AbstractSocket::AbstractSocket(AbstractSocket&& other) noexcept : m_socket_id(other.m_socket_id), m_blocking(other.m_blocking) {
+		other.m_socket_id = INVALID_SOCKET;
+	}
+
+	AbstractSocket& AbstractSocket::operator=(AbstractSocket&& other) noexcept {
+		if (this != &other)
+			Move(other);
+		return *this;
+	}
 
 	AbstractSocket::~AbstractSocket() {
 		Close();
+	}
+
+	void AbstractSocket::Move(AbstractSocket& other) {
+		Close();
+		m_socket_id = other.m_socket_id;
+		m_blocking = other.m_blocking;
+		other.m_socket_id = INVALID_SOCKET;
 	}
 
 	void AbstractSocket::SetBlocking(bool blocking) {
@@ -53,34 +72,32 @@ namespace zore::net {
 	//	Connection Socket
 	//========================================================================
 
-	static constexpr int SOCKET_TYPE_MAP[] = { SOCK_STREAM, SOCK_DGRAM };
-	static constexpr int SOCKET_PROTOCOL_MAP[] = { IPPROTO_TCP, IPPROTO_UDP };
-
-    Socket::Socket(Protocol protocol, bool blocking) : AbstractSocket(INVALID_SOCKET, blocking) {
-		m_socket_type = SOCKET_TYPE_MAP[static_cast<int>(protocol)];
-		m_socket_protocol = SOCKET_PROTOCOL_MAP[static_cast<int>(protocol)];
-        m_sequence_id = 0;
-		SetBlocking(blocking);
-    }
-
-	Socket::Socket(const Address& address, Protocol protocol, bool blocking) : AbstractSocket(INVALID_SOCKET, blocking) {
-		m_socket_type = SOCKET_TYPE_MAP[static_cast<int>(protocol)];
-		m_socket_protocol = SOCKET_PROTOCOL_MAP[static_cast<int>(protocol)];
-        m_sequence_id = 0;
-        Connect(address);
+	Socket::Socket(Protocol protocol, bool blocking) : AbstractSocket(INVALID_SOCKET, blocking), m_protocol(protocol) {
+		SetTimeout(std::chrono::milliseconds::zero());
 	}
 
-	Socket::Socket(socket_t socket_id, Protocol protocol, bool blocking) : AbstractSocket(socket_id, blocking) {
-		m_socket_type = SOCKET_TYPE_MAP[static_cast<int>(protocol)];
-		m_socket_protocol = SOCKET_PROTOCOL_MAP[static_cast<int>(protocol)];
-        m_sequence_id = 0;
-		SetBlocking(blocking);
+	Socket::Socket(socket_t socket_id, Protocol protocol, bool blocking) : AbstractSocket(socket_id, blocking), m_protocol(protocol) {
+		SetTimeout(std::chrono::milliseconds::zero());
 	}
-	
+
+	Socket::Socket(const Address& address, Protocol protocol, bool blocking) : AbstractSocket(INVALID_SOCKET, blocking), m_protocol(protocol) {
+		SetTimeout(std::chrono::milliseconds::zero());
+		Connect(address);
+	}
+
+	Socket::Socket(Socket&& other) noexcept : AbstractSocket(INVALID_SOCKET) {
+		Move(other);
+	}
+
+	Socket& Socket::operator=(Socket&& other) noexcept {
+		if (this != &other)
+			Move(other);
+		return *this;
+	}
+
 	Socket::~Socket() {
 		Close();
 	}
-
 
 	Address Socket::GetSelfAddress() const {
 		sockaddr_in address;
@@ -102,14 +119,30 @@ namespace zore::net {
 		return Address(ntohl(address.sin_addr.s_addr), ntohs(address.sin_port));
 	}
 
+	Socket::Status Socket::SetTimeout(std::chrono::milliseconds timeout) {
+		m_timeout = std::max(timeout, std::chrono::milliseconds::zero());
+		return ApplyTimeout();
+	}
+
+	Socket::Status Socket::Disconnect() {
+		Close();
+		return Status::DISCONNECTED;
+	}
+
 	Socket::Status Socket::Connect(const Address& address) {
+		Close();
+		m_sequence_id = 0;
 		if (address.IsValid() == false) {
-			Logger::Error("Unable to connect socket: Invalid address provided");
+			Logger::Error("Socket connection error: Invalid address");
 			return Status::ERROR;
 		}
-		Close();
-        m_sequence_id = 0;
-		if ((m_socket_id = socket(address.GetFamily(), m_socket_type, m_socket_protocol)) == INVALID_SOCKET) {
+
+		static constexpr int SOCKET_TYPE_MAP[] = { SOCK_STREAM, SOCK_DGRAM };
+		static constexpr int SOCKET_PROTOCOL_MAP[] = { IPPROTO_TCP, IPPROTO_UDP };
+		int socket_type = SOCKET_TYPE_MAP[static_cast<int>(m_protocol)];
+		int socket_protocol = SOCKET_PROTOCOL_MAP[static_cast<int>(m_protocol)];
+
+		if ((m_socket_id = socket(address.GetFamily(), socket_type, socket_protocol)) == INVALID_SOCKET) {
 			Logger::Error(GetLastError("socket"));
 			return Status::ERROR;
 		}
@@ -117,50 +150,55 @@ namespace zore::net {
 			Logger::Error(GetLastError("connect"));
 			return Status::ERROR;
 		}
+		if (Status status = ApplyTimeout(); status != Status::DONE)
+			return status;
 		SetBlocking(m_blocking);
-		Logger::Info("Socket connected to: " + std::string(address));
 		return Status::DONE;
 	}
 
 	Socket::Status Socket::Send(Packet& packet) {
 		if (m_socket_id == INVALID_SOCKET)
 			return Status::DISCONNECTED;
-        packet.SetHeader(0, m_sequence_id++, 1, 0);
-        return Send(packet.Data(), packet.Size());
+		packet.SetHeader(0, m_sequence_id++, 1, 0);
+		return Send(packet.Data(), packet.Size());
 	}
 
-    Socket::Status Socket::Send(const void* data, uint32_t size) {
+	Socket::Status Socket::Send(const void* data, uint32_t size) {
 		if (m_socket_id == INVALID_SOCKET)
 			return Status::DISCONNECTED;
 		if (!data || size == 0)
 			return Status::ERROR;
 
 		uint32_t sent = 0;
-        while (sent < size) {
-            int result = send(m_socket_id, static_cast<const char*>(data) + sent, size - sent, 0);
-            if (result < 0) {
-                Logger::Error(GetLastError("send"));
-                return Status::ERROR;
-            }
-            sent += result;
-        }
+		while (sent < size) {
+			int result = send(m_socket_id, static_cast<const char*>(data) + sent, size - sent, 0);
+			if (result == 0)
+				return Disconnect();
+			if (result < 0) {
+				int error_code = GetLastErrorCode();
+				Status error_type = GetErrorType(error_code);
+				Logger::Error(GetLastError("send", error_code));
+				return error_type;
+			}
+			sent += result;
+		}
 		return Status::DONE;
-    }
+	}
 
 	Socket::Status Socket::Receive(Packet& packet) {
 		if (m_socket_id == INVALID_SOCKET)
 			return Status::DISCONNECTED;
-        packet.Clear();
+		packet.Clear();
 		uint32_t recieved;
 		Status status = Receive(packet.Header(), packet.HeaderSize(), recieved);
-        if (status != Status::DONE || recieved != packet.HeaderSize())
-            return Status::ERROR;
-        uint16_t* header = packet.ParseHeader();
-        packet.Resize(header[2]);
+		if (status != Status::DONE || recieved != packet.HeaderSize())
+			return Status::ERROR;
+		uint16_t* header = packet.ParseHeader();
+		packet.Resize(header[2]);
 		return Receive(packet.Payload(), packet.PayloadSize(), recieved);
 	}
 
-    Socket::Status Socket::Receive(void* data, uint32_t size, uint32_t& recieved) {
+	Socket::Status Socket::Receive(void* data, uint32_t size, uint32_t& recieved) {
 		recieved = 0;
 		if (m_socket_id == INVALID_SOCKET)
 			return Status::DISCONNECTED;
@@ -169,18 +207,76 @@ namespace zore::net {
 
 		int result = recv(m_socket_id, static_cast<char*>(data) + recieved, size - recieved, 0);
 		if (result == 0)
-			return Status::DISCONNECTED;
-        else if (result < 0)
-            return Status::ERROR;
-        recieved += result;
-        return Status::DONE;
-    }
+			return Disconnect();
+		else if (result < 0) {
+			int error_code = GetLastErrorCode();
+			Status error_type = GetErrorType(error_code);
+			Logger::Error(GetLastError("recv", error_code));
+			return error_type;
+		}
+		recieved += result;
+		return Status::DONE;
+	}
 
-    Socket::Status Socket::GetStatus() const {
-        if (m_socket_id == INVALID_SOCKET)
-            return Status::DISCONNECTED;
-        return Status::READY;
-    }
+	bool Socket::IsReady() const {
+		return m_socket_id != INVALID_SOCKET;
+	}
+
+	void Socket::Move(Socket& other) {
+		AbstractSocket::Move(other);
+		m_protocol = other.m_protocol;
+		m_sequence_id = other.m_sequence_id;
+		m_timeout = other.m_timeout;
+		other.m_timeout = std::chrono::milliseconds::zero();
+	}
+
+	Socket::Status Socket::ApplyTimeout() {
+		if (m_socket_id == INVALID_SOCKET)
+			return Status::DONE;
+
+#if defined(PLATFORM_WINDOWS)
+		const DWORD timeout = static_cast<DWORD>(std::max<int64_t>(0, m_timeout.count()));
+		const char* timeout_ptr = reinterpret_cast<const char*>(&timeout);
+#else
+		timeval timeout;
+		timeout.tv_sec = m_timeout.count() / 1000;
+		timeout.tv_usec = (m_timeout.count() % 1000) * 1000;
+		const timeval* timeout_ptr = &timeout;
+#endif
+
+		if (setsockopt(m_socket_id, SOL_SOCKET, SO_SNDTIMEO, timeout_ptr, sizeof(timeout)) == SOCKET_ERROR) {
+			Logger::Error(GetLastError("setsockopt SO_SNDTIMEO"));
+			return Status::ERROR;
+		}
+		if (setsockopt(m_socket_id, SOL_SOCKET, SO_RCVTIMEO, timeout_ptr, sizeof(timeout)) == SOCKET_ERROR) {
+			Logger::Error(GetLastError("setsockopt SO_RCVTIMEO"));
+			return Status::ERROR;
+		}
+		return Status::DONE;
+	}
+
+	Socket::Status Socket::GetErrorType(int error_code) {
+#if defined(PLATFORM_WINDOWS)
+		switch (error_code) {
+		case WSAEWOULDBLOCK:
+			return Status::WOULD_BLOCK;
+		case WSAETIMEDOUT:
+			return Status::TIMED_OUT;
+		default:
+			return Status::ERROR;
+		}
+#else
+		switch (error_code) {
+		case EAGAIN:
+		case EWOULDBLOCK:
+			return Status::WOULD_BLOCK;
+		case ETIMEDOUT:
+			return Status::TIMED_OUT;
+		default:
+			return Status::ERROR;
+	}
+#endif
+	}
 
 	//========================================================================
 	//	Listener Socket
@@ -194,10 +290,12 @@ namespace zore::net {
 
 	void Listener::Listen(uint16_t port) {
 		Close();
+		char enable = 1;
 		if ((m_socket_id = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET) {
 			Logger::Error(GetLastError("socket"));
 			return;
 		}
+		setsockopt(m_socket_id, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(char));
 		Address address = Address::Localhost(port);
 		if (bind(m_socket_id, address.GetSockAddress(), address.GetSockAddressSize()) == SOCKET_ERROR) {
 			Logger::Error(GetLastError("bind"));
@@ -210,165 +308,15 @@ namespace zore::net {
 		Logger::Info("Socket listening on port: " + std::to_string(port));
 	}
 
-	void Listener::AcceptConnections(std::vector<Socket>& connections) {
+	void Listener::AcceptConnections(std::vector<Socket>& connections, Protocol protocol) {
 		sockaddr_storage address_storage;
 		socklen_t address_size = sizeof(address_storage);
 		sockaddr* address_storage_ptr = reinterpret_cast<sockaddr*>(&address_storage);
-		int new_socket_id = static_cast<int>(accept(m_socket_id, address_storage_ptr, &address_size));
+		socket_t new_socket_id = accept(m_socket_id, address_storage_ptr, &address_size);
 
-		//if (new_socket_id == INVALID_SOCKET)
-		//	Logger::Error(GetLastError("accept"));
-		//else
-		//	connections.emplace_back(new_socket_id, nullptr);
+		if (new_socket_id == INVALID_SOCKET)
+			Logger::Error(GetLastError("accept"));
+		else
+			connections.emplace_back(new_socket_id, protocol, false);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//#include "zore/networking/Socket.hpp"
-//#include "zore/networking/Platform.hpp"
-//#include "zore/Debug.hpp"
-//
-//namespace zore::Net {
-//
-//	//========================================================================
-//	//	An abstract generic socket class
-//	//========================================================================
-//
-//	Socket::Socket(const Address& address, Protocol protocol) : m_socket_id(INVALID_SOCKET), m_results(nullptr) {
-//		int status;
-//		addrinfo hints;
-//		memset(&hints, 0, sizeof(addrinfo));
-//
-//		hints.ai_family = AF_UNSPEC; // Allow IPv4 or IPv6
-//		static constexpr int PROTOCOL_TO_SOCKET_TYPE[] = { SOCK_STREAM, SOCK_DGRAM };
-//		hints.ai_socktype = PROTOCOL_TO_SOCKET_TYPE[static_cast<int>(protocol)];
-//		hints.ai_flags = AI_PASSIVE; // For wildcard IP address
-//		Address& address_ref = const_cast<Address&>(address);
-//
-//
-//		sizeof(sockaddr);
-//		sizeof(sockaddr_in);
-//		sizeof(sockaddr_in6);
-//
-//		// Get address info on the provided address
-//		if ((status = getaddrinfo(address_ref.GetNode(), address_ref.GetPort(), &hints, &m_results)) != 0) {
-//			Logger::Error("getaddrinfo error when connecting to " + std::string(address_ref.GetNode()) + "\n" + std::string(gai_strerror(status)));
-//			return;
-//		}
-//		// Initialize the socket file descriptor
-//		if ((m_socket_id = socket(m_results->ai_family, m_results->ai_socktype, m_results->ai_protocol)) == INVALID_SOCKET) {
-//			Logger::Error(GetLastError("socket"));
-//			return;
-//		}
-//	}
-//
-//	Socket::~Socket() {
-//		closesocket(m_socket_id);
-//	}
-//
-//	bool Socket::IsValid() {
-//		return m_socket_id != INVALID_SOCKET;
-//	}
-//
-//	//========================================================================
-//	//	An active socket, used for external connections
-//	//========================================================================
-//
-//	static int s_host_port = 3490;
-//
-//	ActiveSocket::ActiveSocket(const std::string& address, int port, Protocol protocol) : Socket(address.c_str(), port, protocol) {
-//		if (!m_results)
-//			return;
-//		// Connect to a remote port
-//		if (connect(m_socket_id, m_results->ai_addr, static_cast<int>(m_results->ai_addrlen)) == -1) {
-//			Logger::Error(GetLastError("connect"));
-//			return;
-//		}
-//		Logger::Log("Connected");
-//
-//		freeaddrinfo(m_results);
-//	}
-//
-//	std::string ActiveSocket::GetPeerName() {
-//		sockaddr address;
-//		int address_length = sizeof(address);
-//
-//		if (getpeername(m_socket_id, &address, &address_length) == -1) {
-//			Logger::Error(GetLastError("getpeername"));
-//			return "Failed to get peername";
-//		}
-//		return "TODO: Get peername from sockaddr";
-//	}
-//
-//	bool ActiveSocket::SendPacket(const void* data, int* length) {
-//		int total_sent = 0, sent = 0;
-//		const char* char_data = reinterpret_cast<const char*>(data);
-//
-//		while (total_sent < *length) {
-//			sent = send(m_socket_id, char_data + total_sent, *length - total_sent, 0);
-//			if (sent == -1)
-//				break;
-//			total_sent += sent;
-//		}
-//
-//		*length = total_sent;
-//		return (sent == -1) ? false : true;
-//	}
-//
-//	bool ActiveSocket::ReceivePacket(void* buffer, int* length) {
-//		char* char_buffer = reinterpret_cast<char*>(buffer);
-//		*length = recv(m_socket_id, char_buffer, *length, 0);
-//		return (*length == -1) ? false : true;
-//	}
-//
-//	//========================================================================
-//	//	A passive socket, used for listening for incoming connections
-//	//========================================================================
-//
-//	PassiveSocket::PassiveSocket(int port, Protocol protocol) : Socket("", port, protocol) {
-//		if (!m_results)
-//			return;
-//
-//		// Bind our socket to a port
-//		if (bind(m_socket_id, m_results->ai_addr, static_cast<int>(m_results->ai_addrlen)) == -1) {
-//			Logger::Error(GetLastError("bind"));
-//			return;
-//		}
-//
-//		// Listen for incoming connections on a port
-//		if (listen(m_socket_id, 10) == -1) {
-//			Logger::Error(GetLastError("listen"));
-//			return;
-//		}
-//		Logger::Info("Socket listening on port: " + std::to_string(port));
-//
-//		freeaddrinfo(m_results); // free the linked-list
-//	}
-//
-//	void PassiveSocket::AcceptConnections(std::vector<ActiveSocket>& connections) {
-//		sockaddr_storage address_storage;
-//		socklen_t address_size = sizeof(address_storage);
-//		sockaddr* address_storage_ptr = reinterpret_cast<sockaddr*>(&address_storage);
-//		int new_socket_id = static_cast<int>(accept(m_socket_id, address_storage_ptr, &address_size));
-//
-//		if (new_socket_id == -1)
-//			Logger::Error(GetLastError("accept"));
-//		else
-//			connections.emplace_back(new_socket_id, nullptr);
-//	}
-//}

@@ -4,7 +4,7 @@
 namespace zore {
 
 	//========================================================================
-	//	Uniform Buffer
+	//	Shader Storage Buffer
 	//========================================================================
 
 	ShaderStorageBuffer::ShaderStorageBuffer() : m_bind_point(0) {}
@@ -18,6 +18,21 @@ namespace zore {
 	}
 
 	void ShaderStorageBuffer::Bind(uint32_t bind_point) {
+		m_bind_point = bind_point;
+		Bind();
+	}
+
+	//========================================================================
+	//	Shader Storage Buffer View
+	//========================================================================
+
+	ShaderStorageBufferView::ShaderStorageBufferView(const Buffer::Base& other) : m_buffer_id(other.GetID()), m_bind_point(0) {}
+
+	void ShaderStorageBufferView::Bind() const {
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bind_point, m_buffer_id);
+	}
+
+	void ShaderStorageBufferView::Bind(uint32_t bind_point) {
 		m_bind_point = bind_point;
 		Bind();
 	}

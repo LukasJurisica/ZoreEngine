@@ -3,6 +3,8 @@
 #include <zore/ui.hpp>
 #include <zore/debug.hpp>
 
+#include <zore/networking/secure_socket.hpp>
+
 using namespace zore;
 
 static bool s_display_console = false;
@@ -45,6 +47,50 @@ void DemoApplication::Run() {
 	RenderEngine::SetClearMode({ BufferType::COLOUR, BufferType::DEPTH });
 	RenderEngine::SetTopology(MeshTopology::TRIANGLE_STRIP);
 	RenderEngine::SetDepthTest(DepthTest::LESS);
+
+	net::Address address = net::Address::Resolve(
+		"www.google.com",
+		443,
+		net::Protocol::TCP
+	);
+
+	net::SecureSocket socket(address);
+
+	const std::string request =
+		"GET / HTTP/1.1\r\n"
+		"Host: www.google.com\r\n"
+		"Connection: close\r\n"
+		"\r\n";
+
+	if (socket.Send(request.data(), request.size()) !=
+		net::Socket::Status::DONE) {
+		Logger::Error("HTTPS request failed to send");
+	}
+
+	std::string response;
+	char buffer[4096];
+
+	while (true) {
+		uint32_t received = 0;
+
+		const auto status = socket.Receive(
+			buffer,
+			sizeof(buffer),
+			received
+		);
+
+		if (status == net::Socket::Status::DONE) {
+			response.append(buffer, received);
+			continue;
+		}
+
+		if (status != net::Socket::Status::DISCONNECTED)
+			Logger::Error("HTTPS response failed");
+
+		break;
+	}
+
+	Logger::Info(response);
 
 	m_panel_shader.SetSource("default_ui_panel.glsl").Compile();
 	m_text_shader.SetSource("default_ui_text.glsl").Compile();

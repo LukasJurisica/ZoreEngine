@@ -12,7 +12,7 @@ namespace zore {
 	public:
 		VertexBuffer(bool instanced = false);
 		VertexBuffer(const void_span& span, bool instanced = false);
-		VertexBuffer(const void* data, size_t size, size_t stride = 0u, bool instanced = false);
+		VertexBuffer(const void* data, size_t size, size_t stride, bool instanced = false);
 		VertexBuffer(VertexBuffer&&) = default;
 		VertexBuffer& operator=(VertexBuffer&&) = default;
 		~VertexBuffer() = default;

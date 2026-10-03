@@ -17,6 +17,7 @@ namespace zore {
 		UniformBuffer& operator=(UniformBuffer&&) = default;
 		~UniformBuffer() = default;
 
+		using Base::Set;
 		void Bind() const;
 		void Bind(uint32_t bind_point);
 

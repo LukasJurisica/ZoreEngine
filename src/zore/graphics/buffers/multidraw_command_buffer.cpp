@@ -1,4 +1,5 @@
 #include "zore/graphics/buffers/multidraw_command_buffer.hpp"
+#include "zore/graphics/render_engine.hpp"
 #include <glad/glad.h>
 
 namespace zore::multidraw {
@@ -13,11 +14,21 @@ namespace zore::multidraw {
 	//	Multidraw Command Buffer
 	//========================================================================
 
-	CommandBuffer::CommandBuffer(const void_span& span) : Base(span) {}
+	CommandBuffer::CommandBuffer(const void_span& span) : Base(span), m_stride(span.element_size()) {}
 
-	CommandBuffer::CommandBuffer(const void* data, size_t size) : Base(data, size) {}
+	CommandBuffer::CommandBuffer(const void* data, size_t size, size_t stride) : Base(data, size), m_stride(stride) {}
+
+	void CommandBuffer::Set(const void_span& span) {
+		Set(span.data(), span.size_bytes(), span.element_size());
+	}
+
+	void CommandBuffer::Set(const void* data, size_t size, size_t stride) {
+		m_stride = stride;
+		Base::Set(data, size);
+	}
 
 	void CommandBuffer::Bind() const {
+		RenderEngine::SetMultiDrawStride(m_stride);
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, GetID());
 	}
 }

@@ -9,13 +9,9 @@ namespace zore {
 
 	VertexBuffer::VertexBuffer(bool instanced) : m_stride(0), m_instance(instanced ? 1 : 0) {}
 
-	VertexBuffer::VertexBuffer(const void_span& span, bool instanced) {
-		Set(span);
-	}
+	VertexBuffer::VertexBuffer(const void_span& span, bool instanced) : Base(span), m_stride(span.element_size()), m_instance(instanced ? 1 : 0) {}
 
-	VertexBuffer::VertexBuffer(const void* data, size_t size, size_t stride, bool instanced) : m_instance(instanced ? 1 : 0) {
-		Set(data, size, stride);
-	}
+	VertexBuffer::VertexBuffer(const void* data, size_t size, size_t stride, bool instanced) : Base(data, size), m_stride(stride), m_instance(instanced ? 1 : 0) {}
 
 	void VertexBuffer::Set(const void_span& span) {
 		Set(span.data(), span.size_bytes(), span.element_size());

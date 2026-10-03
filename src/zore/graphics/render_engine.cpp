@@ -15,6 +15,7 @@ namespace zore {
 	static uint32_t s_topology = GL_TRIANGLES;
 	static uint32_t s_index_type = GL_UNSIGNED_INT;
 	static uint64_t s_index_size = sizeof(uint32_t);
+	static uint32_t s_multi_draw_stride = 0u;
 	static std::string s_shader_version;
 
 	//========================================================================
@@ -184,6 +185,10 @@ namespace zore {
 		glColorMask(r, g, b, a);
 	}
 
+	void RenderEngine::SetMultiDrawStride(uint32_t stride) {
+		s_multi_draw_stride = stride;
+	}
+
 	void RenderEngine::Clear() {
 		glClear(s_clear_mode);
 	}
@@ -208,15 +213,13 @@ namespace zore {
 			glDrawElementsInstancedBaseInstance(s_topology, index_count, s_index_type, GetIndexOffset(vertex_offset), object_count, instance_offset);
 	}
 
-	void RenderEngine::MultiDrawLinearIndirect(uint32_t command_count, uint32_t command_offset, uint32_t stride) {
-		stride = stride ? stride : static_cast<uint32_t>(sizeof(multidraw::LinearCommand));
+	void RenderEngine::MultiDrawLinearIndirect(uint32_t command_count, uint32_t command_offset) {
 		if (command_count > 0)
-			glMultiDrawArraysIndirect(s_topology, GetCommandOffset(command_offset, stride), command_count, stride);
+			glMultiDrawArraysIndirect(s_topology, GetCommandOffset(command_offset, s_multi_draw_stride), command_count, s_multi_draw_stride);
 	}
 
-	void RenderEngine::MultiDrawIndexedIndirect(uint32_t command_count, uint32_t command_offset, uint32_t stride) {
-		stride = stride ? stride : static_cast<uint32_t>(sizeof(multidraw::IndexedCommand));
+	void RenderEngine::MultiDrawIndexedIndirect(uint32_t command_count, uint32_t command_offset) {
 		if (command_count > 0)
-			glMultiDrawElementsIndirect(s_topology, s_index_type, GetCommandOffset(command_offset, stride), command_count, stride);
+			glMultiDrawElementsIndirect(s_topology, s_index_type, GetCommandOffset(command_offset, s_multi_draw_stride), command_count, s_multi_draw_stride);
 	}
 }

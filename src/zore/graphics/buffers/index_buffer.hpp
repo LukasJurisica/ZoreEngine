@@ -17,6 +17,7 @@ namespace zore {
 		IndexBuffer& operator=(IndexBuffer&&) = default;
 		~IndexBuffer() = default;
 
+		using Base::Set;
 		void Bind() const;
 	};
 }

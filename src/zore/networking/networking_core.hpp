@@ -26,6 +26,7 @@
 #elif defined(PLATFORM_LINUX)
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netdb.h>
 #include <errno.h>
 #define INVALID_SOCKET -1
@@ -34,12 +35,18 @@
 
 namespace zore::net {
 
-	static inline std::string GetLastError(const std::string& function) {
+	static inline int GetLastErrorCode() {
 #if defined(PLATFORM_WINDOWS)
-		int error_code = WSAGetLastError();
+		return WSAGetLastError();
+#else
+		return errno;
+#endif
+	}
+
+	static inline std::string GetLastError(const std::string& function, int error_code = GetLastErrorCode()) {
+#if defined(PLATFORM_WINDOWS)
 		std::string error_message = zore::WindowsException::GetErrorString(error_code);
 #elif defined(PLATFORM_LINUX)
-		int error_code = errno;
 		std::string error_message(' ', strerrorlen_s(error_code));
 		strerror_s(error_message.data(), error_message.length(), error_code);
 #endif

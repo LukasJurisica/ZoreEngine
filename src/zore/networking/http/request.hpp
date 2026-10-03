@@ -1,14 +1,12 @@
 #pragma once
 
-#include <unordered_map>
+#include "zore/networking/http/enums.hpp"
+#include "zore/structures/string_unordered_map.hpp"
 #include <string>
 
 namespace zore::net::http {
 
     class Request {
-    public:
-        enum class Method { GET, PUT, POST, DELETE, PATCH, HEAD, OPTIONS, TRACE, CONNECT };
-
     public:
         Request(Method method, const std::string& uri);
         ~Request() = default;
@@ -16,12 +14,12 @@ namespace zore::net::http {
 		Method GetMethod() const { return m_method; }
 		void SetMethod(Method method) { m_method = method; }
         void SetField(const std::string& key, const std::string& value, bool overwrite = true);
-        void SetBody(const std::string& body);
+        void SetBody(const std::string& body, ContentType content_type = ContentType::TEXT);
         std::string Build() const;
 
     private:
-        std::unordered_map<std::string, std::string> m_fields;
-		std::string m_uri;
+        zore::string_unordered_map<std::string> m_fields;
+        std::string m_uri;
         std::string m_body;
         Method m_method;
     };

@@ -33,11 +33,11 @@ namespace zore {
 
 		S allocate(S size) {
 			for (auto it = m_free_regions.rbegin(); it != m_free_regions.rend(); ++it) {
-				Region r = *it;
+				region r = *it;
 				if (r.size >= size) {
 					m_free_regions.erase(std::next(it).base());
 					if (r.size > size)
-						Free(r.offset + size, r.size - size);
+						free(r.offset + size, r.size - size);
 					return r.offset;
 				}
 			}
@@ -66,13 +66,15 @@ namespace zore {
 				}
 			}
 
-			S new_offset = Allocate(new_size);
+			S new_offset = allocate(new_size);
 			std::memcpy(&m_data[new_offset], &m_data[old_offset], old_size * sizeof(T));
 			free(old_offset, old_size);
 			return new_offset;
 		}
 
 		void free(S offset, S size) {
+			if (size == 0)
+				return;
 			S begin = offset;
 			S end = offset + size;
 

@@ -15,5 +15,5 @@ struct sockaddr_storage;
 struct sockaddr;
 
 namespace zore::net {
-	enum class Protocol { TCP, UDP };
+	enum class Protocol : uint8_t { TCP, UDP };
 }

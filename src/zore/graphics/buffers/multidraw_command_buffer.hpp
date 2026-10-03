@@ -30,13 +30,19 @@ namespace zore::multidraw {
 	//========================================================================
 
 	class CommandBuffer : public Buffer::Base {
+	public:
 		CommandBuffer() = default;
 		CommandBuffer(const void_span& span);
-		CommandBuffer(const void* data, size_t size);
+		CommandBuffer(const void* data, size_t size, size_t stride);
 		CommandBuffer(CommandBuffer&&) = default;
 		CommandBuffer& operator=(CommandBuffer&&) = default;
 		~CommandBuffer() = default;
 
+		void Set(const void_span& span);
+		void Set(const void* data, size_t size, size_t stride);
 		void Bind() const;
+
+	private:
+		uint32_t m_stride = 0u;
 	};
 }

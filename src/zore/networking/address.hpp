@@ -10,15 +10,28 @@ namespace zore::net {
 	public:
 		friend class Socket;
 		enum class Family { INVALID = -1, IPv4, IPv6 };
+		enum class HostType { NONE = -1, IPv4, IPv6, DNS };
 
 	public:
 		Address(uint32_t ip, uint16_t port);
 		Address(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port);
-		//Address(const uint8_t ip[16], uint16_t port);
+		Address(const uint8_t ip[16], uint16_t port);
 		Address(const Address& other);
+		Address(Address&& other) noexcept;
 		Address& operator=(const Address& other);
-		operator std::string() const;
+		Address& operator=(Address&& other) noexcept;
 		~Address();
+
+	private:
+		Address() = default;
+		Address(const sockaddr_storage* storage);
+
+		void Copy(const Address& other);
+		void Move(Address& other);
+		void Clear();
+
+	public:
+		operator std::string() const;
 
 		static Address Localhost(uint16_t port);
 		static Address Local();
@@ -31,12 +44,11 @@ namespace zore::net {
 		int GetFamily() const;
 		const sockaddr* GetSockAddress() const;
 		sockaddr_length_t GetSockAddressSize() const;
+		const std::string& GetHostname() const;
+		HostType GetHostType() const;
 		friend std::ostream& operator<<(std::ostream& os, const Address& address);
 
 	private:
-		Address() = default;
-		Address(const sockaddr_storage* storage);
-
 		void Init(Family family = Family::INVALID, const sockaddr_storage* storage = nullptr);
 		void InitIPv4(uint32_t ip, uint16_t port);
 		void InitIPv6(const uint8_t ip[16], uint16_t port);
@@ -45,7 +57,9 @@ namespace zore::net {
 		static inline Family ConvertFamily(int family);
 
 	private:
+		std::string m_hostname;
 		sockaddr_storage* m_storage = nullptr;
 		Family m_family = Family::INVALID;
+		HostType m_host_type = HostType::NONE;
 	};
 }

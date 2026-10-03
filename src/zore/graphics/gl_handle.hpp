@@ -7,7 +7,7 @@ namespace zore {
 	class GLHandleRegistry {
 	public:
 		GLHandleRegistry(void (*deleter)(uint32_t&));
-		~GLHandleRegistry() = default;
+		~GLHandleRegistry();
 
 		object_pool<uint32_t, uint32_t>* operator->() { return &m_pool; }
 		const object_pool<uint32_t, uint32_t>* operator->() const { return &m_pool; }

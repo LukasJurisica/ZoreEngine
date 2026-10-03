@@ -1,47 +1,92 @@
 #include "zore/networking/http/client.hpp"
 #include "zore/networking/networking_core.hpp"
+#include "zore/networking/secure_socket.hpp"
+#include "zore/utils/string.hpp"
 #include "zore/debug.hpp"
+#include <array>
 
-#define MAX_RESPONSE_SIZE 1024
+#define MAX_RESPONSE_SIZE 4096
 
 namespace zore::net::http {
 
-	Client::Client() : m_socket(Protocol::TCP, true) {}
+	Client::Client() : m_socket(nullptr), m_scheme(Scheme::HTTP), m_port(0), m_connection(Connection::CLOSE), m_timeout(0) {}
 
-	Client::Client(const std::string& host, uint16_t port) : m_socket(Protocol::TCP, true) {
-		m_host = host;
-		m_socket.Connect(Address::Resolve(host, port, Protocol::TCP));
+	Client::Client(const std::string& host, Scheme scheme, uint16_t port) : m_socket(nullptr), m_connection(Connection::CLOSE), m_timeout(0) {
+		Connect(host, scheme, port);
 	}
 
-	bool Client::Connect(const std::string& host, uint16_t port) {
+	void Client::SetTimeout(std::chrono::milliseconds timeout) {
+		m_timeout = timeout;
+		if (m_socket)
+			m_socket->SetTimeout(timeout);
+	}
+
+	bool Client::Connect(const std::string& host, Scheme scheme, uint16_t port) {
+		if (host.empty())
+			return false;
+		if (port == 0)
+			port = (scheme == Scheme::HTTPS) ? 443 : 80;
 		m_host = host;
-		return m_socket.Connect(Address::Resolve(host, port, Protocol::TCP)) == Socket::Status::DONE;
+		m_scheme = scheme;
+		m_port = port;
+
+		if (scheme == Scheme::HTTPS)
+			m_socket = std::make_unique<SecureSocket>(Protocol::TCP, true);
+		else
+			m_socket = std::make_unique<Socket>(Protocol::TCP, true);
+		m_socket->SetTimeout(m_timeout);
+
+		Address address = Address::Resolve(host, port, Protocol::TCP);
+		if (address.IsValid())
+			if (m_socket->Connect(address) == Socket::Status::DONE)
+				return true;
+		Disconnect();
+		return false;
 	}
 
 	Response Client::Make(Request request) {
-		if (m_socket.GetStatus() == Socket::Status::READY) {
+		Response response(request.GetMethod());
+		if (m_socket && m_socket->IsReady()) {
 
-			request.SetField("Host", m_host, false);
-			if (request.GetMethod() == Request::Method::POST)
-				request.SetField("Content-Type", "application/x-www-form-urlencoded", false);
+			request.SetField("Host", std::format("{}:{}", m_host, m_port), false);
+			request.SetField("Connection", m_connection == Connection::CLOSE ? "close" : "keep-alive");
 			std::string req = request.Build();
 
-			if (m_socket.Send(req.data(), req.size()) != Socket::Status::DONE)
-				Logger::Error(GetLastError("send"));
 
-			std::string response;
-			char buffer[MAX_RESPONSE_SIZE];
-			uint32_t response_size;
-			while (m_socket.Receive(buffer, MAX_RESPONSE_SIZE, response_size) == Socket::Status::DONE)
-				response += std::string(buffer, response_size);
-			return Response(response);
+			if (m_socket->Send(req.data(), req.size()) != Socket::Status::DONE) {
+				Logger::Error("HTTP request failed: Failed to send request");
+				return response;
+			}
+
+			std::array<char, MAX_RESPONSE_SIZE> buffer;
+			while (true) {
+				uint32_t response_size;
+				const Socket::Status status = m_socket->Receive(buffer.data(), MAX_RESPONSE_SIZE, response_size);
+
+				if (status == Socket::Status::DONE) {
+					if (response.Append(buffer.data(), response_size))
+						return response;
+				}
+				else if (status == Socket::Status::DISCONNECTED) {
+					break;
+				}
+				else if (status == Socket::Status::TIMED_OUT) {
+					Logger::Error("HTTP request failed: Server timed out");
+					return response;
+				}
+				else {
+					Logger::Error("HTTP request failed: Failed to receive response");
+					return response;
+				}
+			}
+			return response;
 		}
-
-		return Response("Failed to complete request");
+		Logger::Error("HTTP request failed: Socket not connected or unavailable");
+		return response;
 	}
 
 	void Client::Disconnect() {
-		m_socket.Close();
+		m_socket.reset();
 		m_host.clear();
 	}
-} 
+}

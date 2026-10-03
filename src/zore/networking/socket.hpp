@@ -4,6 +4,7 @@
 #include "zore/networking/packet.hpp"
 #include "zore/networking/networking_types.hpp"
 #include <vector>
+#include <chrono>
 
 namespace zore::net {
 
@@ -14,11 +15,17 @@ namespace zore::net {
 	class AbstractSocket {
 	public:
 		void SetBlocking(bool blocking);
-		void Close();
+		virtual void Close();
 
 	protected:
 		AbstractSocket(socket_t socket_id, bool blocking = true);
+		AbstractSocket(const AbstractSocket&) = delete;
+		AbstractSocket(AbstractSocket&& other) noexcept;
+		AbstractSocket& operator=(const AbstractSocket&) = delete;
+		AbstractSocket& operator=(AbstractSocket&& other) noexcept;
 		virtual ~AbstractSocket();
+
+		void Move(AbstractSocket& other);
 
 	protected:
 		socket_t m_socket_id;
@@ -31,33 +38,47 @@ namespace zore::net {
 
 	class Socket : public AbstractSocket {
     public:
-        enum class Status {
+        enum class Status : uint8_t {
             DONE,
-            READY,
+            WOULD_BLOCK,
+			TIMED_OUT,
             DISCONNECTED,
             ERROR
         };
-    
+
 	public:
         Socket(Protocol protocol, bool blocking = false);
-		Socket(const Address& address, Protocol protocol, bool blocking = false);
 		Socket(socket_t socket_id, Protocol protocol, bool blocking = false);
-		~Socket();
+		Socket(const Address& address, Protocol protocol, bool blocking = false);
+		Socket(const Socket&) = delete;
+		Socket(Socket&& other) noexcept;
+		Socket& operator=(const Socket&) = delete;
+		Socket& operator=(Socket&& other) noexcept;
+		virtual ~Socket();
 
 		Address GetSelfAddress() const;
 		Address GetPeerAddress() const;
 
-		Status Connect(const Address& address);
-		Status Send(Packet& packet);
-		Status Send(const void* data, uint32_t size);
-		Status Receive(Packet& packet);
-		Status Receive(void* data, uint32_t size, uint32_t& recieved);
-        Status GetStatus() const;
+		Status SetTimeout(std::chrono::milliseconds timeout);
+		virtual Status Disconnect();
+		virtual Status Connect(const Address& address);
+		virtual Status Send(Packet& packet);
+		virtual Status Send(const void* data, uint32_t size);
+		virtual Status Receive(Packet& packet);
+		virtual Status Receive(void* data, uint32_t size, uint32_t& recieved);
+		bool IsReady() const;
+
+	protected:
+		void Move(Socket& other);
 
 	private:
-		int m_socket_type;
-		int m_socket_protocol;
-        uint32_t m_sequence_id = 0;
+		Status ApplyTimeout();
+		static Status GetErrorType(int error_code);
+
+	protected:
+		std::chrono::milliseconds m_timeout;
+		uint32_t m_sequence_id = 0;
+		Protocol m_protocol;
 	};
 
 	//========================================================================
@@ -70,6 +91,6 @@ namespace zore::net {
 		~Listener();
 
 		void Listen(uint16_t port);
-		void AcceptConnections(std::vector<Socket>& connections);
+		void AcceptConnections(std::vector<Socket>& connections, Protocol protocol);
 	};
 }

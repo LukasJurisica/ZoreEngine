@@ -23,10 +23,12 @@ namespace zore::Buffer {
 
 	public:
 		uint32_t GetID() const;
-		void Set(const void_span& span);
-		void Set(const void* data, size_t size);
 		void Update(const void* data, size_t size, size_t offset = 0u);
 		static void Delete(uint32_t& id);
+
+	protected:
+		void Set(const void_span& span);
+		void Set(const void* data, size_t size);
 
 	protected:
 		uint32_t m_index;

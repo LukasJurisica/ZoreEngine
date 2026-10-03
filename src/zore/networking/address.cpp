@@ -10,35 +10,72 @@
 
 namespace zore::net {
 
-	Address::Address(const sockaddr_storage* storage) {
-		Init(Family::INVALID, storage);
-	}
-
 	Address::Address(uint32_t ip, uint16_t port) {
 		InitIPv4(ip, port);
 	}
 
 	Address::Address(uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint16_t port) {
-		uint32_t ip = (static_cast<uint32_t>(a) << 24) |
+		uint32_t ip =
+			(static_cast<uint32_t>(a) << 24) |
 			(static_cast<uint32_t>(b) << 16) |
-			(static_cast<uint32_t>(c) << 8) |
-			(static_cast<uint32_t>(d) << 0);
+			(static_cast<uint32_t>(c) << 8)  |
+			(static_cast<uint32_t>(d) << 0)  ;
 		InitIPv4(ip, port);
 	}
 
-	//Address::Address(const uint8_t ip[16], uint16_t port) {
-	//	InitIPv6(ip, port);
-	//}
+	Address::Address(const uint8_t ip[16], uint16_t port) {
+		InitIPv6(ip, port);
+	}
 
 	Address::Address(const Address& other) {
-		if (other.m_storage)
-			Init(other.m_family, other.m_storage);
+		Copy(other);
+	}
+
+	Address::Address(Address&& other) noexcept {
+		Move(other);
 	}
 
 	Address& Address::operator=(const Address& other) {
 		if (this != &other)
-			Init(other.m_family, other.m_storage);
+			Copy(other);
 		return *this;
+	}
+
+	Address& Address::operator=(Address&& other) noexcept {
+		if (this != &other)
+			Move(other);
+		return *this;
+	}
+
+	Address::~Address() {
+		Clear();
+	}
+
+	Address::Address(const sockaddr_storage* storage) {
+		Init(Family::INVALID, storage);
+	}
+
+	void Address::Copy(const Address& other) {
+		Init(other.m_family, other.m_storage);
+		m_hostname = other.m_hostname;
+		m_host_type = other.m_host_type;
+	}
+
+	void Address::Move(Address& other) {
+		Clear();
+		m_storage = other.m_storage;
+		m_family = other.m_family;
+		m_hostname = other.m_hostname;
+		m_host_type = other.m_host_type;
+		other.Clear();
+	}
+
+	void Address::Clear() {
+		delete m_storage;
+		m_storage = nullptr;
+		m_family = Family::INVALID;
+		m_hostname.clear();
+		m_host_type = HostType::NONE;
 	}
 
 	Address::operator std::string() const {
@@ -58,11 +95,6 @@ namespace zore::net {
 		return "Invalid Address";
 	}
 
-	Address::~Address() {
-		delete m_storage;
-		m_storage = nullptr;
-	}
-
 	Address Address::Localhost(uint16_t port) {
 		return Address(127, 0, 0, 1, port);
 	}
@@ -76,8 +108,8 @@ namespace zore::net {
 
 	Address Address::Public() {
 		using namespace zore::net::http;
-		Client client("www.sfml-dev.org", 80);
-		Request request(Request::Method::GET, "/ip-provider.php");
+		Client client("www.sfml-dev.org", Scheme::HTTP, 80);
+		Request request(Method::GET, "/ip-provider.php");
 		Response response = client.Make(request);
 		return Parse(response.GetBody(), 0);
 	}
@@ -87,8 +119,11 @@ namespace zore::net {
 			return Localhost(port);
 
 		Address address;
-		if (address.ParseIPv4(ip, port) || address.ParseIPv6(ip, port))
+		if (address.ParseIPv4(ip, port) || address.ParseIPv6(ip, port)) {
+			address.m_hostname = ip;
+			address.m_host_type = (address.m_family == Family::IPv4) ? HostType::IPv4 : HostType::IPv6;
 			return address;
+		}
 		Logger::Error(std::format("Failed to parse address: ({}:{})", ip, port));
 		return Address();
 	}
@@ -100,15 +135,19 @@ namespace zore::net {
 		addrinfo* results = nullptr;
 
 		static constexpr int PROTOCOL_TO_SOCKET_TYPE[] = { SOCK_STREAM, SOCK_DGRAM };
+		static constexpr int PROTOCOL_TO_SOCKET_PROTOCOL[] = { IPPROTO_TCP, IPPROTO_UDP };
 		hints.ai_socktype = PROTOCOL_TO_SOCKET_TYPE[static_cast<int>(protocol)];
+		hints.ai_protocol = PROTOCOL_TO_SOCKET_PROTOCOL[static_cast<int>(protocol)];
 		hints.ai_family = AF_UNSPEC;
-		hints.ai_flags = AI_PASSIVE;
+		hints.ai_flags = 0;
 
 		Address address;
-		if ((status = getaddrinfo(hostname.c_str(), std::to_string(port).c_str(), &hints, &results)) == 0)
+		if ((status = getaddrinfo(hostname.data(), std::to_string(port).c_str(), &hints, &results)) == 0)
 			address.Init(ConvertFamily(results->ai_family), sockaddr_any(results->ai_addr));
 		else
 			Logger::Error(std::format("getaddrinfo error when connecting to: ({}:{})\n{}", hostname, port, gai_strerror(status)));
+		address.m_hostname = hostname;
+		address.m_host_type = HostType::DNS;
 
 		if (results)
 			freeaddrinfo(results);
@@ -147,18 +186,26 @@ namespace zore::net {
 		}
 	}
 
+	const std::string& Address::GetHostname() const {
+		return m_hostname;
+	}
+
+	Address::HostType Address::GetHostType() const {
+		return m_host_type;
+	}
+
 	std::ostream& operator<<(std::ostream& os, const Address& address) {
 		return os << std::string(address);
 	}
 
 	void Address::Init(Family family, const sockaddr_storage* storage) {
+		Clear();
 		m_family = family;
-		if (m_storage == nullptr)
-			m_storage = new sockaddr_storage();
+		if (family == Family::INVALID)
+			return;
+		m_storage = new sockaddr_storage{};
 		if (storage)
 			*m_storage = *storage;
-		else
-			std::memset(m_storage, 0, sizeof(sockaddr_storage));
 	}
 
 	void Address::InitIPv4(uint32_t ip, uint16_t port) {

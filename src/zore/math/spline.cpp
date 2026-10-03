@@ -1,13 +1,12 @@
 #include "zore/math/Spline.hpp"
+#include "zore/math/matrix/mat4.hpp"
 #include "zore/Debug.hpp"
-
-#include <glm/mat4x4.hpp>
 
 namespace zm {
 
-	Spline::Spline(std::vector<glm::vec2>& points) {
-		glm::mat4 m;
-		glm::vec4 y;
+	Spline::Spline(std::vector<zm::vec2>& points) {
+		zm::mat4 m;
+		zm::vec4 y;
 		for (int i = 0; i < 4; i++) {
 			float x = points[i].x;
 			y[i] = points[i].y;
@@ -17,6 +16,6 @@ namespace zm {
 			m[3][i] = x * x * x;
 		}
 
-		y = glm::inverse(m) * y;
+		y = zm::Inverse(m) * y;
 	}
 }

@@ -1,18 +1,18 @@
 #pragma once
 #include <vector>
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
+#include "zore/math/vector/vec2.hpp"
+#include "zore/math/vector/vec4.hpp"
 
 namespace zm {
 
 	struct Curve {
-		glm::vec4 exponents;
+		zm::vec4 exponents;
 		float threshold;
 	};
 
 	class Spline {
 	public:
-		Spline(std::vector<glm::vec2>& points);
+		Spline(std::vector<zm::vec2>& points);
 
 	private:
 		std::vector<Curve> curves;
