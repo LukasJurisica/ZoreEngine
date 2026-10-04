@@ -2,7 +2,6 @@
 #include <zore/io/file_manager.hpp>
 #include <zore/ui.hpp>
 #include <zore/debug.hpp>
-
 #include <zore/networking/secure_socket.hpp>
 
 using namespace zore;
@@ -62,8 +61,7 @@ void DemoApplication::Run() {
 		"Connection: close\r\n"
 		"\r\n";
 
-	if (socket.Send(request.data(), request.size()) !=
-		net::Socket::Status::DONE) {
+	if (socket.Send(request.data(), request.size()).status != net::Socket::Status::DONE) {
 		Logger::Error("HTTPS request failed to send");
 	}
 
@@ -71,25 +69,15 @@ void DemoApplication::Run() {
 	char buffer[4096];
 
 	while (true) {
-		uint32_t received = 0;
-
-		const auto status = socket.Receive(
-			buffer,
-			sizeof(buffer),
-			received
-		);
-
-		if (status == net::Socket::Status::DONE) {
-			response.append(buffer, received);
+		const net::Socket::Result result = socket.Receive(buffer, sizeof(buffer));
+		if (result.status == net::Socket::Status::DONE) {
+			response.append(buffer, result.bytes_transferred);
 			continue;
 		}
-
-		if (status != net::Socket::Status::DISCONNECTED)
+		if (result.status != net::Socket::Status::DISCONNECTED)
 			Logger::Error("HTTPS response failed");
-
 		break;
 	}
-
 	Logger::Info(response);
 
 	m_panel_shader.SetSource("default_ui_panel.glsl").Compile();

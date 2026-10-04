@@ -1,5 +1,6 @@
 #include "zore/networking/networking_manager.hpp"
 #include "zore/networking/networking_core.hpp"
+#include "zore/networking/socket.hpp"
 #include "zore/debug.hpp"
 #include <tlse.h>
 
@@ -34,7 +35,7 @@ namespace zore::net {
 	std::string Manager::GetHostName() {
 		char buffer[256];
 		if (gethostname(buffer, 256) == -1) {
-			Logger::Error(GetLastError("gethostname"));
+			Logger::Error(Socket::GetLastError("gethostname"));
 			return "Failed to get hostname";
 		}
 		return std::string(buffer);

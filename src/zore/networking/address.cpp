@@ -2,6 +2,7 @@
 #include "zore/networking/networking_core.hpp"
 #include "zore/networking/socket.hpp"
 #include "zore/networking/http/client.hpp"
+#include "zore/utils/memory.hpp"
 #include "zore/debug.hpp"
 
 #define sockaddr_ipv4(x) reinterpret_cast<sockaddr_in*>(x)
@@ -62,12 +63,14 @@ namespace zore::net {
 	}
 
 	void Address::Move(Address& other) {
-		Clear();
+		delete m_storage;
 		m_storage = other.m_storage;
 		m_family = other.m_family;
-		m_hostname = other.m_hostname;
 		m_host_type = other.m_host_type;
-		other.Clear();
+		m_hostname = std::move(other.m_hostname);
+		other.m_storage = nullptr;
+		other.m_family = Family::INVALID;
+		other.m_host_type = HostType::NONE;
 	}
 
 	void Address::Clear() {
@@ -100,7 +103,7 @@ namespace zore::net {
 	}
 
 	Address Address::Local() {
-		Socket sock(Protocol::UDP);
+		Socket sock(Protocol::UDP, true);
 		if (sock.Connect({8, 8, 8, 8, 53}) != Socket::Status::DONE)
 			return Address(nullptr);
 		return sock.GetSelfAddress();
@@ -115,10 +118,10 @@ namespace zore::net {
 	}
 
 	Address Address::Parse(const std::string& ip, uint16_t port) {
-		if (ip.length() == 0)
-			return Localhost(port);
-
 		Address address;
+		if (ip.length() == 0)
+			return address;
+
 		if (address.ParseIPv4(ip, port) || address.ParseIPv6(ip, port)) {
 			address.m_hostname = ip;
 			address.m_host_type = (address.m_family == Family::IPv4) ? HostType::IPv4 : HostType::IPv6;
@@ -132,7 +135,7 @@ namespace zore::net {
 		int status;
 		addrinfo hints;
 		memset(&hints, 0, sizeof(addrinfo));
-		addrinfo* results = nullptr;
+		unique_pointer<addrinfo, freeaddrinfo> results;
 
 		static constexpr int PROTOCOL_TO_SOCKET_TYPE[] = { SOCK_STREAM, SOCK_DGRAM };
 		static constexpr int PROTOCOL_TO_SOCKET_PROTOCOL[] = { IPPROTO_TCP, IPPROTO_UDP };
@@ -142,15 +145,12 @@ namespace zore::net {
 		hints.ai_flags = 0;
 
 		Address address;
-		if ((status = getaddrinfo(hostname.data(), std::to_string(port).c_str(), &hints, &results)) == 0)
+		if (status = getaddrinfo(hostname.data(), std::to_string(port).c_str(), &hints, results.c_ptr()); status == 0)
 			address.Init(ConvertFamily(results->ai_family), sockaddr_any(results->ai_addr));
 		else
 			Logger::Error(std::format("getaddrinfo error when connecting to: ({}:{})\n{}", hostname, port, gai_strerror(status)));
 		address.m_hostname = hostname;
 		address.m_host_type = HostType::DNS;
-
-		if (results)
-			freeaddrinfo(results);
 		return address;
 	}
 
@@ -205,7 +205,7 @@ namespace zore::net {
 			return;
 		m_storage = new sockaddr_storage{};
 		if (storage)
-			*m_storage = *storage;
+			std::memcpy(m_storage, storage, GetSockAddressSize());
 	}
 
 	void Address::InitIPv4(uint32_t ip, uint16_t port) {

@@ -23,7 +23,7 @@ namespace zore::net::http {
 		void Disconnect();
 
     private:
-        UNIQUE<Socket> m_socket;
+        zore::unique_pointer<Socket> m_socket;
         std::string m_host;
         uint16_t m_port;
         Scheme m_scheme;

@@ -2,115 +2,30 @@
 #include "zore/networking/networking_core.hpp"
 #include "zore/networking/ca_bundle.hpp"
 #include "zore/debug.hpp"
-#include <sys/types.h>
+#include <tlse.h>
 
 namespace zore::net {
 
+	SecureSocket::SecureSocket(Protocol protocol, bool blocking) : Socket(protocol, blocking), m_tls_context(nullptr), m_established(false) {
+		ENSURE(protocol == Protocol::TCP, "SecureSocket currently only supports the TCP protocol");
+	}
 
-
-
-
-
-	//int ValidateCertificate(
-	//	TLSContext* context,
-	//	TLSCertificate** chain,
-	//	int chain_length)
-	//{
-	//	Logger::Info(std::format(
-	//		"TLS presented {} certificates",
-	//		chain_length
-	//	));
-
-	//	if (!chain || chain_length <= 0) {
-	//		Logger::Error("TLS server presented no certificates");
-	//		return certificate_unknown;
-	//	}
-
-	//	for (int i = 0; i < chain_length; ++i) {
-	//		const int result =
-	//			tls_certificate_is_valid(chain[i]);
-
-	//		// Certificate helpers return 0 on success.
-	//		if (result != 0) {
-	//			Logger::Error(std::format(
-	//				"TLS certificate {} date validation failed: {}",
-	//				i,
-	//				result
-	//			));
-
-	//			return result;
-	//		}
-	//	}
-
-	//	int result = tls_certificate_chain_is_valid(
-	//		chain,
-	//		chain_length
-	//	);
-
-	//	if (result != 0) {
-	//		Logger::Error(std::format(
-	//			"TLS certificate chain validation failed: {}",
-	//			result
-	//		));
-
-	//		return result;
-	//	}
-
-	//	const char* server_name = tls_sni(context);
-
-	//	if (!server_name) {
-	//		Logger::Error(
-	//			"TLS certificate validation has no server name"
-	//		);
-
-	//		return certificate_unknown;
-	//	}
-
-	//	result = tls_certificate_valid_subject(
-	//		chain[0],
-	//		server_name
-	//	);
-
-	//	if (result != 0) {
-	//		Logger::Error(std::format(
-	//			"TLS certificate does not match '{}': {}",
-	//			server_name,
-	//			result
-	//		));
-
-	//		return result;
-	//	}
-
-	//	result = tls_certificate_chain_is_valid_root(
-	//		context,
-	//		chain,
-	//		chain_length
-	//	);
-
-	//	if (result != 0) {
-	//		Logger::Error(std::format(
-	//			"TLS certificate is not rooted in a trusted CA: {}",
-	//			result
-	//		));
-
-	//		return result;
-	//	}
-
-	//	Logger::Info("TLS certificate validation succeeded");
-
-	//	// The callback protocol uses 255 for acceptance.
-	//	return no_error;
-	//}
-
-
-
-
-
-
-	SecureSocket::SecureSocket(Protocol protocol, bool blocking) : Socket(protocol, blocking), m_tls_context(nullptr) {}
-
-	SecureSocket::SecureSocket(const Address& address, Protocol protocol, bool blocking) : Socket(protocol, blocking), m_tls_context(nullptr) {
+	SecureSocket::SecureSocket(const Address& address, Protocol protocol, bool blocking) : Socket(protocol, blocking), m_tls_context(nullptr), m_established(false) {
+		ENSURE(protocol == Protocol::TCP, "SecureSocket currently only supports the TCP protocol");
 		Connect(address);
+	}
+
+	SecureSocket::SecureSocket(SecureSocket&& other) noexcept : Socket(std::move(other)) {
+		Move(other);
+	}
+
+	SecureSocket& SecureSocket::operator=(SecureSocket&& other) noexcept {
+		if (this != &other) {
+			Close();
+			Move(other);
+			Socket::Move(other);
+		}
+		return *this;
 	}
 
 	SecureSocket::~SecureSocket() {
@@ -119,66 +34,70 @@ namespace zore::net {
 
 	Socket::Status SecureSocket::Connect(const Address& address) {
 		Close();
-		if (!address.IsValid() || address.GetHostname().empty()) {
+		if (!address.IsValid() || address.GetHostType() != Address::HostType::DNS || address.GetHostname().empty()) {
 			Logger::Error("Socket connection error: Invalid address");
 			return Status::ERROR;
 		}
-
 		if (Status status = Socket::Connect(address); status != Status::DONE)
 			return status;
-
 		if (Status status = InitializeContext(address); status != Status::DONE) {
 			Close();
 			return status;
 		}
-
 		return Status::DONE;
 	}
 
-	Socket::Status SecureSocket::Send(const void* data, uint32_t size) {
+	Socket::Result SecureSocket::Send(const void* data, int size) {
 		if (!m_tls_context || !m_established)
-			return Status::DISCONNECTED;
-		if (!data || size == 0)
-			return Status::ERROR;
+			return { Status::DISCONNECTED };
+		if (!data || size <= 0)
+			return { Status::ERROR };
 
-		const auto* bytes = static_cast<const unsigned char*>(data);
-		uint32_t written = 0;
+		const Result pending = SendEncrypted();
+		if (pending.status != Status::DONE)
+			return { pending.status, 0 };
 
-		while (written < size) {
-			const int result = tls_write(m_tls_context, bytes + written, size - written);
-			if (result <= 0)
-				return Status::ERROR;
-			written += static_cast<uint32_t>(result);
+		const unsigned char* bytes = static_cast<const unsigned char*>(data);
+		uint32_t sent = 0;
 
-			const Status status = SendEncrypted();
-			if (status != Status::DONE)
-				return status;
+		while (sent < size) {
+			const int written = tls_write(m_tls_context, bytes + sent, size - sent);
+			if (written <= 0)
+				return { Status::ERROR, sent };
+
+			sent += static_cast<uint32_t>(written);
+			const Result flushed = SendEncrypted();
+			if (flushed.status != Status::DONE)
+				return { flushed.status, sent };
 		}
-
-		return Status::DONE;
+		return { Status::DONE, sent };
 	}
 
-	Socket::Status SecureSocket::Receive(void* data, uint32_t size, uint32_t& received) {
-		received = 0;
-
+	Socket::Result SecureSocket::Receive(void* buffer, int max_size) {
 		if (!m_tls_context || !m_established)
-			return Status::DISCONNECTED;
-		if (!data || size == 0)
-			return Status::ERROR;
+			return { Status::DISCONNECTED };
+		if (!buffer || max_size == 0)
+			return { Status::ERROR };
 
 		while (true) {
-			const int plain_size = tls_read(m_tls_context, static_cast<unsigned char*>(data), size);
-			if (plain_size < 0)
-				return Status::ERROR;
-			if (plain_size > 0) {
-				received = static_cast<uint32_t>(plain_size);
-				return Status::DONE;
+			const int plain_size = tls_read(m_tls_context, static_cast<unsigned char*>(buffer), max_size);
+			if (plain_size < 0) {
+				Logger::Error("SecureSocket receive error: TLS read failed with error code: {}", plain_size);
+				return { Status::ERROR };
 			}
+			if (plain_size > 0)
+				return { Status::DONE, static_cast<uint32_t>(plain_size) };
 
-			const Status status = ReceiveEncrypted();
-			if (status != Status::DONE)
-				return status;
+			const Result result = ReceiveEncrypted();
+			if (result.status != Status::DONE)
+				return { result.status };
 		}
+	}
+
+	Socket::Status SecureSocket::Flush() {
+		if (!m_tls_context || !m_established)
+			return Status::DISCONNECTED;
+		return SendEncrypted().status;
 	}
 
 	void SecureSocket::Close() {
@@ -194,13 +113,14 @@ namespace zore::net {
 		Socket::Close();
 	}
 
+	void SecureSocket::Move(SecureSocket& other) {
+		m_tls_context = other.m_tls_context;
+		m_established = other.m_established;
+		other.m_tls_context = nullptr;
+		other.m_established = false;
+	}
+
 	Socket::Status SecureSocket::InitializeContext(const Address& address) {
-
-		if (m_protocol != Protocol::TCP) {
-			Logger::Error("SecureSocket currently supports TLS/TCP only");
-			return Status::ERROR;
-		}
-
 		static constexpr uint16_t TLS_VERSION_MAP[] = { TLS_V12, DTLS_V12 };
 		m_tls_context = tls_create_context(0, TLS_VERSION_MAP[static_cast<int>(m_protocol)]);
 		if (!m_tls_context) {
@@ -208,7 +128,7 @@ namespace zore::net {
 			return Status::ERROR;
 		}
 		if (address.GetHostType() == Address::HostType::DNS) {
-			if (tls_sni_set(m_tls_context, address.GetHostname().c_str()) < 0) {
+			if (tls_sni_set(m_tls_context, address.GetHostname().c_str()) != 1) {
 				Logger::Error("Failed to set SNI");
 				return Status::ERROR;
 			}
@@ -223,7 +143,7 @@ namespace zore::net {
 			Logger::Error("Failed to create TLS ClientHello");
 			return Status::ERROR;
 		}
-		if (SendEncrypted() != Status::DONE)
+		if (SendEncrypted().status != Status::DONE)
 			return Status::ERROR;
 		if (Status status = PerformHandshake(); status != Status::DONE)
 			return status;
@@ -242,32 +162,55 @@ namespace zore::net {
 				return Status::DONE;
 			}
 
-			if (Status status = ReceiveEncrypted(); status != Status::DONE)
-				return status;
+			if (Result result = ReceiveEncrypted(); result.status != Status::DONE)
+				return result.status;
 		}
 	}
 
-	Socket::Status SecureSocket::SendEncrypted() {
+	Socket::Result SecureSocket::SendEncrypted() {
 		unsigned int size = 0;
 		const unsigned char* data = tls_get_write_buffer(m_tls_context, &size);
 
-		if (!data || size == 0)
-			return Status::DONE;
-		Status status = Socket::Send(data, size);
+		if (m_encrypted_send_offset > size || (size != 0 && !data))
+			return { Status::ERROR };
+
+		uint32_t sent = 0;
+		while (m_encrypted_send_offset < size) {
+			uint32_t remaining = size - m_encrypted_send_offset;
+
+			int to_send = static_cast<int>(std::min(remaining, static_cast<uint32_t>(int32_max)));
+			const Result result = Socket::Send(data + m_encrypted_send_offset, to_send);
+
+			m_encrypted_send_offset += result.bytes_transferred;
+			sent += result.bytes_transferred;
+			if (result.status != Status::DONE)
+				return { result.status, sent };
+		}
+
 		tls_buffer_clear(m_tls_context);
-		return status;
+		m_encrypted_send_offset = 0;
+		return { Status::DONE, sent };
 	}
 
-	Socket::Status SecureSocket::ReceiveEncrypted() {
-		uint32_t received;
-		if (Status status = Socket::Receive(m_encrypted.data(), m_encrypted.size(), received); status != Status::DONE)
-			return status;
+	Socket::Result SecureSocket::ReceiveEncrypted() {
+		if (!m_tls_context)
+			return { Status::DISCONNECTED };
 
-		const int consumed = tls_consume_stream(m_tls_context, m_encrypted, received, tls_default_verify);
+		const Result pending = SendEncrypted();
+		if (pending.status != Status::DONE)
+			return { pending.status, 0 };
+
+		const Result received = Socket::Receive(m_encrypted.data(), m_encrypted.size());
+		if (received.status != Status::DONE)
+			return received;
+
+		const int consumed = tls_consume_stream(m_tls_context, m_encrypted, static_cast<int>(received.bytes_transferred), tls_default_verify);
 		if (consumed < 0) {
 			Logger::Error("TLS input processing failed with code:", consumed);
-			return Status::ERROR;
+			return { Status::ERROR, received.bytes_transferred };
 		}
-		return SendEncrypted();
+
+		const Result flushed = SendEncrypted();
+		return { flushed.status, received.bytes_transferred };
 	}
 }

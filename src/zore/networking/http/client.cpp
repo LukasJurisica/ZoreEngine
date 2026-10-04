@@ -1,7 +1,5 @@
 #include "zore/networking/http/client.hpp"
-#include "zore/networking/networking_core.hpp"
 #include "zore/networking/secure_socket.hpp"
-#include "zore/utils/string.hpp"
 #include "zore/debug.hpp"
 #include <array>
 
@@ -31,9 +29,9 @@ namespace zore::net::http {
 		m_port = port;
 
 		if (scheme == Scheme::HTTPS)
-			m_socket = std::make_unique<SecureSocket>(Protocol::TCP, true);
+			m_socket.reset(new SecureSocket(Protocol::TCP, true));
 		else
-			m_socket = std::make_unique<Socket>(Protocol::TCP, true);
+			m_socket.reset(new Socket(Protocol::TCP, true));
 		m_socket->SetTimeout(m_timeout);
 
 		Address address = Address::Resolve(host, port, Protocol::TCP);
@@ -46,31 +44,30 @@ namespace zore::net::http {
 
 	Response Client::Make(Request request) {
 		Response response(request.GetMethod());
-		if (m_socket && m_socket->IsReady()) {
+		if (m_socket) {
 
 			request.SetField("Host", std::format("{}:{}", m_host, m_port), false);
 			request.SetField("Connection", m_connection == Connection::CLOSE ? "close" : "keep-alive");
 			std::string req = request.Build();
 
-
-			if (m_socket->Send(req.data(), req.size()) != Socket::Status::DONE) {
+			Socket::Result result = m_socket->Send(req.data(), req.size());
+			if (result.status != Socket::Status::DONE) {
 				Logger::Error("HTTP request failed: Failed to send request");
 				return response;
 			}
 
 			std::array<char, MAX_RESPONSE_SIZE> buffer;
 			while (true) {
-				uint32_t response_size;
-				const Socket::Status status = m_socket->Receive(buffer.data(), MAX_RESPONSE_SIZE, response_size);
+				const Socket::Result result = m_socket->Receive(buffer.data(), MAX_RESPONSE_SIZE);
 
-				if (status == Socket::Status::DONE) {
-					if (response.Append(buffer.data(), response_size))
+				if (result.status == Socket::Status::DONE) {
+					if (response.Append(buffer.data(), result.bytes_transferred))
 						return response;
 				}
-				else if (status == Socket::Status::DISCONNECTED) {
+				else if (result.status == Socket::Status::DISCONNECTED) {
 					break;
 				}
-				else if (status == Socket::Status::TIMED_OUT) {
+				else if (result.status == Socket::Status::TIMED_OUT) {
 					Logger::Error("HTTP request failed: Server timed out");
 					return response;
 				}
