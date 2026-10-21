@@ -2,7 +2,9 @@
 #include <zore/io/file_manager.hpp>
 #include <zore/ui.hpp>
 #include <zore/debug.hpp>
-#include <zore/networking/secure_socket.hpp>
+#include <zore/networking/http/client.hpp>
+
+#include "zore/command.hpp"
 
 using namespace zore;
 
@@ -33,6 +35,17 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 		});
 
 	action_map.Register(ActionMap::Source::KEYBOARD, KEY_F8, true, false, &DemoApplication::ReloadShaders, this);
+
+
+
+	std::string test = "set weather       clear 4 'The rest of the string'";
+	Command::StringReader reader(test);
+
+	Logger::Log(Command::ArgumentParser<std::string>::Parse(reader));
+	Logger::Log(Command::ArgumentParser<std::string>::Parse(reader));
+	Logger::Log(Command::ArgumentParser<std::string>::Parse(reader));
+	Logger::Log(Command::ArgumentParser<int>::Parse(reader));
+	Logger::Log(Command::ArgumentParser<Command::greedy_string>::Parse(reader));
 }
 
 void DemoApplication::ReloadShaders(ActionMap::Key) {
@@ -47,38 +60,13 @@ void DemoApplication::Run() {
 	RenderEngine::SetTopology(MeshTopology::TRIANGLE_STRIP);
 	RenderEngine::SetDepthTest(DepthTest::LESS);
 
-	net::Address address = net::Address::Resolve(
-		"www.google.com",
-		443,
-		net::Protocol::TCP
-	);
-
-	net::SecureSocket socket(address);
-
-	const std::string request =
-		"GET / HTTP/1.1\r\n"
-		"Host: www.google.com\r\n"
-		"Connection: close\r\n"
-		"\r\n";
-
-	if (socket.Send(request.data(), request.size()).status != net::Socket::Status::DONE) {
-		Logger::Error("HTTPS request failed to send");
-	}
-
-	std::string response;
-	char buffer[4096];
-
-	while (true) {
-		const net::Socket::Result result = socket.Receive(buffer, sizeof(buffer));
-		if (result.status == net::Socket::Status::DONE) {
-			response.append(buffer, result.bytes_transferred);
-			continue;
-		}
-		if (result.status != net::Socket::Status::DISCONNECTED)
-			Logger::Error("HTTPS response failed");
-		break;
-	}
-	Logger::Info(response);
+	//{
+	//	using namespace net::http;
+	//	Client client;
+	//	client.Connect("www.google.com", Scheme::HTTPS, 443);
+	//	Response response = client.Make(Request(Method::GET, "/"));
+	//	Logger::Log(static_cast<int>(response.GetStatus()), response.GetBody());
+	//}
 
 	m_panel_shader.SetSource("default_ui_panel.glsl").Compile();
 	m_text_shader.SetSource("default_ui_text.glsl").Compile();

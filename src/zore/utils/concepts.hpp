@@ -3,8 +3,9 @@
 #include <concepts>
 
 namespace zore {
+
 	template <typename T>
-	concept numeric = std::integral<T> || std::floating_point<T>;
+	concept numeric = (std::integral<T> || std::floating_point<T>) && (!std::same_as<T, bool>);
 
 	template <typename T>
 	concept arithmetic = requires(T a, T b) {

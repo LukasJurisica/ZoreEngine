@@ -1,6 +1,7 @@
 #include "zore/networking/socket.hpp"
 #include "zore/networking/networking_core.hpp"
 #include "zore/debug.hpp"
+#include <algorithm>
 
 namespace zore::net {
 
@@ -32,7 +33,7 @@ namespace zore::net {
 	}
 
 	Socket::Status Socket::SetTimeout(std::chrono::milliseconds timeout) {
-		m_timeout = timeout.count();
+		m_timeout = std::clamp(timeout.count(), static_cast<long long>(0), static_cast<long long>(60 * 1000));
 		return ApplyTimeout();
 	}
 
@@ -48,6 +49,7 @@ namespace zore::net {
 
 		if (connect(m_socket_id, address.GetSockAddress(), address.GetSockAddressSize()) == SOCKET_ERROR) {
 			Logger::Error(GetLastError("connect"));
+			Close();
 			return Status::ERROR;
 		}
 		return Status::DONE;
@@ -67,7 +69,8 @@ namespace zore::net {
 			if (result < 0) {
 				int error_code = GetLastErrorCode();
 				Status error_type = GetErrorType(error_code);
-				Logger::Error(GetLastError("send", error_code));
+				if (error_type != Status::WOULD_BLOCK && error_type != Status::TIMED_OUT)
+					Logger::Error(GetLastError("send", error_code));
 				return { error_type, sent };
 			}
 			sent += result;
@@ -87,7 +90,8 @@ namespace zore::net {
 		else if (result < 0) {
 			int error_code = GetLastErrorCode();
 			Status error_type = GetErrorType(error_code);
-			Logger::Error(GetLastError("recv", error_code));
+			if (error_type != Status::WOULD_BLOCK && error_type != Status::TIMED_OUT)
+				Logger::Error(GetLastError("recv", error_code));
 			return { error_type };
 		}
 		return { Status::DONE, static_cast<uint32_t>(result) };

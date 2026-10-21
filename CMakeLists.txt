@@ -25,9 +25,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 include("cmake/CPM.cmake")
 include("cmake/glfw.cmake")
 include("cmake/tlse.cmake")
+include("cmake/plf_hive.cmake")
 add_subdirectory("deps/glad")
 add_subdirectory("deps/imgui")
-set(ZORE_LIBRARIES "glfw" "glad" "imgui" "tlse")
+set(ZORE_LIBRARIES "glfw" "glad" "imgui" "tlse" "plf_hive")
 
 # Add Tracy as a dependency if the ZORE_BUILD_PROFILER option is set
 if (${ZORE_BUILD_PROFILER})
