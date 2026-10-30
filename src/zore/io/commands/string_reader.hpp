@@ -15,10 +15,12 @@ namespace zore::Command {
 		std::string_view Read();
 		std::string_view Remaining();
 		size_t GetPosition();
+		void Close();
+		bool CanRead() const;
 
 	private:
-		inline bool CanRead() const;
 		inline char Peek() const;
+		inline bool IsWhitespace() const;
 		inline void SkipWhitespace();
 
 		void ReadQuoted(char quote);
@@ -27,5 +29,6 @@ namespace zore::Command {
 	private:
 		std::string_view m_content;
 		size_t m_position = 0;
+		size_t m_token = 0;
 	};
 }

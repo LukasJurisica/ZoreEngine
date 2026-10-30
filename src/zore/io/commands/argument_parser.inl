@@ -3,8 +3,8 @@
 #ifdef __INTELLISENSE__
 #include "zore/io/commands/argument_parser.hpp"
 #endif
+#include "zore/io/commands/parse_exception.hpp"
 #include "zore/utils/String.hpp"
-#include <stdexcept>
 #include <charconv>
 
 namespace zore::Command {
@@ -15,45 +15,38 @@ namespace zore::Command {
 
     template <numeric T>
     struct ArgumentParser<T> {
-        static T Parse(StringReader& reader) {
-            std::string_view token = reader.Read();
+        static T Parse(std::string_view token) {
             T result{};
             const auto parsed = std::from_chars(token.data(), token.data() + token.size(), result);
             if (parsed.ec != std::errc{} || parsed.ptr != token.data() + token.size())
-                throw ParseException("Expected a representable number", reader.GetPosition());
+                throw ParseException("Expected a representable number");
             return result;
         }
     };
 
     template <>
-    struct ArgumentParser<std::string> {
-        static std::string_view Parse(StringReader& reader) {
-            std::string_view token = reader.Read();
-            if (token == "")
-                throw ParseException("Expected text", reader.GetPosition());
+    struct ArgumentParser<std::string_view> {
+        static std::string_view Parse(std::string_view token) {
             return token;
         }
     };
 
     template <>
-    struct ArgumentParser<bool> {
-        static bool Parse(StringReader& reader) {
-            std::string token = String::Lower(reader.Read());
-            if (token == "true" || token == "1")
-                return true;
-            else if (token == "false" || token == "0")
-                return false;
-            throw ParseException("Expected true/1 or false/0", reader.GetPosition());
+    struct ArgumentParser<std::string> {
+        static std::string Parse(std::string_view token) {
+            return std::string(token);
         }
     };
 
     template <>
-    struct ArgumentParser<greedy_string> {
-        static std::string_view Parse(StringReader& reader) {
-            std::string_view result = reader.Remaining();
-            if (result == "")
-                throw ParseException("Expected text", reader.GetPosition());
-            return result;
+    struct ArgumentParser<bool> {
+        static bool Parse(std::string_view token) {
+            std::string lower = String::Lower(token);
+            if (lower == "true" || lower == "1")
+                return true;
+            else if (lower == "false" || lower == "0")
+                return false;
+            throw ParseException("Expected true/1 or false/0, got: " + lower);
         }
     };
 }

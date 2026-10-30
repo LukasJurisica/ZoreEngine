@@ -18,36 +18,38 @@ namespace zore::Command {
 		enum class Type { ROOT, LITERAL, ARGUMENT };
 
 		using Action = void(*)(Context&);
-		using Parser = std::any(*)(StringReader&);
 		//using Action = std::function<void(Context&)>;
-		//using Parser = std::function<std::any(StringReader&)>;
 
 	public:
-		Node(std::string_view name, Node* parent, Type type, Parser = nullptr);
+		Node(std::string_view name, Node* parent, Type type, bool greedy);
 		Node(const Node&) = delete;
 		Node& operator=(const Node&) = delete;
-		Node(Node&& other) = default;
-		Node& operator=(Node&& other) = default;
+		Node(Node&& other) = delete;
+		Node& operator=(Node&& other) = delete;
 		~Node() = default;
 
 		Node& Literal(std::string_view name);
-		template<Parsable T>
-		Node& Argument(std::string_view name);
+		Node& Argument(std::string_view name, bool greedy = false);
+		Node& Unregister(std::string_view name);
 		Node& Description(std::string description);
 		Node& Executes(Action action);
+		std::string Path() const;
+		std::string Target() const;
+
+		Node* Insert(std::string_view name, Type type, bool greedy = false);
+		Node* GetChild(std::string_view name);
 
 	private:
-		Node* Insert(std::string_view name, Type type, Parser parser = nullptr);
+		bool HasArgument() const;
 
 	private:
 		std::string m_name;
-		std::string m_description;
+		std::string m_description = "This command has no description";
 		std::vector<unique_pointer<Node>> m_children;
 		Node* m_parent;
 		Action m_action = nullptr;
-		Parser m_parser;
-		uint32_t literal_children_count = 0;
 		Type m_type;
+		bool m_greedy;
 	};
 }
 

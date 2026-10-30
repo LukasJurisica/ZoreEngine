@@ -1,6 +1,7 @@
 #include "zore/io/commands/string_reader.hpp"
+#include "zore/io/commands/parse_exception.hpp"
+#include "zore/debug.hpp"
 #include <cctype>
-#include <zore/debug.hpp>
 
 namespace zore::Command {
 
@@ -12,12 +13,16 @@ namespace zore::Command {
 
 	std::string_view StringReader::Read() {
 		SkipWhitespace();
+		if (!CanRead())
+			throw ParseException("Expected an argument");
 		size_t start = m_position;
 		const char first = Peek();
 		bool quoted = first == '\'' || first == '"';
 		quoted ? ReadQuoted(first) : ReadUnquoted();
-		start += quoted ? 1 : 0;
-		return m_content.substr(start, m_position - start);
+		size_t offset = quoted ? 1 : 0;
+		start += offset;
+		m_token += 1;
+		return m_content.substr(start, m_position - start - offset);
 	}
 
 	std::string_view StringReader::Remaining() {
@@ -29,6 +34,10 @@ namespace zore::Command {
 		return m_position;
 	}
 
+	void StringReader::Close() {
+		m_position = m_content.size();
+	}
+
 	bool StringReader::CanRead() const {
 		return m_position < m_content.size();
 	}
@@ -37,8 +46,12 @@ namespace zore::Command {
 		return m_content[m_position];
 	}
 
+	bool StringReader::IsWhitespace() const {
+		return std::isspace(static_cast<unsigned char>(Peek()));
+	}
+
 	void StringReader::SkipWhitespace() {
-		while (CanRead() && std::isspace(Peek()))
+		while (CanRead() && IsWhitespace())
 			m_position++;
 	}
 
@@ -46,10 +59,13 @@ namespace zore::Command {
 		m_position++;
 		while (CanRead() && Peek() != quote)
 			m_position++;
+		if (!CanRead())
+			throw ParseException("Unterminated quoted argument");
+		m_position++;
 	}
 
 	void StringReader::ReadUnquoted() {
-		while (CanRead() && std::isspace(Peek()) == false)
+		while (CanRead() && IsWhitespace() == false)
 			m_position++;
 	}
 }

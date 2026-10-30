@@ -36,16 +36,16 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 
 	action_map.Register(ActionMap::Source::KEYBOARD, KEY_F8, true, false, &DemoApplication::ReloadShaders, this);
 
+	Command::Manager::Init();
+	
+	Command::Manager::Register("test").Executes([](Command::Context& context) {
+		Logger::Log("testing");
+		});
+	
+	Command::Manager::Evaluate("/help test");
 
 
-	std::string test = "set weather       clear 4 'The rest of the string'";
-	Command::StringReader reader(test);
 
-	Logger::Log(Command::ArgumentParser<std::string>::Parse(reader));
-	Logger::Log(Command::ArgumentParser<std::string>::Parse(reader));
-	Logger::Log(Command::ArgumentParser<std::string>::Parse(reader));
-	Logger::Log(Command::ArgumentParser<int>::Parse(reader));
-	Logger::Log(Command::ArgumentParser<Command::greedy_string>::Parse(reader));
 }
 
 void DemoApplication::ReloadShaders(ActionMap::Key) {
