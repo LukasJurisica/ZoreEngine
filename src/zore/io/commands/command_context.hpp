@@ -29,7 +29,12 @@ namespace zore::Command {
 			return m_values.contains(key);
 		}
 
+		std::string& Response() {
+			return m_response;
+		}
+
 	private:
 		zore::string_unordered_map<std::string_view> m_values;
+		std::string m_response;
 	};
 }

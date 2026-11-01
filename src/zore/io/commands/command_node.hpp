@@ -3,7 +3,6 @@
 #include "zore/io/commands/command_context.hpp"
 #include "zore/io/commands/argument_parser.hpp"
 #include "zore/utils/memory.hpp"
-//#include <functional>
 #include <vector>
 
 namespace zore::Command {
@@ -16,9 +15,7 @@ namespace zore::Command {
 	public:
 		friend class Manager;
 		enum class Type { ROOT, LITERAL, ARGUMENT };
-
 		using Action = void(*)(Context&);
-		//using Action = std::function<void(Context&)>;
 
 	public:
 		Node(std::string_view name, Node* parent, Type type, bool greedy);
@@ -52,5 +49,3 @@ namespace zore::Command {
 		bool m_greedy;
 	};
 }
-
-#include "zore/io/commands/command_node.inl"

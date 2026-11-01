@@ -4,6 +4,15 @@
 namespace zore::Command {
 
 	//========================================================================
+	//	Command Result
+	//========================================================================
+
+	struct Result {
+		std::string message;
+		bool success;
+	};
+
+	//========================================================================
 	//	Command Manager
 	//========================================================================
 	
@@ -12,7 +21,7 @@ namespace zore::Command {
 		static void Init();
 		static Node& Register(std::string_view name);
 		static void Unregister(std::string_view name);
-		static void Evaluate(std::string_view command);
+		static Result Evaluate(std::string_view command);
 		static void Clear();
 
 	private:

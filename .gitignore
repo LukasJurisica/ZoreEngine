@@ -2,5 +2,6 @@ build/
 config/*
 .vscode/
 !config/path_config.h.in
+!config/ca_bundle.cpp.in
 ZoreEngine.lnk
 logs/

@@ -1,5 +1,5 @@
 #include "zore/ui/console.hpp"
-#include "zore/core/command.hpp"
+#include "zore/io/commands/command_manager.hpp"
 #include "zore/io/file_manager.hpp"
 #include "zore/utils/time.hpp"
 #include "zore/debug.hpp"
@@ -113,12 +113,11 @@ namespace zore {
 				s_history_pos = s_history.size();
 				s_scroll_to_bottom = true;
 				s_retain_focus = true;
-				try {
-					Command::Process(command);
-				}
-				catch (const std::exception& e) {
-					Logger::Error("Error executing command:", std::string(e.what()));
-				}
+				Command::Result result = Command::Manager::Evaluate(command);
+				if (result.success)
+					Logger::Log(result.message);
+				else
+					Logger::Error(result.message);
 			}
 		}
 		ImGui::End();

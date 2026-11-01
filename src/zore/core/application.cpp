@@ -1,7 +1,7 @@
 #include "zore/core/application.hpp"
 #include "zore/platform/processor.hpp"
 #include "zore/io/file_manager.hpp"
-#include "zore/core/command.hpp"
+#include "zore/io/commands/command_manager.hpp"
 #include "zore/devices/window.hpp"
 #include "zore/networking/networking_manager.hpp"
 #include "zore/audio/audio_manager.hpp"
@@ -24,7 +24,7 @@ namespace zore {
 			net::Manager::Init();
 		if (options.enable_audio)
 			audio::Manager::Init();
-		Command::Register("help", Command::Help);
+		Command::Manager::Init();
 		Editor::Init(options.enable_multi_viewports, options.enable_docking, options.enable_keyboard_navigation);
 	}
 
@@ -40,7 +40,7 @@ namespace zore {
 	}
 
 	void Application::Cleanup() {
-		Command::UnregisterAll();
+		Command::Manager::Clear();
 		Editor::Cleanup();
 		audio::Manager::Cleanup();
 		net::Manager::Cleanup();

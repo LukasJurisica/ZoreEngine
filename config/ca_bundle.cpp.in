@@ -1,0 +1,7 @@
+#include "zore/networking/ca_bundle.hpp"
+
+namespace zore::net {
+
+	const unsigned char CA_BUNDLE[] = R"ZORE_CA_BUNDLE(@ZORE_CA_BUNDLE_CONTENT@)ZORE_CA_BUNDLE";
+	const int CA_BUNDLE_SIZE = static_cast<int>(sizeof(CA_BUNDLE) - 1);
+}

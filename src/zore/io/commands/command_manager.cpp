@@ -25,20 +25,27 @@ namespace zore::Command {
 		s_root.Unregister(name);
 	}
 
-	void Manager::Evaluate(std::string_view command) {
+	Result Manager::Evaluate(std::string_view command) {
 		StringReader reader(command);
 		Context context;
-		Node* result = Traverse(&s_root, reader, context);
-		if (result == nullptr)
-			Logger::Error(std::format("Unknown command or invalid arguments: '{}'. Type '/help' for available commands.", command));
+		Node* node = Traverse(&s_root, reader, context);
+		if (node == nullptr)
+			return { std::format("Unknown command or invalid arguments: '{}'. Type '/help' for available commands.", command), false };
 		else if (!reader.Remaining().empty())
-			Logger::Error(std::format("Unexpected input after '/{}': '{}'.", result->Path(), reader.Remaining()));
-		else if (result->m_action)
-			result->m_action(context);
-		else if (result->m_children.size() > 0)
-			Logger::Error(std::format("Incomplete command. Type '/help {}' for usage.", result->Path()));
+			return { std::format("Unexpected input after '/{}': '{}'.", node->Path(), reader.Remaining()), false };
+		else if (node->m_action) {
+			try {
+				node->m_action(context);
+				return { context.Response(), true };
+			}
+			catch (const std::exception& e) {
+				return { std::string(e.what()), false };
+			}
+		}
+		else if (node->m_children.size() > 0)
+			return { std::format("Incomplete command. Type '/help {}' for usage.", node->Path()), false };
 		else
-			Logger::Warn("Command is incomplete: it has no action.");
+			return { "Command is incomplete: it has no action.", false };
 	}
 
 	void Manager::Clear() {
@@ -59,17 +66,17 @@ namespace zore::Command {
 
 				// Traverse stops at leaves, so reject unconsumed input too.
 				if (!selected || !reader.Remaining().empty()) {
-					Logger::Error("Unknown command path: " + std::string(command));
+					throw ParseException("Unknown command path: " + std::string(command));
 					return;
 				}
 
-				Logger::Log(std::format("/{}: {}", selected->Path(), selected->m_description));
-				Logger::Log("Usage:");
+				context.Response() = std::format("/{}: {}", selected->Path(), selected->m_description);
+				context.Response() += "\nUsage:";
 
 				bool found_action = false;
 				auto print_usage = [&](auto&& self, const Node& node) -> void {
 					if (node.m_action) {
-						Logger::Log("  /" + node.Path());
+						context.Response() += "\n  /" + node.Path();
 						found_action = true;
 					}
 
@@ -79,21 +86,21 @@ namespace zore::Command {
 
 				print_usage(print_usage, *selected);
 				if (!found_action)
-					Logger::Log("  No executable forms are registered.");
+					context.Response() += "  \nNo executable forms are registered.";
 			}
 			catch (const ParseException& error) {
-				Logger::Error(std::string("Invalid help query: ") + error.what());
+				throw std::runtime_error("Invalid help query: " + std::string(error.what()));
 				return;
 			}
 		}
 		else if (s_root.m_children.empty()) {
-			Logger::Log("No commands are registered.");
+			context.Response() = "No commands are registered.";
 		}
 		else {
-			Logger::Log("--- Available Commands ---");
+			context.Response() = "--- Available Commands ---";
 			for (auto& n : s_root.m_children)
-				Logger::Log(n->Target() + ": " + n->m_description);
-			Logger::Log("Use /help <command> for usage.");
+				context.Response() += "\n" + n->Target() + ": " + n->m_description;
+			context.Response() += "\nUse /help <command> for usage.";
 		}
 	}
 
