@@ -10,6 +10,7 @@ namespace zore::Command {
 	//========================================================================
 
 	void Manager::Init() {
+		Clear();
 		Register("help")
 			.Executes(Manager::Help)
 			.Description("Provides a list of all available commands")

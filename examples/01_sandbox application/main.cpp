@@ -35,17 +35,6 @@ DemoApplication::DemoApplication(const LaunchOptions& options) : Application(opt
 		});
 
 	action_map.Register(ActionMap::Source::KEYBOARD, KEY_F8, true, false, &DemoApplication::ReloadShaders, this);
-
-	Command::Manager::Init();
-	
-	Command::Manager::Register("test").Executes([](Command::Context& context) {
-		Logger::Log("testing");
-		});
-	
-	Command::Manager::Evaluate("/help test");
-
-
-
 }
 
 void DemoApplication::ReloadShaders(ActionMap::Key) {

@@ -16,6 +16,7 @@ namespace zore::net {
 
 	public:
 		enum class Status : uint8_t { DONE, WOULD_BLOCK, TIMED_OUT, ERROR, DISCONNECTED };
+		enum class Interest : uint8_t { NONE = 0, READ = 1, WRITE = 2, READ_WRITE = 3 };
 
 		struct Result {
 			Status status;
@@ -35,18 +36,30 @@ namespace zore::net {
 		Status SetBlocking(bool blocking);
 		Status SetTimeout(std::chrono::milliseconds timeout);
 		virtual Status Connect(const Address& address);
+		virtual Status CompleteConnect();
 		virtual Result Send(const void* data, int size);
 		virtual Result Receive(void* buffer, int max_size);
+		virtual Status Flush();
+		virtual Status Shutdown();
 		virtual void Close();
 
+		Interest GetInterest() const;
+		socket_t GetSocketID() const;
 		Address GetSelfAddress() const;
 		Address GetPeerAddress() const;
 
 	protected:
+		std::chrono::steady_clock::time_point MakeDeadline() const;
+		static bool Expired(std::chrono::steady_clock::time_point deadline);
+
 		void Move(Socket& other);
 		Status Open();
-		Status ApplyBlocking();
-		Status ApplyTimeout();
+		Status Configure();
+		Status Wait(Interest interest, std::chrono::steady_clock::time_point deadline);
+		Result SendRaw(const void* data, int size);
+		Result ReceiveRaw(void* buffer, int size);
+		Status Fail(Status status);
+
 		static int GetLastErrorCode();
 		static std::string GetLastError(const std::string& function, int error_code = GetLastErrorCode());
 		static Status GetErrorType(int error_code = GetLastErrorCode());
